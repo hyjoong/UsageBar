@@ -5,6 +5,7 @@ import UsageBarCore
 extension ProviderID {
     var tint: Color { UsageTheme.accent }
     var symbol: String { self == .claude ? "asterisk.circle.fill" : "terminal.fill" }
+    var statusURL: URL { URL(string: self == .claude ? "https://status.claude.com" : "https://status.openai.com")! }
     var dashboardURL: URL {
         URL(string: self == .claude ? "https://claude.ai/settings/usage" : "https://chatgpt.com/codex/settings/usage")!
     }
@@ -118,9 +119,14 @@ struct UsagePanel: View {
                 }
             }
             HStack(spacing: 14) {
-                Picker("서비스", selection: $store.selectedProvider) {
-                    ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
-                }.pickerStyle(.segmented).labelsHidden().frame(width: 185)
+                if store.activeProviders.count > 1 {
+                    Picker("서비스", selection: $store.selectedProvider) {
+                        ForEach(store.activeProviders) { Text($0.title).tag($0) }
+                    }.pickerStyle(.segmented).labelsHidden().frame(width: 185)
+                } else {
+                    Label(provider.title, systemImage: provider.symbol)
+                        .font(.system(size: 13, weight: .medium))
+                }
                 Spacer(minLength: 0)
                 Text(planLabel)
                     .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
@@ -192,10 +198,21 @@ struct UsagePanel: View {
     }
 
     @ViewBuilder private var connectionNotice: some View {
+        if let notice = store.selectionNotice(for: provider) {
+            Label(notice, systemImage: "pin.slash")
+                .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         if let message = store.selectedState.errorMessage {
             Label(message, systemImage: "exclamationmark.circle")
                 .font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
                 .fixedSize(horizontal: false, vertical: true)
+            Button("서비스 장애 현황 확인") { NSWorkspace.shared.open(provider.statusURL) }
+                .buttonStyle(.link).font(.caption)
+        }
+        if let retry = store.retryMessage(for: provider) {
+            Label(retry, systemImage: "clock")
+                .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
         }
         if store.selectedState.requiresConnection, provider == .claude {
             Button("Claude 다시 연결") { openClaudeSetup() }.buttonStyle(.bordered)
@@ -326,9 +343,16 @@ struct UsagePanel: View {
                     .font(.callout).foregroundStyle(UsageTheme.secondaryInk).fixedSize(horizontal: false, vertical: true)
                 Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
                     .buttonStyle(.borderedProminent)
+                    .disabled(!store.canRefresh(provider))
+                if let retry = store.retryMessage(for: provider) {
+                    Text(retry).font(.caption).foregroundStyle(UsageTheme.secondaryInk)
+                }
                 if provider == .claude {
                     Button("Claude 연결 설정") { openClaudeSetup() }
                         .buttonStyle(.bordered)
+                    Button("Claude Code 설치 안내") {
+                        NSWorkspace.shared.open(URL(string: "https://code.claude.com/docs/en/quickstart")!)
+                    }.font(.caption).buttonStyle(.link)
                     Text("터미널에서 처음 한 번 연결을 확인해 주세요.")
                         .font(.caption).foregroundStyle(UsageTheme.secondaryInk)
                     if let setupMessage {
@@ -336,6 +360,8 @@ struct UsagePanel: View {
                     }
                 }
                 Button("공식 사용량 화면 열기") { NSWorkspace.shared.open(provider.dashboardURL) }
+                    .font(.caption).buttonStyle(.link)
+                Button("서비스 장애 현황 확인") { NSWorkspace.shared.open(provider.statusURL) }
                     .font(.caption).buttonStyle(.link)
             }
         }.frame(maxWidth: .infinity).multilineTextAlignment(.center).padding(.vertical, 26)
@@ -356,7 +382,7 @@ struct UsagePanel: View {
             Button { Task { await store.refresh(provider, force: true) } } label: {
                 Image(systemName: "arrow.clockwise").frame(width: 28, height: 28)
             }.buttonStyle(.plain).help("사용량 새로고침").accessibilityLabel("사용량 새로고침")
-                .disabled(store.selectedState.isRefreshing)
+                .disabled(!store.canRefresh(provider))
                 .keyboardShortcut("r", modifiers: .command)
         }.font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk).padding(.horizontal, 22).padding(.vertical, 8)
     }
@@ -369,6 +395,7 @@ struct UsagePanel: View {
                 .keyboardShortcut(",", modifiers: .command)
             Menu {
                 Button("공식 사용량 화면") { NSWorkspace.shared.open(provider.dashboardURL) }
+                Button("서비스 장애 현황") { NSWorkspace.shared.open(provider.statusURL) }
                 Divider()
                 Button("UsageBar 종료", role: .destructive) { NSApp.terminate(nil) }.keyboardShortcut("q")
             } label: { Image(systemName: "ellipsis") }.menuStyle(.borderlessButton).tint(UsageTheme.secondaryInk).frame(width: 28, height: 28).accessibilityLabel("추가 메뉴")
@@ -379,12 +406,12 @@ struct UsagePanel: View {
 
     private func openClaudeSetup() {
         do {
-            try ClaudeProvider.prepareConnectionDirectory()
             guard let script = Bundle.main.url(forResource: "setup-claude", withExtension: "command") else {
                 setupMessage = "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요."
                 return
             }
-            setupMessage = NSWorkspace.shared.open(script) ? nil : "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요."
+            let launcher = try ClaudeProvider.prepareConnectionScript(scriptURL: script)
+            setupMessage = NSWorkspace.shared.open(launcher) ? nil : "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요."
         } catch { setupMessage = error.localizedDescription }
     }
 

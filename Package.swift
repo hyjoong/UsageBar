@@ -12,6 +12,7 @@ let package = Package(
         .target(name: "UsageBarCore"),
         .executableTarget(name: "UsageBar", dependencies: ["UsageBarCore"]),
         .executableTarget(name: "UsageBarDoctor", dependencies: ["UsageBarCore"]),
-        .testTarget(name: "UsageBarCoreTests", dependencies: ["UsageBarCore"])
+        .testTarget(name: "UsageBarCoreTests", dependencies: ["UsageBarCore"]),
+        .testTarget(name: "UsageBarAppTests", dependencies: ["UsageBar"])
     ]
 )

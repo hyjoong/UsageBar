@@ -18,6 +18,48 @@ public actor ClaudeProvider: UsageProvider {
         try prepareConnectionDirectory(at: connectionDirectoryURL)
     }
 
+    /// Creates a user-opened Terminal launcher containing paths only, never credentials.
+    /// The explicit executable keeps Terminal's PATH from selecting a different install.
+    public static func prepareConnectionScript(scriptURL: URL) throws -> URL {
+        try prepareConnectionScript(scriptURL: scriptURL, directory: connectionDirectoryURL,
+                                    environment: ProcessInfo.processInfo.environment,
+                                    home: FileManager.default.homeDirectoryForCurrentUser)
+    }
+
+    static func prepareConnectionScript(scriptURL: URL, directory: URL,
+                                        environment: [String: String], home: URL,
+                                        knownPaths: [String]? = nil) throws -> URL {
+        let manager = FileManager.default
+        guard let executable = resolveExecutable(preferred: nil, environment: environment, home: home,
+                                                 knownPaths: knownPaths) else {
+            throw ProviderError.setupRequired("Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요.")
+        }
+        guard scriptURL.isFileURL, !scriptURL.path.utf8.contains(0),
+              scriptURL.resolvingSymlinksInPath().standardizedFileURL.path == scriptURL.standardizedFileURL.path,
+              manager.isReadableFile(atPath: scriptURL.path),
+              (try? scriptURL.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else {
+            throw ProviderError.setupRequired("Claude 연결 설정 파일을 사용할 수 없어요. build 폴더의 UsageBar.app을 다시 실행해 주세요.")
+        }
+        let folder = try prepareConnectionDirectory(at: directory)
+        let launcher = folder.appendingPathComponent("ConnectClaude.command")
+        guard (try? manager.destinationOfSymbolicLink(atPath: launcher.path)) == nil else {
+            throw ProviderError.setupRequired("Claude 연결 실행 파일이 다른 위치로 연결되어 있어요.")
+        }
+        if manager.fileExists(atPath: launcher.path) {
+            let values = try launcher.resourceValues(forKeys: [.isRegularFileKey])
+            guard values.isRegularFile == true else {
+                throw ProviderError.setupRequired("Claude 연결 실행 파일의 경로를 확인해 주세요.")
+            }
+        }
+        let arguments = ["/bin/zsh", scriptURL.standardizedFileURL.path, "--claude-executable", executable]
+        let command = arguments.map { "'" + $0.replacingOccurrences(of: "'", with: "'\\''") + "'" }
+            .joined(separator: " ")
+        try ("#!/bin/zsh\nset -euo pipefail\nexec " + command + "\n")
+            .write(to: launcher, atomically: true, encoding: .utf8)
+        try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: launcher.path)
+        return launcher
+    }
+
     static func prepareConnectionDirectory(at directory: URL) throws -> URL {
         let manager = FileManager.default
         let path = directory.standardizedFileURL.path
@@ -71,7 +113,7 @@ public actor ClaudeProvider: UsageProvider {
         environment.removeValue(forKey: "CLAUDECODE")
         environment["DISABLE_AUTOUPDATER"] = "1"
         environment["TERM"] = "xterm-256color"
-        // The user confirms only this empty app-owned folder in the setup terminal.
+        // The user confirms only this app-owned connection folder in the setup terminal.
         // Preserve the normal CLI config and authentication directories.
         let directory = try prepareConnectionDirectory()
         environment["PWD"] = directory.path
@@ -91,15 +133,26 @@ public actor ClaudeProvider: UsageProvider {
                                 windows: result.0, source: "Claude Code /usage")
     }
 
-    static func resolveExecutable(preferred: String?, environment: [String: String], home: URL = FileManager.default.homeDirectoryForCurrentUser) -> String? {
+    static func resolveExecutable(preferred: String?, environment: [String: String],
+                                  home: URL = FileManager.default.homeDirectoryForCurrentUser,
+                                  knownPaths: [String]? = nil) -> String? {
         let manager = FileManager.default
+        func executable(_ path: String) -> String? {
+            guard path.hasPrefix("/"), !path.utf8.contains(0) else { return nil }
+            // Homebrew and native installs commonly use symlinks. Pin their executable
+            // target, but never treat an executable directory as a CLI.
+            let url = URL(fileURLWithPath: path).resolvingSymlinksInPath().standardizedFileURL
+            guard manager.isExecutableFile(atPath: url.path),
+                  (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else { return nil }
+            return url.path
+        }
         if let preferred, !preferred.isEmpty {
             let expanded = (preferred as NSString).expandingTildeInPath
-            return manager.isExecutableFile(atPath: expanded) ? expanded : nil
+            return executable(expanded)
         }
-        let known = [home.appendingPathComponent(".local/bin/claude").path, "/opt/homebrew/bin/claude", "/usr/local/bin/claude"]
+        let known = knownPaths ?? [home.appendingPathComponent(".local/bin/claude").path, "/opt/homebrew/bin/claude", "/usr/local/bin/claude"]
         let fromPath = (environment["PATH"] ?? "").split(separator: ":").filter { $0.hasPrefix("/") }.map { "\($0)/claude" }
-        return (fromPath + known).first { manager.isExecutableFile(atPath: $0) }
+        return (known + fromPath).lazy.compactMap(executable).first
     }
 }
 

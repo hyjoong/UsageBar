@@ -42,9 +42,14 @@ struct PreferencesView: View {
                         ForEach(MenuBarDisplayMode.allCases) { Text($0.title).tag($0) }
                     }
                     Picker("기본으로 보는 서비스", selection: $store.selectedProvider) {
-                        ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
+                        ForEach(store.activeProviders) { Text($0.title).tag($0) }
                     }
                     Toggle("메뉴 막대에 잔여율 표시", isOn: $store.showPercentage)
+                    Toggle("리셋까지 남은 시간도 표시", isOn: $store.showResetCountdown)
+                        .disabled(!store.showPercentage)
+                    if store.showPercentage && store.showResetCountdown {
+                        detail("표시 예: 62% · 2h 10m · 선택한 한도의 리셋 시각을 사용해요.")
+                    }
                     ForEach(store.menuProviders) { provider in
                         windowPicker(for: provider)
                     }
@@ -85,15 +90,20 @@ struct PreferencesView: View {
 
                 Section {
                     ForEach(ProviderID.allCases) { provider in
+                        Toggle("\(provider.title) 사용량 조회", isOn: Binding(
+                            get: { store.enabledProviders.contains(provider) },
+                            set: { store.setProviderEnabled($0, for: provider) }
+                        ))
+                        .disabled(store.enabledProviders.contains(provider) && store.enabledProviders.count == 1)
                         connectionRow(for: provider)
                     }
-                    detail("Claude Code와 Codex의 로그인 상태를 이용해요. 사용량은 5분마다 확인하며, 인증이나 초기 설정은 해당 도구에서 먼저 완료해 주세요.")
+                    detail("켜 둔 서비스만 조회해요. 최소 한 서비스는 켜 두며, 끈 서비스의 기존 기록은 보관해요. Claude Code와 Codex의 로그인 상태를 이용해요. 사용량은 5분마다 확인하며, 인증이나 초기 설정은 해당 도구에서 먼저 완료해 주세요.")
                 } header: {
                     sectionTitle("연결", symbol: "link")
                 }
 
                 Section {
-                    LabeledContent("버전", value: "0.3.0")
+                    LabeledContent("버전", value: "0.4.0")
                     detail("사용량 기록은 이 Mac에 저장돼요. 대화 내용은 수집하지 않아요.")
                 } header: {
                     sectionTitle("앱 정보", symbol: "info.circle")
@@ -142,11 +152,14 @@ struct PreferencesView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(connectionColor(for: provider))
                 Button("확인") { Task { await store.refresh(provider, force: true) } }
-                    .disabled(store.isDemo || state?.isRefreshing == true)
+                    .disabled(store.isDemo || !store.canRefresh(provider))
                     .accessibilityLabel("\(provider.title) 연결 확인")
             }
-            if let error = state?.errorMessage {
+            if store.enabledProviders.contains(provider), let error = state?.errorMessage {
                 detail(error, color: UsageTheme.warning)
+            }
+            if let message = store.retryMessage(for: provider) {
+                detail(message)
             }
             if let snapshot = state?.snapshot {
                 if let plan = snapshot.plan, !plan.isEmpty {
@@ -173,6 +186,7 @@ struct PreferencesView: View {
     }
 
     private func connectionColor(for provider: ProviderID) -> Color {
+        if !store.enabledProviders.contains(provider) { return UsageTheme.secondaryInk }
         if store.states[provider]?.isRefreshing == true { return UsageTheme.secondaryInk }
         if store.states[provider]?.errorMessage != nil || store.isStale(for: provider) { return UsageTheme.warning }
         return UsageTheme.secondaryInk

@@ -7,7 +7,7 @@ import UserNotifications
 enum MenuBarDisplayMode: String, CaseIterable, Identifiable {
     case selected, all
     var id: String { rawValue }
-    var title: String { self == .selected ? "선택한 서비스" : "Claude + Codex" }
+    var title: String { self == .selected ? "선택한 서비스" : "사용 중인 서비스 모두" }
 }
 
 enum UsageAppearanceMode: String, CaseIterable, Identifiable {
@@ -53,6 +53,10 @@ final class AppStore: ObservableObject {
     @Published var menuBarDisplayMode: MenuBarDisplayMode = .selected {
         didSet { if !isDemo { defaults.set(menuBarDisplayMode.rawValue, forKey: "menuBarDisplayMode") } }
     }
+    @Published private(set) var enabledProviders: Set<ProviderID> = Set(ProviderID.allCases)
+    @Published var showResetCountdown = false {
+        didSet { if !isDemo { defaults.set(showResetCountdown, forKey: "showResetCountdown") } }
+    }
     @Published var showPercentage = true {
         didSet { if !isDemo { defaults.set(showPercentage, forKey: "showPercentage") } }
     }
@@ -70,12 +74,12 @@ final class AppStore: ObservableObject {
     @Published private(set) var notificationMessage: String?
 
     let isDemo: Bool
-    private let defaults = UserDefaults(suiteName: "UsageBar.Preferences")!
+    private let defaults: UserDefaults
     private let providers: [ProviderID: any UsageProvider]
     private let historyStore: HistoryStore?
     private var refreshTasks: [ProviderID: Task<Void, Never>] = [:]
     private var taskTokens: [ProviderID: UUID] = [:]
-    private var retryStates: [ProviderID: RetryState] = [:]
+    @Published private var retryStates: [ProviderID: RetryState] = [:]
     private var observations: [NSObjectProtocol] = []
     private var pollTask: Task<Void, Never>?
     private var clockTask: Task<Void, Never>?
@@ -93,10 +97,12 @@ final class AppStore: ObservableObject {
         var rateLimited: Bool
     }
 
-    init(demo: Bool = false) {
+    init(demo: Bool = false, providerOverrides: [ProviderID: any UsageProvider]? = nil,
+         preferences: UserDefaults = UserDefaults(suiteName: "UsageBar.Preferences")!) {
         isDemo = demo
-        providers = demo ? [:] : [.claude: ClaudeProvider(), .codex: CodexProvider()]
-        historyStore = demo ? nil : HistoryStore()
+        defaults = preferences
+        providers = providerOverrides ?? (demo ? [:] : [.claude: ClaudeProvider(), .codex: CodexProvider()])
+        historyStore = demo || providerOverrides != nil ? nil : HistoryStore()
         states = Dictionary(uniqueKeysWithValues: ProviderID.allCases.map { ($0, ProviderState()) })
         if demo {
             installDemo()
@@ -105,6 +111,14 @@ final class AppStore: ObservableObject {
             selectedProvider = ProviderID(rawValue: defaults.string(forKey: "selectedProvider") ?? "") ?? .claude
             menuBarDisplayMode = MenuBarDisplayMode(rawValue: defaults.string(forKey: "menuBarDisplayMode") ?? "") ?? .selected
             if defaults.object(forKey: "showPercentage") != nil { showPercentage = defaults.bool(forKey: "showPercentage") }
+            showResetCountdown = defaults.bool(forKey: "showResetCountdown")
+            if let saved = defaults.stringArray(forKey: "enabledProviders") {
+                let enabled = Set(saved.compactMap(ProviderID.init(rawValue:)))
+                enabledProviders = enabled.isEmpty ? [.claude] : enabled
+            }
+            if !enabledProviders.contains(selectedProvider) {
+                selectedProvider = activeProviders.first ?? .claude
+            }
             notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
             if let saved = defaults.dictionary(forKey: "trackedWindowIDs") as? [String: String] {
                 trackedWindowIDs = Dictionary(uniqueKeysWithValues: saved.compactMap { key, value in
@@ -120,14 +134,54 @@ final class AppStore: ObservableObject {
 
     var selectedState: ProviderState { states[selectedProvider] ?? ProviderState() }
 
-    var menuProviders: [ProviderID] { menuBarDisplayMode == .all ? ProviderID.allCases : [selectedProvider] }
+    var activeProviders: [ProviderID] { ProviderID.allCases.filter { enabledProviders.contains($0) } }
+    var menuProviders: [ProviderID] { menuBarDisplayMode == .all ? activeProviders : [selectedProvider] }
+
+    func setProviderEnabled(_ enabled: Bool, for provider: ProviderID) {
+        guard enabled != enabledProviders.contains(provider) else { return }
+        if enabled {
+            enabledProviders.insert(provider)
+        } else {
+            guard enabledProviders.count > 1 else { return }
+            enabledProviders.remove(provider)
+            refreshTasks[provider]?.cancel()
+            states[provider]?.isRefreshing = false
+            if selectedProvider == provider { selectedProvider = activeProviders.first ?? .claude }
+        }
+        if !isDemo { defaults.set(activeProviders.map(\.rawValue), forKey: "enabledProviders") }
+        if enabled && started && !isDemo {
+            let previousTask = refreshTasks[provider]
+            let previousToken = taskTokens[provider]
+            Task { [weak self] in
+                await previousTask?.value
+                guard let self, self.enabledProviders.contains(provider), self.started else { return }
+                if self.taskTokens[provider] == previousToken {
+                    self.refreshTasks[provider] = nil
+                    self.taskTokens[provider] = nil
+                }
+                await self.refresh(provider, force: true)
+            }
+        }
+    }
+
+    func retryMessage(for provider: ProviderID) -> String? {
+        guard enabledProviders.contains(provider), let retry = retryStates[provider], retry.notBefore > clockNow else { return nil }
+        let minutes = max(1, Int(ceil(retry.notBefore.timeIntervalSince(clockNow) / 60)))
+        return retry.rateLimited ? "약 \(minutes)분 후 다시 확인할 수 있어요" : "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요"
+    }
+
+    func canRefresh(_ provider: ProviderID) -> Bool {
+        guard enabledProviders.contains(provider), states[provider]?.isRefreshing != true else { return false }
+        if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return false }
+        return true
+    }
 
     var menuTitle: String { menuTitle(for: selectedProvider) }
 
     func menuTitle(for provider: ProviderID) -> String {
         guard showPercentage else { return "" }
         guard let window = trackedWindow(for: provider) else { return states[provider]?.isRefreshing == true ? "…" : "—" }
-        return "\(Int(window.remainingPercent.rounded()))%\(isStale(for: provider) ? " ·" : "")"
+        return UsageMenuBarFormatter.title(for: window, includeReset: showResetCountdown, now: clockNow) + (isStale(for: provider) ? " ·" : "")
     }
 
     func freshness(for provider: ProviderID) -> UsageFreshness {
@@ -141,9 +195,11 @@ final class AppStore: ObservableObject {
     }
 
     func connectionStatus(for provider: ProviderID) -> String {
+        guard enabledProviders.contains(provider) else { return "조회 꺼짐" }
         let state = states[provider] ?? ProviderState()
         if state.isRefreshing { return "확인 중" }
         if state.requiresConnection { return "다시 연결 필요" }
+        if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return "요청 제한 · 대기 중" }
         if state.errorMessage != nil { return state.snapshot == nil ? "조회 실패" : "조회 실패 · 이전 기록" }
         switch freshness(for: provider) {
         case .unavailable: return "연결 확인 필요"
@@ -155,6 +211,25 @@ final class AppStore: ObservableObject {
 
     var nextReset: Date? {
         trackedWindow(for: selectedProvider)?.resetsAt
+    }
+
+    func selectionNotice(for provider: ProviderID) -> String? {
+        guard let savedID = trackedWindowIDs[provider],
+              let displayed = trackedWindow(for: provider), displayed.id != savedID else { return nil }
+        return "고정한 한도가 제공되지 않아 \(displayed.label)을 임시로 표시해요."
+    }
+
+    func menuDescription(for provider: ProviderID) -> String {
+        let window = trackedWindow(for: provider)
+        var details = [provider.title, window?.label ?? "사용량"]
+        if let window {
+            details.append("\(Int(window.remainingPercent.rounded()))퍼센트 남음")
+            if let reset = window.resetsAt {
+                details.append(reset <= clockNow ? "리셋 시각 경과, 확인 필요" : "리셋 \(reset.formatted(date: .abbreviated, time: .shortened))")
+            }
+        }
+        details.append(connectionStatus(for: provider))
+        return details.joined(separator: " · ")
     }
 
     func trackedWindow(for provider: ProviderID) -> UsageWindow? {
@@ -222,7 +297,7 @@ final class AppStore: ObservableObject {
     }
 
     private func requestRefresh(_ id: ProviderID, force: Bool = false) async -> Bool {
-        guard !isDemo, !sleeping, refreshTasks[id] == nil, let provider = providers[id] else { return false }
+        guard !isDemo, !sleeping, enabledProviders.contains(id), refreshTasks[id] == nil, let provider = providers[id] else { return false }
         let now = Date()
         if let retry = retryStates[id], retry.notBefore > now, retry.rateLimited || !force { return false }
         if !force, let fetchedAt = states[id]?.snapshot?.fetchedAt, now.timeIntervalSince(fetchedAt) < 60 { return false }
@@ -247,13 +322,14 @@ final class AppStore: ObservableObject {
 
     private func refreshAll(force: Bool) async {
         await withTaskGroup(of: Void.self) { group in
-            for id in ProviderID.allCases {
+            for id in activeProviders {
                 group.addTask { [weak self] in await self?.refresh(id, force: force) }
             }
         }
     }
 
     private func performRefresh(_ id: ProviderID, provider: any UsageProvider, generation expected: Int) async {
+        guard !Task.isCancelled, enabledProviders.contains(id), generation == expected else { return }
         states[id]?.isRefreshing = true
         states[id]?.lastAttempt = Date()
         defer { if generation == expected { states[id]?.isRefreshing = false } }
@@ -302,7 +378,8 @@ final class AppStore: ObservableObject {
                 default: break
                 }
             }
-            retryStates[id] = RetryState(attempts: attempt, notBefore: Date().addingTimeInterval(delay), rateLimited: limited)
+            clockNow = Date()
+            retryStates[id] = RetryState(attempts: attempt, notBefore: clockNow.addingTimeInterval(delay), rateLimited: limited)
             states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? "지금 사용량을 가져올 수 없어요."
             states[id]?.requiresConnection = connection
         }
@@ -361,7 +438,7 @@ final class AppStore: ObservableObject {
                 guard let self, self.started else { return }
                 self.clockNow = Date()
                 guard !self.isDemo, !self.sleeping else { continue }
-                for provider in ProviderID.allCases {
+                for provider in self.activeProviders {
                     let pending = (self.states[provider]?.snapshot?.windows ?? []).compactMap { window -> (String, Date)? in
                         guard let reset = window.resetsAt, reset <= self.clockNow else { return nil }
                         if let attempted = self.resetRefreshes[provider]?[window.id],

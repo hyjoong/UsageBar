@@ -172,8 +172,90 @@ final class ClaudeProviderTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let executable = directory.appendingPathComponent("claude")
         try writeExecutable("#!/bin/sh\nexit 0\n", to: executable)
-        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": directory.path], home: directory), executable.path)
+        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": directory.path], home: directory, knownPaths: []), executable.resolvingSymlinksInPath().path)
         XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: directory.appendingPathComponent("absent").path, environment: ["PATH": directory.path], home: directory))
+    }
+
+    func testKnownExecutablePrecedesPATHAndResolvesSymlink() throws {
+        let base = try fixtureDirectory(root: connectionFixtureRoot)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let preferred = base.appendingPathComponent("known ' CLI")
+        let fallback = base.appendingPathComponent("claude")
+        let link = base.appendingPathComponent("known-link")
+        try writeExecutable("#!/bin/sh\nexit 0\n", to: preferred)
+        try writeExecutable("#!/bin/sh\nexit 0\n", to: fallback)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: preferred)
+        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": base.path],
+            home: base, knownPaths: [link.path]), preferred.path)
+        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: base.path, environment: [:], knownPaths: []))
+        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: "relative/claude", environment: [:], knownPaths: []))
+        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": ".:relative:"],
+            home: base, knownPaths: []))
+    }
+
+    func testConnectionLauncherQuotesPathsAndExecutesOnlyFixtureCLI() throws {
+        let base = try fixtureDirectory(root: connectionFixtureRoot)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let executable = base.appendingPathComponent("CLI ' $(touch INJECTED)")
+        try writeExecutable("""
+        #!/bin/sh
+        [ "$1" = "--safe-mode" ] || exit 31
+        [ "${CLAUDE_CODE_OAUTH_TOKEN+x}" = "" ] || exit 32
+        for arg do last="$arg"; done
+        [ "$last" = "/usage" ] || exit 33
+        printf 'fixture-selected'
+        """, to: executable)
+        let source = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Resources/setup-claude.command")
+        let script = base.appendingPathComponent("setup ' quoted.command")
+        try FileManager.default.copyItem(at: source, to: script)
+        let directory = base.appendingPathComponent("Library/Application Support/UsageBar/ClaudeConnection")
+        let launcher = try ClaudeProvider.prepareConnectionScript(scriptURL: script, directory: directory,
+            environment: [:], home: base, knownPaths: [executable.path])
+        let attributes = try FileManager.default.attributesOfItem(atPath: launcher.path)
+        XCTAssertEqual((attributes[.posixPermissions] as? NSNumber)?.intValue, 0o700)
+        let output = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        process.arguments = [launcher.path]
+        process.environment = ["HOME": base.path, "PATH": "/usr/bin:/bin", "CLAUDE_CODE_OAUTH_TOKEN": "fixture-only"]
+        process.standardOutput = output
+        process.standardError = output
+        try process.run()
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        XCTAssertEqual(process.terminationStatus, 0, String(decoding: data, as: UTF8.self))
+        XCTAssertTrue(String(decoding: data, as: UTF8.self).contains("fixture-selected"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("INJECTED").path))
+        XCTAssertFalse(try String(contentsOf: launcher).contains("fixture-only"))
+    }
+
+    func testConnectionLauncherRejectsExistingSymlink() throws {
+        let base = try fixtureDirectory(root: connectionFixtureRoot)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let executable = base.appendingPathComponent("cli")
+        try writeExecutable("#!/bin/sh\nexit 0\n", to: executable)
+        let directory = try ClaudeProvider.prepareConnectionDirectory(at: base.appendingPathComponent("connection"))
+        let launcher = directory.appendingPathComponent("ConnectClaude.command")
+        try FileManager.default.createSymbolicLink(at: launcher, withDestinationURL: executable)
+        XCTAssertThrowsError(try ClaudeProvider.prepareConnectionScript(scriptURL: executable, directory: directory,
+            environment: [:], home: base, knownPaths: [executable.path]))
+        XCTAssertEqual(try String(contentsOf: executable), "#!/bin/sh\nexit 0\n")
+    }
+
+    func testConnectionLauncherMissingCLIGivesInstallationGuidance() throws {
+        let base = try fixtureDirectory(root: connectionFixtureRoot)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let script = base.appendingPathComponent("setup.command")
+        try writeExecutable("#!/bin/sh\nexit 0\n", to: script)
+        XCTAssertThrowsError(try ClaudeProvider.prepareConnectionScript(scriptURL: script,
+            directory: base.appendingPathComponent("connection"), environment: [:], home: base, knownPaths: [])) { error in
+            guard case ProviderError.setupRequired(let message) = error else {
+                return XCTFail("Expected installation guidance")
+            }
+            XCTAssertEqual(message, "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요.")
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: base.appendingPathComponent("connection").path))
     }
 
     func testConnectionDirectoryCreationIsPrivateAndRepeatable() throws {

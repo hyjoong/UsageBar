@@ -56,10 +56,8 @@ private struct UsageMenuLabel: View {
                 .opacity(store.isStale(for: provider) ? 0.6 : 1)
             }
         }
-        .help(store.menuProviders.map { provider in
-            "\(provider.title) · \(store.trackedWindow(for: provider)?.label ?? "사용량") · \(store.menuTitle(for: provider)) 남음 · \(store.connectionStatus(for: provider))"
-        }.joined(separator: "\n"))
-        .accessibilityLabel("UsageBar, " + store.menuProviders.map { "\($0.title) \(store.menuTitle(for: $0)) 남음" }.joined(separator: ", "))
+        .help(store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: "\n"))
+        .accessibilityLabel("UsageBar, " + store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: ", "))
         #if DEBUG
         .task {
             guard store.isDemo, !openedCheckWindow else { return }
