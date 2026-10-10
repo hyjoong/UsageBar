@@ -24,7 +24,7 @@ struct UsageBarApp: App {
         Window("사용 기록 · UsageBar", id: "history") {
             HistoryView(store: store)
         }
-        .defaultSize(width: 760, height: 560)
+        .defaultSize(width: 760, height: 660)
         .windowResizability(.contentMinSize)
 
         Window("설정 · UsageBar", id: "settings") {
@@ -43,11 +43,14 @@ private struct UsageMenuLabel: View {
     #endif
 
     var body: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 7) {
+            Image(nsImage: UsageBrandMark.menuImage)
             if store.isDemo { Text("예시").font(.caption2) }
             ForEach(store.menuProviders) { provider in
                 HStack(spacing: 4) {
-                    Image(systemName: provider.symbol)
+                    if store.menuProviders.count > 1 {
+                        Text(provider == .claude ? "CL" : "CX").font(.system(size: 10, weight: .semibold))
+                    }
                     if store.showPercentage { Text(store.menuTitle(for: provider)).monospacedDigit() }
                 }
                 .opacity(store.isStale(for: provider) ? 0.6 : 1)
@@ -76,6 +79,13 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
     #endif
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        Self.store?.applyAppearance()
+        #if DEBUG
+        if Self.store?.isDemo == true {
+            if CommandLine.arguments.contains("--ui-dark") { Self.store?.appearanceMode = .dark }
+            if CommandLine.arguments.contains("--ui-light") { Self.store?.appearanceMode = .light }
+        }
+        #endif
         Self.store?.start()
         #if DEBUG
         if CommandLine.arguments.contains("--ui-check"), let store = Self.store, store.isDemo {

@@ -3,7 +3,7 @@ import SwiftUI
 import UsageBarCore
 
 extension ProviderID {
-    var tint: Color { self == .claude ? Color(red: 0.77, green: 0.48, blue: 0.30) : Color(red: 0.22, green: 0.65, blue: 0.52) }
+    var tint: Color { UsageTheme.accent }
     var symbol: String { self == .claude ? "asterisk.circle.fill" : "terminal.fill" }
     var dashboardURL: URL {
         URL(string: self == .claude ? "https://claude.ai/settings/usage" : "https://chatgpt.com/codex/settings/usage")!
@@ -14,16 +14,16 @@ struct UsagePanel: View {
     @ObservedObject var store: AppStore
     @Environment(\.openWindow) private var openWindow
     @State private var showCredits = false
+    @State private var showPace = false
     @State private var setupMessage: String?
     private var provider: ProviderID { store.selectedProvider }
     private var snapshot: ProviderSnapshot? { store.selectedState.snapshot }
     private var demo: Bool { store.isDemo }
-    private var panelHeight: CGFloat {
-        guard let snapshot else { return 520 }
-        let extras = (snapshot.resetCreditCount == nil ? 0 : 70) + ((snapshot.dailyUsage?.isEmpty ?? true) ? 0 : 40)
-        return CGFloat(min(690, 420 + snapshot.windows.count * 100 + extras + (showCredits ? 80 : 0)))
+    private var planLabel: String {
+        guard let snapshot else { return "연결 확인" }
+        let plan = snapshot.plan?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return plan.isEmpty ? "계정 사용량" : plan
     }
-
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -33,28 +33,43 @@ struct UsagePanel: View {
                     if let snapshot {
                         if let first = store.trackedWindow(for: provider) {
                             quota(first, prominent: true)
+                            connectionNotice
+                            timeline(snapshot)
+                            let others = store.sortedWindows(for: provider).filter { $0.id != first.id }
+                            if !others.isEmpty {
+                                VStack(alignment: .leading, spacing: 15) {
+                                    sectionLabel("다른 한도")
+                                    ForEach(others) { quota($0, prominent: false) }
+                                }
+                            }
                             if store.freshness(for: provider) == .current,
                                let pace = UsagePace.evaluate(window: first, observedAt: snapshot.fetchedAt, now: store.clockNow) {
-                                paceCard(pace)
+                                Divider()
+                                DisclosureGroup(isExpanded: $showPace) {
+                                    paceCard(pace).padding(.top, 12)
+                                } label: {
+                                    HStack {
+                                        Text("사용 속도")
+                                        Spacer()
+                                        Text(paceTitle(pace)).foregroundStyle(UsageTheme.secondaryInk)
+                                    }.font(.system(size: 12))
+                                }
                             }
-                            ForEach(store.sortedWindows(for: provider).filter { $0.id != first.id }) { quota($0, prominent: false) }
                         } else {
                             Label("제공된 한도 정보가 없어요", systemImage: "info.circle")
-                                .foregroundStyle(.secondary).font(.callout)
+                                .foregroundStyle(UsageTheme.secondaryInk).font(.callout)
+                            connectionNotice
                         }
-                        timeline(snapshot)
                         if let count = snapshot.resetCreditCount {
-                            Button { showCredits.toggle() } label: {
+                            DisclosureGroup(isExpanded: $showCredits) {
+                                VStack(spacing: 12) { credits(snapshot) }.padding(.top, 12)
+                            } label: {
                                 HStack {
                                     Label("초기화권", systemImage: "ticket")
                                     Spacer()
                                     Text("\(count)장").monospacedDigit()
-                                    Image(systemName: showCredits ? "chevron.up" : "chevron.down")
-                                        .font(.caption2).foregroundStyle(.secondary)
-                                }
+                                }.font(.system(size: 12))
                             }
-                            .buttonStyle(.plain)
-                            if showCredits { credits(snapshot) }
                         }
                         if let daily = snapshot.dailyUsage, !daily.isEmpty {
                             Button { showWindow("history") } label: {
@@ -62,129 +77,162 @@ struct UsagePanel: View {
                                     Label("최근 일별 토큰", systemImage: "chart.bar")
                                     Spacer()
                                     Text(Self.tokenLabel(daily.last?.tokens ?? 0)).monospacedDigit()
-                                    Image(systemName: "arrow.up.right").font(.caption2).foregroundStyle(.secondary)
-                                }
+                                    Image(systemName: "arrow.up.right").foregroundStyle(UsageTheme.secondaryInk)
+                                }.font(.system(size: 12)).frame(minHeight: 28)
                             }.buttonStyle(.plain)
                         }
                     } else {
                         emptyState
                     }
-                    if snapshot != nil, let message = store.selectedState.errorMessage {
-                        Label(message, systemImage: "exclamationmark.circle")
-                            .font(.caption).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
-                    }
-                    if snapshot != nil, store.selectedState.requiresConnection, provider == .claude {
-                        Button("Claude 다시 연결") { openClaudeSetup() }.buttonStyle(.bordered)
-                        if let setupMessage { Text(setupMessage).font(.caption).foregroundStyle(.orange) }
-                    }
                 }
-                .padding(20)
+                .padding(22)
             }
-            .frame(maxHeight: 510)
+            .defaultScrollAnchor(.top)
+            .id(provider)
             status
             Divider()
             footer
         }
-        .frame(width: 370, height: panelHeight)
-        .background(.background)
-        .tint(provider.tint)
+        .frame(width: 392, height: 640)
+        .background(UsageTheme.canvas)
+        .foregroundStyle(UsageTheme.ink)
+        .tint(UsageTheme.accent)
         .task { await store.refresh(provider) }
         .onChange(of: store.selectedProvider) { _, newValue in
             showCredits = false
+            showPace = false
             Task { await store.refresh(newValue) }
         }
     }
 
     private var header: some View {
         VStack(spacing: 15) {
-            HStack(spacing: 10) {
-                Image(systemName: provider.symbol)
-                    .font(.system(size: 19, weight: .medium)).foregroundStyle(provider.tint)
-                    .frame(width: 36, height: 36).background(provider.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(provider.title).font(.system(size: 17, weight: .semibold))
-                    Text(snapshot?.plan ?? "계정 사용량").font(.caption).foregroundStyle(.secondary)
-                }
+            HStack(spacing: 8) {
+                UsageBrandMark().frame(width: 28, height: 28)
+                Text("UsageBar").font(.system(size: 15, weight: .semibold))
                 Spacer()
                 if demo {
-                    Text("예시 데이터").font(.system(size: 10)).foregroundStyle(.secondary)
-                        .padding(.horizontal, 6).padding(.vertical, 4)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(.quaternary))
+                    Text("예시 데이터").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                } else {
+                    Text("계정 전체").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
                 }
             }
-            Picker("서비스", selection: $store.selectedProvider) {
-                ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
-            }.pickerStyle(.segmented).labelsHidden()
-        }.padding(20)
+            HStack(spacing: 14) {
+                Picker("서비스", selection: $store.selectedProvider) {
+                    ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
+                }.pickerStyle(.segmented).labelsHidden().frame(width: 185)
+                Spacer(minLength: 0)
+                Text(planLabel)
+                    .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                    .lineLimit(2).multilineTextAlignment(.trailing)
+            }
+        }.padding(.horizontal, 22).padding(.vertical, 17)
+    }
+
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title).font(.system(size: 11, weight: .semibold)).foregroundStyle(UsageTheme.secondaryInk)
+    }
+
+    private func pin(_ window: UsageWindow, selected: Bool) -> some View {
+        Button { store.selectWindow(window.id, for: provider) } label: {
+            Image(systemName: selected ? "pin.fill" : "pin")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(selected ? UsageTheme.accent : UsageTheme.secondaryInk)
+                .frame(width: 28, height: 28)
+                .background(selected ? UsageTheme.accent.opacity(0.10) : .clear, in: RoundedRectangle(cornerRadius: 7))
+        }
+        .buttonStyle(.plain)
+        .help(selected ? "메뉴바에 표시 중" : "이 한도를 메뉴바에 표시")
+        .accessibilityLabel("\(window.label) 메뉴바에 표시")
+        .accessibilityValue(selected ? "선택됨" : "선택 안 됨")
     }
 
     private func quota(_ window: UsageWindow, prominent: Bool) -> some View {
-            VStack(alignment: .leading, spacing: prominent ? 13 : 9) {
-            HStack(alignment: .firstTextBaseline) {
-                Button { store.selectWindow(window.id, for: provider) } label: {
-                    HStack(spacing: 5) {
-                        Text(window.label)
-                        Image(systemName: prominent ? "pin.fill" : "pin")
-                            .font(.system(size: 9))
-                    }.foregroundStyle(prominent ? provider.tint : .secondary)
+        VStack(alignment: .leading, spacing: prominent ? 12 : 6) {
+            if prominent {
+                HStack {
+                    Text(window.label).font(.system(size: 13, weight: .medium))
+                    Text("메뉴바에 표시 중").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                    Spacer()
+                    pin(window, selected: true)
                 }
-                .buttonStyle(.plain)
-                .help(prominent ? "메뉴바에 표시 중" : "클릭해서 메뉴바에 표시")
-                .accessibilityLabel("\(window.label), \(prominent ? "메뉴바에 표시 중" : "메뉴바에 표시하기")")
-                Spacer()
-                (Text(window.remainingPercent, format: .number.precision(.fractionLength(0)))
-                    .font(.system(size: prominent ? 32 : 15, weight: .medium, design: .rounded))
-                 + Text("% 남음").font(.system(size: prominent ? 13 : 12)))
-                .monospacedDigit()
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(window.remainingPercent, format: .number.precision(.fractionLength(0)))
+                        .font(.system(size: 48, weight: .regular)).tracking(-2).monospacedDigit()
+                    Text("%").font(.system(size: 22)).foregroundStyle(UsageTheme.secondaryInk)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 5) {
+                        Text("남은 한도").font(.system(size: 13, weight: .medium))
+                        Text("\(Int(window.usedPercent.rounded()))% 사용").font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                    }
+                }
+            } else {
+                HStack(spacing: 9) {
+                    Text(window.label).font(.system(size: 13))
+                    Spacer()
+                    Text("\(Int(window.remainingPercent.rounded()))% 남음")
+                        .font(.system(size: 13, weight: .medium)).monospacedDigit()
+                    pin(window, selected: false)
+                }
             }
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(.quaternary)
-                    Capsule().fill(window.remainingPercent <= 20 ? Color.orange : provider.tint)
+                    Capsule().fill(UsageTheme.mutedSurface)
+                    Capsule().fill(window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8))
                         .frame(width: max(0, proxy.size.width * window.remainingPercent / 100))
                 }
-            }.frame(height: prominent ? 7 : 5)
+            }.frame(height: prominent ? 6 : 4)
+                .accessibilityLabel("\(window.label) 남은 한도")
+                .accessibilityValue("\(Int(window.remainingPercent.rounded()))퍼센트")
+            if prominent && window.remainingPercent <= 20 {
+                Label("남은 한도가 20% 이하예요", systemImage: "exclamationmark.circle")
+                    .font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
+            }
         }
-        .accessibilityElement(children: .contain)
     }
 
-    private func paceCard(_ pace: UsagePace) -> some View {
-        let title: String = switch pace.position {
+    @ViewBuilder private var connectionNotice: some View {
+        if let message = store.selectedState.errorMessage {
+            Label(message, systemImage: "exclamationmark.circle")
+                .font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        if store.selectedState.requiresConnection, provider == .claude {
+            Button("Claude 다시 연결") { openClaudeSetup() }.buttonStyle(.bordered)
+            if let setupMessage { Text(setupMessage).font(.caption).foregroundStyle(UsageTheme.warning) }
+        }
+    }
+
+    private func paceTitle(_ pace: UsagePace) -> String {
+        switch pace.position {
         case .behind: "여유 있는 속도"
         case .onTrack: "기준과 비슷한 속도"
         case .ahead: "빠르게 사용 중"
         }
-        let color = pace.position == .ahead ? Color.orange : provider.tint
-        return VStack(alignment: .leading, spacing: 11) {
-            HStack {
-                Label("사용 속도", systemImage: "gauge.with.dots.needle.50percent")
-                    .font(.caption).foregroundStyle(.secondary)
-                Spacer()
-                Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(color)
-            }
-            VStack(spacing: 7) {
-                paceRow("기간 경과", percent: pace.elapsedPercent, color: .secondary)
-                paceRow("한도 사용", percent: pace.usedPercent, color: color)
-            }
-            Text("조회 시점 · 기간을 고르게 사용하는 기준")
-                .font(.system(size: 10)).foregroundStyle(.secondary)
+    }
+
+    private func paceCard(_ pace: UsagePace) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            paceRow("기간 경과", percent: pace.elapsedPercent, color: UsageTheme.secondaryInk)
+            paceRow("한도 사용", percent: pace.usedPercent, color: pace.position == .ahead ? UsageTheme.warning : UsageTheme.ink)
+            Text("마지막 조회 시점 · 기간을 고르게 사용하는 기준")
+                .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(13)
-        .background(provider.tint.opacity(0.065), in: RoundedRectangle(cornerRadius: 12))
-        .help("마지막 조회 시점의 기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요.")
+        .help("기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요.")
     }
 
     private func paceRow(_ label: String, percent: Double, color: Color) -> some View {
         HStack(spacing: 9) {
-            Text(label).frame(width: 47, alignment: .leading)
+            Text(label).frame(width: 55, alignment: .leading)
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(.quaternary)
+                    Capsule().fill(UsageTheme.mutedSurface)
                     Capsule().fill(color).frame(width: proxy.size.width * percent / 100)
                 }
             }.frame(height: 4)
-            Text("\(Int(percent.rounded()))%").monospacedDigit().frame(width: 31, alignment: .trailing)
-        }.font(.system(size: 10)).foregroundStyle(.secondary)
+            Text("\(Int(percent.rounded()))%").monospacedDigit().frame(width: 36, alignment: .trailing)
+        }.font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
             .accessibilityElement(children: .ignore).accessibilityLabel("\(label) \(Int(percent.rounded()))퍼센트")
     }
 
@@ -192,62 +240,75 @@ struct UsagePanel: View {
         let valid = UsageWindowSelection.validWindows(snapshot.windows)
         let upcoming = valid.filter { $0.resetsAt != nil }.sorted { $0.resetsAt! < $1.resetsAt! }
         let credit = snapshot.resetCredits?.filter {
-            $0.status.lowercased() == "available" && ($0.expiresAt.map { $0 > Date() } ?? false)
+            $0.status.lowercased() == "available" && ($0.expiresAt.map { $0 > store.clockNow } ?? false)
         }.min { $0.expiresAt! < $1.expiresAt! }
-        return VStack(alignment: .leading, spacing: 20) {
-            ForEach(upcoming.prefix(3)) { window in
-                if let date = window.resetsAt {
-                    event(title: "\(window.label) 리셋", date: date, expiry: false)
+        return VStack(alignment: .leading, spacing: 14) {
+            sectionLabel("리셋 타임라인")
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(upcoming.prefix(3).enumerated()), id: \.element.id) { index, window in
+                    if let date = window.resetsAt {
+                        event(title: window.label, date: date, expiry: false,
+                              first: index == 0, last: index == min(upcoming.count, 3) - 1 && credit == nil)
+                    }
+                }
+                if let date = credit?.expiresAt {
+                    event(title: "첫 초기화권 만료", date: date, expiry: true, first: upcoming.isEmpty, last: true)
                 }
             }
-            if let date = credit?.expiresAt { event(title: "첫 초기화권 만료", date: date, expiry: true) }
             ForEach(valid.filter { $0.resetsAt == nil }) { window in
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(window.label) 리셋").font(.caption)
+                    Text("\(window.label) 리셋").font(.system(size: 12, weight: .medium))
                     Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
                 }
             }
         }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func event(title: String, date: Date, expiry: Bool) -> some View {
-        HStack(alignment: .top, spacing: 13) {
+    private func event(title: String, date: Date, expiry: Bool, first: Bool, last: Bool) -> some View {
+        HStack(alignment: .top, spacing: 11) {
             VStack(spacing: 0) {
-                Circle().fill(expiry ? Color.secondary : provider.tint).frame(width: 6, height: 6)
-                Rectangle().fill(.quaternary).frame(width: 1, height: 44)
-            }.padding(.top, 6)
-            VStack(alignment: .leading, spacing: 4) {
-                TimelineView(.periodic(from: .now, by: 60)) { context in
-                    Text(Self.relativeDate(date, now: context.date, expiry: expiry))
-                        .font(.caption).foregroundStyle(provider.tint)
+                Circle().fill(first ? UsageTheme.accent : UsageTheme.secondaryInk).frame(width: 6, height: 6)
+                Rectangle().fill(last ? .clear : UsageTheme.separator).frame(width: 1, height: last ? 0 : 42)
+            }.padding(.top, 5).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(title).font(.system(size: 12, weight: .medium))
+                    Spacer(minLength: 3)
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        Text(Self.relativeDate(date, now: context.date, expiry: expiry))
+                            .font(.system(size: 12, weight: first ? .semibold : .regular))
+                            .foregroundStyle(first ? UsageTheme.accent : UsageTheme.ink)
+                            .monospacedDigit().multilineTextAlignment(.trailing)
+                    }
                 }
-                Text(title).font(.system(size: 15, weight: .medium))
                 Text(date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().weekday().hour().minute()))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
+                    .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+            }.padding(.bottom, last ? 0 : 15)
         }.accessibilityElement(children: .combine)
     }
 
     @ViewBuilder private func credits(_ snapshot: ProviderSnapshot) -> some View {
         if let credits = snapshot.resetCredits {
             if credits.isEmpty {
-                Text("표시할 초기화권 상세가 없어요").font(.caption).foregroundStyle(.secondary)
+                Text("표시할 초기화권 상세가 없어요").font(.caption).foregroundStyle(UsageTheme.secondaryInk)
             }
             ForEach(credits) { credit in
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(credit.title.isEmpty ? "초기화권" : credit.title)
-                        Text(Self.creditStatus(credit.status)).foregroundStyle(.secondary)
+                        Text(Self.creditStatus(credit.status)).foregroundStyle(UsageTheme.secondaryInk)
                     }
                     Spacer()
                     Text(credit.expiresAt.map { $0.formatted(.dateTime.month().day().hour().minute()) } ?? "만료 없음")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(UsageTheme.secondaryInk)
                 }.font(.caption)
             }
         } else {
-            Text("초기화권 상세가 제공되지 않았어요").font(.caption).foregroundStyle(.secondary)
+            Text("초기화권 상세가 제공되지 않았어요").font(.caption).foregroundStyle(UsageTheme.secondaryInk)
         }
     }
 
@@ -257,21 +318,21 @@ struct UsagePanel: View {
                 ProgressView().controlSize(.small)
                 Text("\(provider.title) 한도 확인 중").font(.headline)
                 Text(provider == .claude ? "Claude Code의 사용량 화면을 확인하고 있어요." : "로그인된 Codex 계정의 한도를 확인하고 있어요.")
-                    .foregroundStyle(.secondary).font(.caption)
+                    .foregroundStyle(UsageTheme.secondaryInk).font(.caption)
             } else {
                 Image(systemName: "link.circle").font(.system(size: 30)).foregroundStyle(provider.tint)
                 Text("\(provider.title) 연결 확인").font(.headline)
                 Text(store.selectedState.errorMessage ?? (provider == .claude ? "로그인된 Claude Code의 한도와 리셋 시각을 확인해요." : "로그인된 Codex의 한도와 토큰 기록을 확인해요."))
-                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.callout).foregroundStyle(UsageTheme.secondaryInk).fixedSize(horizontal: false, vertical: true)
                 Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
                     .buttonStyle(.borderedProminent)
                 if provider == .claude {
                     Button("Claude 연결 설정") { openClaudeSetup() }
                         .buttonStyle(.bordered)
                     Text("터미널에서 처음 한 번 연결을 확인해 주세요.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(UsageTheme.secondaryInk)
                     if let setupMessage {
-                        Text(setupMessage).font(.caption).foregroundStyle(.orange)
+                        Text(setupMessage).font(.caption).foregroundStyle(UsageTheme.warning)
                     }
                 }
                 Button("공식 사용량 화면 열기") { NSWorkspace.shared.open(provider.dashboardURL) }
@@ -283,7 +344,7 @@ struct UsagePanel: View {
     private var status: some View {
         HStack(spacing: 7) {
             if store.selectedState.isRefreshing { ProgressView().controlSize(.mini) }
-            else { Circle().fill(store.freshness(for: provider) == .current ? provider.tint : Color.orange).frame(width: 5, height: 5) }
+            else { Image(systemName: store.freshness(for: provider) == .current ? "checkmark.circle" : "clock.badge.exclamationmark").foregroundStyle(store.freshness(for: provider) == .current ? UsageTheme.secondaryInk : UsageTheme.warning).accessibilityHidden(true) }
             if let last = snapshot?.fetchedAt {
                 TimelineView(.periodic(from: .now, by: 60)) { context in
                     Text("\(Self.freshness(last, now: context.date)) · \(store.isStale(for: provider) ? store.connectionStatus(for: provider) : "계정 전체")")
@@ -293,23 +354,25 @@ struct UsagePanel: View {
             }
             Spacer()
             Button { Task { await store.refresh(provider, force: true) } } label: {
-                Image(systemName: "arrow.clockwise").frame(width: 25, height: 25)
+                Image(systemName: "arrow.clockwise").frame(width: 28, height: 28)
             }.buttonStyle(.plain).help("사용량 새로고침").accessibilityLabel("사용량 새로고침")
                 .disabled(store.selectedState.isRefreshing)
-        }.font(.system(size: 11)).foregroundStyle(.secondary).padding(.horizontal, 20).padding(.bottom, 13)
+                .keyboardShortcut("r", modifiers: .command)
+        }.font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk).padding(.horizontal, 22).padding(.vertical, 8)
     }
 
     private var footer: some View {
         HStack {
-            Button { showWindow("history") } label: { Label("사용 기록", systemImage: "chart.bar") }
+            Button { showWindow("history") } label: { Label("사용 기록", systemImage: "chart.xyaxis.line").frame(minHeight: 28) }
             Spacer()
-            Button { showWindow("settings") } label: { Label("설정", systemImage: "slider.horizontal.3") }
+            Button { showWindow("settings") } label: { Label("설정", systemImage: "slider.horizontal.3").frame(minHeight: 28) }
+                .keyboardShortcut(",", modifiers: .command)
             Menu {
                 Button("공식 사용량 화면") { NSWorkspace.shared.open(provider.dashboardURL) }
                 Divider()
                 Button("UsageBar 종료", role: .destructive) { NSApp.terminate(nil) }.keyboardShortcut("q")
-            } label: { Image(systemName: "ellipsis") }.menuStyle(.borderlessButton).frame(width: 22)
-        }.font(.caption).buttonStyle(.plain).padding(.horizontal, 20).padding(.vertical, 14)
+            } label: { Image(systemName: "ellipsis") }.menuStyle(.borderlessButton).tint(UsageTheme.secondaryInk).frame(width: 28, height: 28).accessibilityLabel("추가 메뉴")
+        }.font(.system(size: 12)).buttonStyle(.plain).padding(.horizontal, 22).padding(.vertical, 8)
     }
 
     private func showWindow(_ id: String) { openWindow(id: id); NSApp.activate(ignoringOtherApps: true) }

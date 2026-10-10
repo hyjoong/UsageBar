@@ -12,126 +12,169 @@ struct PreferencesView: View {
     }
 
     var body: some View {
-        Form {
-            Section("표시") {
-                Picker("메뉴바 표시", selection: $store.menuBarDisplayMode) {
-                    ForEach(MenuBarDisplayMode.allCases) { Text($0.title).tag($0) }
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 6) {
+                    UsageBrandMark().frame(width: 15, height: 15)
+                    Text("UsageBar").font(.system(size: 11, weight: .semibold))
                 }
-                Picker("기본으로 보는 서비스", selection: $store.selectedProvider) {
-                    ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
-                }
-                Toggle("메뉴바에 잔여율 표시", isOn: $store.showPercentage)
-                let windows = store.sortedWindows(for: store.selectedProvider)
-                if !windows.isEmpty {
-                    Picker("\(store.selectedProvider.title) 메뉴바 한도", selection: Binding(
-                        get: { store.trackedWindow(for: store.selectedProvider)?.id ?? "" },
-                        set: { store.selectWindow($0, for: store.selectedProvider) }
-                    )) {
-                        ForEach(windows) { Text($0.label).tag($0.id) }
+                .foregroundStyle(UsageTheme.secondaryInk)
+                Text("설정").font(.system(size: 24, weight: .semibold))
+                Text("메뉴 막대 표시와 연결을 관리하세요.")
+                    .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+            }
+            .padding(.horizontal, 28).padding(.top, 24).padding(.bottom, 20)
+
+            Rectangle().fill(UsageTheme.separator).frame(height: 1).padding(.horizontal, 28)
+
+            Form {
+                Section {
+                    Picker("화면 모드", selection: $store.appearanceMode) {
+                        ForEach(UsageAppearanceMode.allCases) { Text($0.title).tag($0) }
                     }
+                    detail("기본은 어둡게 표시해요. 이 앱에만 적용돼요.")
+                } header: {
+                    sectionTitle("화면", symbol: "circle.lefthalf.filled")
                 }
-                Text("한도는 서비스별로 기억해요. 두 서비스를 함께 표시할 때도 각 서비스에서 선택한 한도를 사용해요.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Section("시작") {
-                Toggle("로그인 시 UsageBar 실행", isOn: Binding(
-                    get: { launchAtLogin.isEnabled },
-                    set: { launchAtLogin.setEnabled($0) }
-                ))
-                Text(launchAtLogin.statusMessage)
-                    .font(.caption)
-                    .foregroundStyle(launchAtLogin.requiresApproval ? Color.orange : Color.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let message = launchAtLogin.errorMessage {
-                    Text(message)
-                        .font(.caption).foregroundStyle(.orange)
-                        .fixedSize(horizontal: false, vertical: true)
+
+                Section {
+                    Picker("메뉴 막대 표시", selection: $store.menuBarDisplayMode) {
+                        ForEach(MenuBarDisplayMode.allCases) { Text($0.title).tag($0) }
+                    }
+                    Picker("기본으로 보는 서비스", selection: $store.selectedProvider) {
+                        ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
+                    }
+                    Toggle("메뉴 막대에 잔여율 표시", isOn: $store.showPercentage)
+                    ForEach(store.menuProviders) { provider in
+                        windowPicker(for: provider)
+                    }
+                    detail("한도는 서비스별로 기억해요. 두 서비스를 함께 표시할 때도 각 서비스에서 선택한 한도를 사용해요.")
+                } header: {
+                    sectionTitle("메뉴 막대", symbol: "menubar.rectangle")
                 }
-                if launchAtLogin.requiresApproval {
-                    Button("로그인 항목 설정 열기") { launchAtLogin.openSystemSettings() }
+
+                Section {
+                    Toggle("로그인 시 UsageBar 실행", isOn: Binding(
+                        get: { launchAtLogin.isEnabled },
+                        set: { launchAtLogin.setEnabled($0) }
+                    ))
+                    detail(launchAtLogin.statusMessage,
+                           color: launchAtLogin.requiresApproval ? UsageTheme.warning : UsageTheme.secondaryInk)
+                    if let message = launchAtLogin.errorMessage {
+                        detail(message, color: UsageTheme.warning)
+                    }
+                    if launchAtLogin.requiresApproval {
+                        Button("로그인 항목 설정 열기") { launchAtLogin.openSystemSettings() }
+                    }
+                } header: {
+                    sectionTitle("시작", symbol: "power")
+                }
+
+                Section {
+                    Toggle("남은 한도가 20% 아래로 내려가면 알림", isOn: Binding(
+                        get: { store.notificationsEnabled },
+                        set: { value in Task { await store.setNotificationsEnabled(value) } }
+                    ))
+                    detail("같은 한도에서 반복해서 알리지 않아요. 알림을 켤 때 macOS 권한을 요청해요.")
+                    if let message = store.notificationMessage {
+                        detail(message, color: UsageTheme.warning)
+                    }
+                } header: {
+                    sectionTitle("알림", symbol: "bell")
+                }
+
+                Section {
+                    ForEach(ProviderID.allCases) { provider in
+                        connectionRow(for: provider)
+                    }
+                    detail("Claude Code와 Codex의 로그인 상태를 이용해요. 사용량은 5분마다 확인하며, 인증이나 초기 설정은 해당 도구에서 먼저 완료해 주세요.")
+                } header: {
+                    sectionTitle("연결", symbol: "link")
+                }
+
+                Section {
+                    LabeledContent("버전", value: "0.3.0")
+                    detail("사용량 기록은 이 Mac에 저장돼요. 대화 내용은 수집하지 않아요.")
+                } header: {
+                    sectionTitle("앱 정보", symbol: "info.circle")
                 }
             }
-            Section("알림") {
-                Toggle("남은 한도가 20% 아래로 내려가면 알림", isOn: Binding(
-                    get: { store.notificationsEnabled },
-                    set: { value in Task { await store.setNotificationsEnabled(value) } }
-                ))
-                Text("같은 한도에서 반복해서 알리지 않아요. 알림을 켤 때 macOS 권한을 요청해요.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let message = store.notificationMessage {
-                    Text(message).font(.caption).foregroundStyle(.orange)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            Section("연결") {
-                ForEach(ProviderID.allCases) { provider in
-                    connectionRow(for: provider)
-                }
-                Text("Claude Code와 Codex의 로그인 상태를 이용해요. 사용량은 5분마다 확인하며, 인증이나 초기 설정이 필요하면 해당 도구에서 먼저 완료해 주세요.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Section {
-                LabeledContent("UsageBar", value: "0.2.0")
-                Text("사용량 기록은 이 Mac에 저장돼요. 대화 내용은 수집하지 않아요.")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .padding(.horizontal, 8).padding(.bottom, 8)
         }
-        .formStyle(.grouped)
-        .padding(8)
-        .frame(width: 500)
-        .frame(minHeight: 420, idealHeight: 650, maxHeight: 720)
+        .font(.system(size: 13))
+        .foregroundStyle(UsageTheme.ink)
+        .tint(UsageTheme.accent)
+        .background(UsageTheme.canvas)
+        .frame(width: 520)
+        .frame(minHeight: 520, idealHeight: 740, maxHeight: 800)
         .onAppear { launchAtLogin.refreshStatus() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             launchAtLogin.refreshStatus()
         }
     }
 
+    @ViewBuilder private func windowPicker(for provider: ProviderID) -> some View {
+        let windows = store.sortedWindows(for: provider)
+        if !windows.isEmpty {
+            Picker("\(provider.title) 메뉴 막대 한도", selection: Binding(
+                get: { store.trackedWindow(for: provider)?.id ?? "" },
+                set: { store.selectWindow($0, for: provider) }
+            )) {
+                ForEach(windows) { Text($0.label).tag($0.id) }
+            }
+        }
+    }
+
     private func connectionRow(for provider: ProviderID) -> some View {
         let state = store.states[provider]
-        return VStack(alignment: .leading, spacing: 6) {
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 8) {
                 Label(provider.title, systemImage: provider.symbol)
+                    .font(.system(size: 13, weight: .medium))
                 Spacer()
                 if state?.isRefreshing == true {
                     ProgressView().controlSize(.small)
                         .accessibilityLabel("\(provider.title) 연결 확인 중")
                 }
                 Text(store.connectionStatus(for: provider))
-                    .font(.caption)
+                    .font(.system(size: 12))
                     .foregroundStyle(connectionColor(for: provider))
                 Button("확인") { Task { await store.refresh(provider, force: true) } }
                     .disabled(store.isDemo || state?.isRefreshing == true)
                     .accessibilityLabel("\(provider.title) 연결 확인")
             }
             if let error = state?.errorMessage {
-                Text(error)
-                    .font(.caption).foregroundStyle(.orange)
-                    .fixedSize(horizontal: false, vertical: true)
+                detail(error, color: UsageTheme.warning)
             }
             if let snapshot = state?.snapshot {
                 if let plan = snapshot.plan, !plan.isEmpty {
-                    Text(plan).font(.caption).foregroundStyle(.secondary)
+                    detail(plan)
                 }
-                Text("마지막 성공: \(snapshot.fetchedAt.formatted(date: .abbreviated, time: .shortened))")
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(snapshot.source)
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                detail("마지막 성공: \(snapshot.fetchedAt.formatted(date: .abbreviated, time: .shortened))")
+                detail(snapshot.source)
             } else if let attemptedAt = state?.lastAttempt {
-                Text("마지막 확인: \(attemptedAt.formatted(date: .abbreviated, time: .shortened))")
-                    .font(.caption).foregroundStyle(.secondary)
+                detail("마지막 확인: \(attemptedAt.formatted(date: .abbreviated, time: .shortened))")
             }
         }
-        .padding(.vertical, 3)
+        .padding(.vertical, 5)
+    }
+
+    private func sectionTitle(_ title: String, symbol: String) -> some View {
+        Label(title, systemImage: symbol)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(UsageTheme.ink)
+    }
+
+    private func detail(_ text: String, color: Color = UsageTheme.secondaryInk) -> some View {
+        Text(text).font(.system(size: 12)).foregroundStyle(color)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func connectionColor(for provider: ProviderID) -> Color {
-        if store.states[provider]?.isRefreshing == true { return .secondary }
-        if store.states[provider]?.errorMessage != nil || store.isStale(for: provider) { return .orange }
-        return .secondary
+        if store.states[provider]?.isRefreshing == true { return UsageTheme.secondaryInk }
+        if store.states[provider]?.errorMessage != nil || store.isStale(for: provider) { return UsageTheme.warning }
+        return UsageTheme.secondaryInk
     }
 }

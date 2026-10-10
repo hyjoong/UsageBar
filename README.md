@@ -1,8 +1,17 @@
 # UsageBar
 
-Claude를 기본으로 보여주는 macOS 메뉴 막대 앱입니다. 실행하면 화면 상단에 그래프 아이콘과 남은 한도가 표시됩니다. 아이콘을 클릭하면 Reset Timeline이 열리고, 바깥을 클릭하면 닫힙니다. 사용 기록과 설정은 필요한 때 별도 창으로 엽니다.
+Claude를 기본으로 보여주는 macOS 메뉴 막대 앱입니다. 실행하면 화면 상단에 U 게이지 아이콘과 남은 한도가 표시됩니다. 아이콘을 클릭하면 Reset Timeline이 열리고, 바깥을 클릭하면 닫힙니다. 사용 기록과 설정은 필요한 때 별도 창으로 엽니다.
 
 macOS 14 이상에서 실행합니다. SwiftUI·AppKit·Swift Charts와 Swift Package Manager를 사용하며 외부 패키지 의존성은 없습니다. 빌드에는 Swift 5.10 이상을 지원하는 macOS 개발 도구가 필요합니다.
+
+**0.3 디자인 개선**
+
+- 기본 화면 모드는 **어둡게**입니다. 설정 → 화면 모드에서 밝게 또는 시스템 설정 따르기로 바꿀 수 있으며 선택은 다음 실행에도 유지됩니다. 밝은 모드는 따뜻한 종이색, 어두운 모드는 차콜을 사용합니다. 서비스별 녹색이나 그라데이션 대신 구리색을 선택 상태와 가까운 리셋에 제한합니다.
+- 앱 아이콘과 메뉴바에 같은 U 게이지 마크를 사용합니다. 메뉴바 아이콘은 macOS가 명암에 맞춰 표시하는 단색 템플릿입니다.
+- 잔여 한도 바로 아래에 리셋 타임라인을 배치했습니다. 사용 속도와 초기화권 상세는 필요할 때 펼칩니다.
+- 한도 고정은 별도 핀 버튼으로 조작합니다. 서비스 전환 시 처음부터 읽을 수 있도록 스크롤 위치를 초기화하며, 패널 높이는 일정하게 유지합니다.
+- `⌘R`로 새로고침, `⌘,`로 설정을 엽니다. 동시 표시 설정에서는 Claude와 Codex 한도를 함께 선택할 수 있습니다.
+- 기록 차트는 단색과 기호로 구분합니다. CSV 내보내기·연결 방식·개인 기록 보관 정책은 같습니다.
 
 **0.2에서 추가한 기능**
 
@@ -63,19 +72,22 @@ swift run UsageBar --demo
 
 `--demo`는 예시 데이터를 메뉴 막대에 표시합니다. CLI 조회와 사용 기록 캐시 접근 없이 화면을 확인할 수 있습니다. 일반 실행에서는 실제 계정을 조회합니다. 화면 확인용 독립 창과 `--preview` 옵션은 제거했습니다.
 
-개발용 debug 빌드에서는 `--demo --ui-check`로 팝오버 검증 창, `--demo --ui-settings` 또는 `--demo --ui-history`로 보조 창을 열 수 있습니다. 이 검증용 진입점은 release 빌드에 포함되지 않습니다.
+개발용 debug 빌드에서는 `--demo --ui-check`로 팝오버 검증 창, `--demo --ui-settings` 또는 `--demo --ui-history`로 보조 창을 열 수 있습니다. `--ui-light` 또는 `--ui-dark`로 예시 앱만 밝거나 어둡게 확인할 수 있습니다. 이 검증용 진입점은 release 빌드에 포함되지 않습니다.
 
 - `Sources/UsageBar`: 메뉴 막대·타임라인·설정·기록 화면과 갱신 상태 관리.
 - `Sources/UsageBarCore`: CLI 연결, 응답 파싱, 공통 모델, 로컬 기록 저장.
 - `Tests/UsageBarCoreTests`: 파서 경계 사례, 가짜 CLI 프로세스, 취소·시간 제한·기록 분리 검증.
 - `Resources`: 앱 정보와 네이티브 아이콘. 빌드 스크립트는 포함된 `AppIcon.icns`를 재사용합니다.
 
-2026-10-10 개발 환경에서 Claude Team과 Codex 실제 조회를 확인했습니다. 0.2의 예시 화면에서 한도 고정·동시 표시 선택·기록 선택 분리·CSV 파일 저장을 검증했습니다. 설치된 CLI의 출력이나 프로토콜이 바뀌면 연결 코드를 조정해야 할 수 있습니다.
+2026-10-10 개발 환경에서 Claude Team과 Codex 실제 조회를 확인했습니다. 0.3에서는 밝은 모드·어두운 모드, 한도 고정, 서비스 전환, 부가 정보 펼침, 동시 표시 설정과 기록 차트 배치를 예시 앱으로 확인했습니다. 기존 핵심 테스트 71개가 통과했습니다. 0.2의 예시 화면에서 한도 고정·동시 표시 선택·기록 선택 분리·CSV 파일 저장을 검증했습니다. 설치된 CLI의 출력이나 프로토콜이 바뀌면 연결 코드를 조정해야 할 수 있습니다.
 
 **참고한 문서와 화면**
 
 - [Claude Code 인터랙티브 모드](https://code.claude.com/docs/en/interactive-mode): CLI 동작과 사용자 설정 확인.
 - [Codex App Server](https://learn.chatgpt.com/docs/app-server): stdio 프로토콜과 계정·사용량 응답.
+- [Things 기능 소개](https://culturedcode.com/things/features/): 필요한 때 세부 정보를 펼치는 구조와 여백 참고.
+- [iStat Menus](https://bjango.com/mac/istatmenus/): 메뉴바 요약과 상세 메뉴의 정보량 분리 참고.
+- [Raycast Action Panel](https://manual.raycast.com/action-panel): 자주 쓰는 행동과 단축키의 관계 참고.
 - [SwiftUI MenuBarExtra](https://developer.apple.com/documentation/swiftui/menubarextra): 네이티브 메뉴 막대 구성.
 - [CodexBar](https://github.com/steipete/CodexBar): 여러 서비스의 한도를 간결하게 보여주는 메뉴 막대 UI 참고.
 - [ClaudeBar](https://github.com/kemalasliyuksek/ClaudeBar): 로그인 시 실행, 표시 설정, 연결 상태를 확인하는 흐름 참고.
@@ -83,3 +95,9 @@ swift run UsageBar --demo
 - [tddworks/ClaudeBar](https://github.com/tddworks/ClaudeBar): 서비스별 한도를 모아 보는 구성 참고.
 
 사용 속도 계산, CSV 내보내기, 상태 처리 코드는 이 프로젝트에서 직접 구현했습니다. 참고 앱의 인증 방식이나 계정 데이터 수집 코드를 가져오지 않았습니다.
+
+아이콘 원본은 `Resources/UsageBar-mark.svg`에 있으며 외부 로고를 사용하지 않았습니다. 다음 명령으로 앱 아이콘을 다시 만들 수 있습니다.
+
+```sh
+swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
+```

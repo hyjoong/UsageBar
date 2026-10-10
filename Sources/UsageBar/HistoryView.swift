@@ -56,21 +56,28 @@ struct HistoryView: View {
         let points = limitPoints(now: now)
         let records = tokenRecords(now: now)
         VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("사용 기록").font(.largeTitle.weight(.semibold))
-                    Text("\(selectedProvider.title) · 계정 전체").foregroundStyle(.secondary)
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(spacing: 6) {
+                        UsageBrandMark().frame(width: 15, height: 15)
+                        Text("UsageBar").font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(UsageTheme.secondaryInk)
+                    Text("사용 기록").font(.system(size: 24, weight: .semibold))
+                    Text("\(selectedProvider.title) · 계정 전체")
+                        .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
                 }
                 Spacer()
                 Picker("서비스", selection: $selectedProvider) {
                     ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
                 }.pickerStyle(.segmented).frame(width: 170)
             }
+            Rectangle().fill(UsageTheme.separator).frame(height: 1)
             HStack {
                 Picker("기록 종류", selection: $kind) {
                     Text("잔여 한도").tag("limits")
-                    Text("일별 토큰").tag("tokens")
-                }.pickerStyle(.segmented).frame(width: 220)
+                    Text(selectedProvider == .claude ? "일별 토큰 (미지원)" : "일별 토큰").tag("tokens")
+                }.pickerStyle(.segmented).frame(width: 260)
                 Spacer()
                 Picker("기간", selection: $days) {
                     Text(kind == "tokens" ? "오늘" : "24시간").tag(1)
@@ -96,19 +103,26 @@ struct HistoryView: View {
                 } label: {
                     Label("CSV 내보내기", systemImage: "square.and.arrow.up")
                 }
+                .controlSize(.regular)
                 .disabled(isExporting || (kind == "tokens" ? records.isEmpty : points.isEmpty))
                 .help("현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요.")
             }
             if kind == "tokens" { tokens(records) } else { limits(points) }
-            Divider()
-            if let message = store.storageNotice { Text(message).font(.caption).foregroundStyle(.orange) }
+            Rectangle().fill(UsageTheme.separator).frame(height: 1)
+            if let message = store.storageNotice {
+                Text(message).font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
+            }
             HStack {
-                Label(kind == "tokens" ? "제공자가 반환한 일별 토큰" : "실제로 확인한 잔여율 · 앱이 꺼진 시간은 연결하지 않아요", systemImage: "info.circle")
+                Label(kind == "tokens" ? "제공자가 반환한 일별 토큰" : "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요", systemImage: "info.circle")
                 Spacer()
                 if store.isDemo { Text("예시 데이터") }
-            }.font(.caption).foregroundStyle(.secondary)
+            }.font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
         }
-        .padding(28).frame(minWidth: 650, minHeight: 540).tint(selectedProvider.tint)
+        .font(.system(size: 13))
+        .foregroundStyle(UsageTheme.ink)
+        .padding(28).frame(minWidth: 650, minHeight: 620)
+        .background(UsageTheme.canvas)
+        .tint(UsageTheme.accent)
         .onChange(of: selectedProvider) { _, _ in selectedWindowID = nil }
         .onChange(of: availableWindows.map(\.id)) { _, ids in
             if let selectedWindowID, !ids.contains(selectedWindowID) { self.selectedWindowID = nil }
@@ -124,50 +138,146 @@ struct HistoryView: View {
 
     @ViewBuilder private func tokens(_ records: [DailyUsage]) -> some View {
         if records.isEmpty {
-            ContentUnavailableView("제공된 토큰 기록이 없어요", systemImage: "chart.bar", description: Text(selectedProvider == .claude ? "Claude 연결은 한도와 리셋 정보를 지원해요. 연결 후 잔여 한도 기록에서 사용 흐름을 확인할 수 있어요." : "선택한 기간에 제공된 기록이 없어요. 계정과 설치된 Codex 버전에 따라 일별 기록이 제공되지 않을 수 있어요."))
-                .frame(maxHeight: .infinity)
+            emptyState(title: "토큰 기록이 없어요", symbol: "chart.bar",
+                       detail: selectedProvider == .claude
+                        ? "Claude의 사용 흐름은 잔여 한도 기록에서 확인할 수 있어요."
+                        : "선택한 기간에 제공된 기록이 없어요. 계정과 Codex 버전에 따라 지원 여부가 달라요.")
         } else {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("선택한 기간의 토큰").font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(UsageTheme.secondaryInk)
                 // Several valid Int64 buckets can exceed Int64.max; accumulate in Double for display.
-                Text(Self.tokenLabel(records.reduce(0.0) { $0 + Double($1.tokens) }) + " tokens")
-                    .font(.system(size: 30, weight: .medium, design: .rounded)).monospacedDigit()
+                HStack(alignment: .firstTextBaseline, spacing: 7) {
+                    Text(Self.tokenLabel(records.reduce(0.0) { $0 + Double($1.tokens) }))
+                        .font(.system(size: 30, weight: .medium)).monospacedDigit()
+                    Text("tokens").font(.system(size: 13)).foregroundStyle(UsageTheme.secondaryInk)
+                }
                 Text("일별 기록 \(records.count)개 · \(records.first!.day) ~ \(records.last!.day)")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
             }
             Chart(records) { record in
                 BarMark(x: .value("날짜", String(record.day.suffix(5))), y: .value("토큰", record.tokens))
-                    .foregroundStyle(selectedProvider.tint.gradient).cornerRadius(3)
+                    .foregroundStyle(UsageTheme.accent).cornerRadius(3)
                     .accessibilityLabel("\(record.day), \(record.tokens) 토큰")
             }
-            .chartYAxis {
+            .chartXAxis {
                 AxisMarks { value in
-                    AxisGridLine()
                     AxisValueLabel {
-                        if let count = value.as(Double.self) { Text(Self.tokenLabel(count)) }
+                        if let day = value.as(String.self) {
+                            Text(day).font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                        }
                     }
                 }
             }
-            .chartYAxisLabel("토큰").frame(minHeight: 200)
+            .chartYAxis {
+                AxisMarks { value in
+                    AxisGridLine().foregroundStyle(UsageTheme.separator)
+                    AxisValueLabel {
+                        if let count = value.as(Double.self) {
+                            Text(Self.tokenLabel(count)).font(.system(size: 11))
+                                .foregroundStyle(UsageTheme.secondaryInk)
+                        }
+                    }
+                }
+            }
+            .chartYAxisLabel {
+                Text("토큰").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+            }
+            .frame(minHeight: 200)
         }
     }
 
     @ViewBuilder private func limits(_ points: [HistoryPoint]) -> some View {
         if points.isEmpty {
-            ContentUnavailableView("선택한 범위에 기록이 없어요", systemImage: "clock.arrow.circlepath", description: Text("연결 후 실제로 확인한 잔여 한도만 기록해요. 다른 기간이나 한도를 선택해 볼 수 있어요."))
-                .frame(maxHeight: .infinity)
+            emptyState(title: "선택한 범위에 기록이 없어요", symbol: "clock.arrow.circlepath",
+                       detail: "연결 후 확인된 한도가 기록돼요. 기간이나 한도를 바꿔 확인해 보세요.")
         } else {
-            Text("실제 관측값 \(points.count)개 · \(Self.observationDate(points.first!.date)) ~ \(Self.observationDate(points.last!.date))")
-                .font(.caption).foregroundStyle(.secondary)
+            let allSeries = Array(Set(validHistory.map(\.windowName))).sorted()
+            let seriesIndices = Dictionary(uniqueKeysWithValues: allSeries.enumerated().map { ($0.element, $0.offset) })
+            let visibleSeries = Array(Set(points.map(\.windowName))).sorted()
+            let usesTimeLabels = points.last!.date.timeIntervalSince(points.first!.date) <= 48 * 3_600
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("잔여 한도 추이").font(.system(size: 15, weight: .semibold))
+                    Spacer()
+                    Text("관측값 \(points.count)개").font(.system(size: 12)).monospacedDigit()
+                        .foregroundStyle(UsageTheme.secondaryInk)
+                }
+                Text("\(Self.observationDate(points.first!.date)) ~ \(Self.observationDate(points.last!.date))")
+                    .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+            }
             Chart(points) { point in
+                let seriesIndex = seriesIndices[point.windowName] ?? 0
                 PointMark(x: .value("확인 시각", point.date), y: .value("남은 한도", point.remaining))
-                    .foregroundStyle(by: .value("한도", point.windowName)).symbolSize(24)
+                    .foregroundStyle(seriesColor(seriesIndex))
+                    .symbol { seriesSymbol(seriesIndex) }
                     .accessibilityLabel("\(Self.observationDate(point.date)), \(point.windowName), \(Int(point.remaining))퍼센트 남음")
             }
+            // The custom legend below lists observed series once, using the same explicit
+            // color and symbol mapping as the marks. Snapshot-only windows are not series.
+            .chartLegend(.hidden)
+            .chartXScale(range: .plotDimension(startPadding: 24, endPadding: 24))
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 3)) { value in
+                    AxisValueLabel(collisionResolution: .automatic) {
+                        if let date = value.as(Date.self) {
+                            Text(Self.chartAxisLabel(date, timeOnly: usesTimeLabels))
+                                .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                        }
+                    }
+                }
+            }
+            .chartYAxis {
+                AxisMarks(values: [0, 25, 50, 75, 100]) { value in
+                    AxisGridLine().foregroundStyle(UsageTheme.separator)
+                    AxisValueLabel {
+                        if let percent = value.as(Int.self) {
+                            Text("\(percent)%").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                        }
+                    }
+                }
+            }
             .chartYScale(domain: 0...100)
-            .chartYAxisLabel("남은 한도 (%)")
-            .chartXAxisLabel("확인 시각")
+            .font(.system(size: 11))
             .frame(minHeight: 220)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), alignment: .leading)],
+                      alignment: .leading, spacing: 8) {
+                ForEach(visibleSeries, id: \.self) { name in
+                    HStack(spacing: 6) {
+                        seriesSymbol(seriesIndices[name] ?? 0)
+                        Text(name.isEmpty ? "이름 없는 한도" : name)
+                            .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
         }
+    }
+
+    private func seriesColor(_ index: Int) -> Color {
+        UsageTheme.chartColors[index % UsageTheme.chartColors.count]
+    }
+
+    private func seriesSymbol(_ index: Int) -> some View {
+        let symbols = ["circle.fill", "square.fill", "diamond.fill", "triangle.fill", "plus"]
+        return Image(systemName: symbols[index % symbols.count])
+            .font(.system(size: 8, weight: .bold))
+            .foregroundStyle(seriesColor(index))
+            .frame(width: 10, height: 10)
+            .accessibilityHidden(true)
+    }
+
+    private func emptyState(title: String, symbol: String, detail: String) -> some View {
+        VStack(spacing: 11) {
+            Image(systemName: symbol).font(.system(size: 27, weight: .light))
+                .foregroundStyle(UsageTheme.secondaryInk)
+            Text(title).font(.system(size: 15, weight: .semibold))
+            Text(detail).font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                .multilineTextAlignment(.center).frame(maxWidth: 360)
+        }
+        .padding(.vertical, 35)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func limitPoints(now: Date) -> [HistoryPoint] {
@@ -221,6 +331,14 @@ struct HistoryView: View {
 
     private static func observationDate(_ date: Date) -> String {
         date.formatted(.dateTime.month().day().hour().minute())
+    }
+
+    private static func chartAxisLabel(_ date: Date, timeOnly: Bool) -> String {
+        let formatter = dayFormatter()
+        // The full date range is already shown above the plot. Short time labels avoid
+        // repeating the same date and keep endpoint labels inside narrow windows.
+        formatter.dateFormat = timeOnly ? "HH:mm" : "M/d"
+        return formatter.string(from: date)
     }
 
     private static func tokenLabel(_ number: Double) -> String {

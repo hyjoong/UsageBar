@@ -10,6 +10,25 @@ enum MenuBarDisplayMode: String, CaseIterable, Identifiable {
     var title: String { self == .selected ? "선택한 서비스" : "Claude + Codex" }
 }
 
+enum UsageAppearanceMode: String, CaseIterable, Identifiable {
+    case dark, light, system
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .dark: "어둡게"
+        case .light: "밝게"
+        case .system: "시스템 설정 따르기"
+        }
+    }
+    var appearance: NSAppearance? {
+        switch self {
+        case .dark: NSAppearance(named: .darkAqua)
+        case .light: NSAppearance(named: .aqua)
+        case .system: nil
+        }
+    }
+}
+
 struct ProviderState {
     var snapshot: ProviderSnapshot?
     var isRefreshing = false
@@ -22,6 +41,12 @@ struct ProviderState {
 final class AppStore: ObservableObject {
     @Published var selectedProvider: ProviderID = .claude {
         didSet { if !isDemo { defaults.set(selectedProvider.rawValue, forKey: "selectedProvider") } }
+    }
+    @Published var appearanceMode: UsageAppearanceMode = .dark {
+        didSet {
+            if !isDemo { defaults.set(appearanceMode.rawValue, forKey: "appearanceMode") }
+            applyAppearance()
+        }
     }
     @Published private(set) var states: [ProviderID: ProviderState] = [:]
     @Published private(set) var clockNow = Date()
@@ -76,6 +101,7 @@ final class AppStore: ObservableObject {
         if demo {
             installDemo()
         } else {
+            appearanceMode = UsageAppearanceMode(rawValue: defaults.string(forKey: "appearanceMode") ?? "") ?? .dark
             selectedProvider = ProviderID(rawValue: defaults.string(forKey: "selectedProvider") ?? "") ?? .claude
             menuBarDisplayMode = MenuBarDisplayMode(rawValue: defaults.string(forKey: "menuBarDisplayMode") ?? "") ?? .selected
             if defaults.object(forKey: "showPercentage") != nil { showPercentage = defaults.bool(forKey: "showPercentage") }
@@ -86,6 +112,10 @@ final class AppStore: ObservableObject {
                 })
             }
         }
+    }
+
+    func applyAppearance() {
+        NSApplication.shared.appearance = appearanceMode.appearance
     }
 
     var selectedState: ProviderState { states[selectedProvider] ?? ProviderState() }

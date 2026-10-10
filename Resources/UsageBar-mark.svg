@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <title>UsageBar U gauge</title>
+  <path d="M22 20V61C22 82 78 82 78 61V44" stroke="#F3EFE6" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M78 20V25" stroke="#D77855" stroke-width="14" stroke-linecap="round"/>
+</svg>
