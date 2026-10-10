@@ -38,6 +38,21 @@ struct UsageBarApp: App {
         }
         .defaultSize(width: 500, height: 650)
         .windowResizability(.contentSize)
+        .commands { UsageBarCommands() }
+    }
+}
+
+private struct UsageBarCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(replacing: .appSettings) {
+            Button("설정…") {
+                openWindow(id: "settings")
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            .keyboardShortcut(",", modifiers: .command)
+        }
     }
 }
 
