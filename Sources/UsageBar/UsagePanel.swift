@@ -35,7 +35,6 @@ struct UsagePanel: View {
                         if let first = store.trackedWindow(for: provider) {
                             quota(first, prominent: true)
                             connectionNotice
-                            timeline(snapshot, excluding: first.id)
                             let others = store.sortedWindows(for: provider).filter { $0.id != first.id }
                             if !others.isEmpty {
                                 VStack(alignment: .leading, spacing: 15) {
@@ -61,6 +60,7 @@ struct UsagePanel: View {
                                 .foregroundStyle(UsageTheme.secondaryInk).font(.callout)
                             connectionNotice
                         }
+                        creditExpiry(snapshot)
                         if let count = snapshot.resetCreditCount {
                             DisclosureGroup(isExpanded: $showCredits) {
                                 VStack(spacing: 12) { credits(snapshot) }.padding(.top, 12)
@@ -90,7 +90,7 @@ struct UsagePanel: View {
             }
             .defaultScrollAnchor(.top)
             .id(provider)
-            WorkJournalShortcut(journal: store.workJournal) { showWindow("work-journal") }
+            WorkJournalPanel(store: store) { showWindow("work-journal") }
             status
             Divider()
             footer
@@ -177,14 +177,19 @@ struct UsagePanel: View {
                 GeometryReader { proxy in
                     ZStack(alignment: .leading) {
                         Capsule().fill(UsageTheme.mutedSurface)
-                        Capsule().fill(window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8))
+                        Capsule().fill(store.freshness(for: provider) != .current
+                            ? UsageTheme.secondaryInk
+                            : (window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8)))
                             .frame(width: max(0, proxy.size.width * window.remainingPercent / 100))
                     }
                 }.frame(height: 4)
                     .accessibilityLabel("\(window.label) 남은 한도")
                     .accessibilityValue("\(Int(window.remainingPercent.rounded()))퍼센트")
             }
-            if prominent && window.remainingPercent <= 20 {
+            if !prominent {
+                resetSummary(window)
+            }
+            if window.remainingPercent <= 20 {
                 Label(store.freshness(for: provider) == .current ? "남은 한도가 20% 이하예요" : "마지막 기록에서 20% 이하였어요", systemImage: "exclamationmark.circle")
                     .font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
             }
@@ -247,55 +252,43 @@ struct UsagePanel: View {
             .accessibilityElement(children: .ignore).accessibilityLabel("\(label) \(Int(percent.rounded()))퍼센트")
     }
 
-    private struct ResetEvent: Identifiable {
-        let id: String
-        let title: String
-        let date: Date
-        let expiry: Bool
+    @ViewBuilder private func resetSummary(_ window: UsageWindow) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "arrow.turn.down.right")
+                .font(.system(size: 10)).padding(.top, 2).accessibilityHidden(true)
+            if let date = window.resetsAt {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("리셋 · \(Self.relativeDate(date, now: store.clockNow, expiry: false))")
+                        .foregroundStyle(date <= store.clockNow ? UsageTheme.warning : UsageTheme.secondaryInk)
+                    Text(date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().hour().minute()))
+                }
+            } else {
+                Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            if store.freshness(for: provider) != .current {
+                Text("이전 기록").foregroundStyle(UsageTheme.warning)
+            }
+        }
+        .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+        .accessibilityElement(children: .combine)
     }
 
-    @ViewBuilder private func timeline(_ snapshot: ProviderSnapshot, excluding selectedID: String) -> some View {
-        let valid = UsageWindowSelection.validWindows(snapshot.windows).filter { $0.id != selectedID }
-        let resets = valid.compactMap { window in
-            window.resetsAt.map { ResetEvent(id: "window-" + window.id, title: window.label, date: $0, expiry: false) }
-        }
+    @ViewBuilder private func creditExpiry(_ snapshot: ProviderSnapshot) -> some View {
         let credit = snapshot.resetCredits?.filter {
             $0.status.lowercased() == "available" && ($0.expiresAt.map { $0 > store.clockNow } ?? false)
         }.min { $0.expiresAt! < $1.expiresAt! }
-        let expiry = credit?.expiresAt.map { [ResetEvent(id: "credit-expiry", title: "첫 초기화권 만료", date: $0, expiry: true)] } ?? []
-        let events = (resets + expiry).sorted { $0.date < $1.date }.prefix(3)
-        if !events.isEmpty || valid.contains(where: { $0.resetsAt == nil }) {
-            VStack(alignment: .leading, spacing: 12) {
-                sectionLabel("다른 리셋 일정")
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
-                        HStack(alignment: .top, spacing: 12) {
-                            VStack(spacing: 0) {
-                                RoundedRectangle(cornerRadius: 1)
-                                    .fill(UsageTheme.secondaryInk).frame(width: 10, height: 2)
-                                Rectangle().fill(UsageTheme.separator)
-                                    .frame(width: 1, height: index == events.count - 1 ? 0 : 40)
-                            }.frame(width: 10).padding(.top, 7).accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 5) {
-                                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                    Text(event.title).font(.system(size: 12, weight: .medium))
-                                    Spacer(minLength: 3)
-                                    Text(Self.relativeDate(event.date, now: store.clockNow, expiry: event.expiry))
-                                        .font(.system(size: 12)).monospacedDigit()
-                                        .multilineTextAlignment(.trailing)
-                                }
-                                Text(event.date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().weekday().hour().minute()))
-                                    .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
-                            }.padding(.bottom, index == events.count - 1 ? 0 : 14)
-                        }.accessibilityElement(children: .combine)
-                    }
-                }
-                ForEach(valid.filter { $0.resetsAt == nil }) { window in
-                    Text("\(window.label) · \(window.resetDescription ?? "리셋 시각 미제공")")
-                        .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
-                        .fixedSize(horizontal: false, vertical: true)
+        if let date = credit?.expiresAt {
+            HStack(alignment: .top, spacing: 9) {
+                Image(systemName: "ticket").accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("첫 초기화권 만료 · \(Self.relativeDate(date, now: store.clockNow, expiry: true))")
+                    Text(date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().hour().minute()))
                 }
             }
+            .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+            .accessibilityElement(children: .combine)
         }
     }
 
@@ -435,41 +428,5 @@ struct UsagePanel: View {
         if number >= 1_000_000 { return String(format: "%.1fM", Double(number) / 1_000_000) }
         if number >= 1_000 { return String(format: "%.1fK", Double(number) / 1_000) }
         return String(number)
-    }
-}
-
-private struct WorkJournalShortcut: View {
-    @ObservedObject var journal: WorkJournalController
-    let open: () -> Void
-
-    var body: some View {
-        Button(action: open) {
-            HStack(spacing: 8) {
-                Image(systemName: journal.state.active == nil ? "receipt" : "record.circle")
-                    .foregroundStyle(UsageTheme.accent)
-                if let active = journal.state.active {
-                    Text("\(active.kind.title) 기록 중").fontWeight(.medium)
-                    Spacer()
-                    TimelineView(.periodic(from: .now, by: 60)) { context in
-                        let elapsed = context.date.timeIntervalSince(active.startedAt)
-                        let minutes = elapsed.isFinite ? Int(min(max(0, elapsed / 60), Double(Int.max / 2))) : 0
-                        Text("\(minutes)분")
-                            .monospacedDigit()
-                    }
-                } else {
-                    Text("작업 영수증")
-                    Spacer()
-                    Text("이번 작업의 한도 변화").foregroundStyle(UsageTheme.secondaryInk)
-                }
-                Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
-            }
-            .font(.system(size: 11))
-            .padding(.horizontal, 12).frame(minHeight: 36)
-            .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 8))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(journal.state.active == nil ? "작업 영수증 열기" : "진행 중인 작업 영수증 열기")
-        .padding(.horizontal, 22).padding(.top, 7)
     }
 }

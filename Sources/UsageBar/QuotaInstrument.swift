@@ -15,7 +15,7 @@ struct QuotaInstrument: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(window.remainingPercent, format: .number.precision(.fractionLength(0)))
-                    .font(.system(size: 64, weight: .light, design: .rounded))
+                    .font(.system(size: 56, weight: .light, design: .rounded))
                     .tracking(-3).monospacedDigit()
                 Text("%").font(.system(size: 24, weight: .light)).foregroundStyle(UsageTheme.secondaryInk)
                 Spacer()
@@ -63,22 +63,22 @@ struct QuotaInstrument: View {
                 let width = max(0, proxy.size.width - 4)
                 let position = width * window.remainingPercent / 100
                 ZStack(alignment: .topLeading) {
-                    ForEach(0..<41) { index in
-                        let percent = Double(index) * 2.5
+                    ForEach(0..<21) { index in
+                        let percent = Double(index) * 5
                         let filled = percent < window.remainingPercent
                         RoundedRectangle(cornerRadius: 0.8)
                             .fill(filled ? UsageTheme.ink.opacity(current ? 0.8 : 0.45) : UsageTheme.mutedSurface)
-                            .frame(width: index % 10 == 0 ? 2 : 1.5,
-                                   height: index % 10 == 0 ? 24 : (index % 5 == 0 ? 18 : 12))
+                            .frame(width: index % 5 == 0 ? 2 : 1.5,
+                                   height: index % 5 == 0 ? 20 : 10)
                             .offset(x: width * percent / 100 + 1, y: 9)
                     }
                     RoundedRectangle(cornerRadius: 1)
-                        .fill(marker).frame(width: 3, height: 32)
+                        .fill(marker).frame(width: 3, height: 28)
                         .offset(x: position + 0.5, y: 2)
                     Circle().fill(marker).frame(width: 5, height: 5)
                         .offset(x: min(max(0, position - 0.5), proxy.size.width - 5), y: 0)
                 }
-            }.frame(height: 35)
+            }.frame(height: 31)
             GeometryReader { proxy in
                 ZStack(alignment: .topLeading) {
                     HStack {

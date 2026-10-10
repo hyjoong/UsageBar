@@ -78,6 +78,7 @@ final class WorkJournalControllerTests: XCTestCase {
         XCTAssertEqual(controller.state.receipts.count, 1)
         XCTAssertEqual(controller.state.receipts.first?.provider, .claude)
         XCTAssertEqual(controller.state.receipts.first?.rows.first?.percentagePoints, 12)
+        XCTAssertEqual(controller.recentCompletion?.id, controller.state.receipts.first?.id)
         XCTAssertFalse(controller.isBusy)
     }
 
@@ -97,6 +98,7 @@ final class WorkJournalControllerTests: XCTestCase {
         XCTAssertEqual(controller.state.active?.id, activeID)
         XCTAssertTrue(controller.state.receipts.isEmpty)
         XCTAssertNotNil(controller.message)
+        XCTAssertNil(controller.recentCompletion)
         XCTAssertFalse(controller.isBusy)
 
         await controller.finishWithoutSnapshot()
@@ -105,6 +107,7 @@ final class WorkJournalControllerTests: XCTestCase {
         XCTAssertEqual(receipt.provider, .codex)
         XCTAssertTrue(receipt.rows.allSatisfy { $0.percentagePoints == nil },
                       "Failed endpoint measurements must never become numeric usage claims")
+        XCTAssertEqual(controller.recentCompletion?.id, receipt.id)
     }
 
     func testFailedStartDoesNotCreateAnActiveSessionOrReceipt() async throws {
@@ -134,6 +137,7 @@ final class WorkJournalControllerTests: XCTestCase {
         XCTAssertTrue(restored.isLoaded)
         XCTAssertEqual(restored.state.active, active)
         XCTAssertTrue(restored.state.receipts.isEmpty)
+        XCTAssertNil(restored.recentCompletion)
 
         await restored.finishWithoutSnapshot()
         let third = WorkJournalController(persistence: WorkJournalStore(directory: directory))
@@ -142,6 +146,90 @@ final class WorkJournalControllerTests: XCTestCase {
         XCTAssertEqual(third.state.receipts.count, 1)
         XCTAssertEqual(third.state.receipts.first?.id, active.id)
         XCTAssertTrue(third.state.receipts.first?.rows.allSatisfy { $0.percentagePoints == nil } ?? false)
+        XCTAssertNil(third.recentCompletion, "Loading old receipts must not replay a completion panel")
+    }
+
+    func testDemoHistoryDoesNotShowARecentCompletionAtLaunch() {
+        let controller = WorkJournalController(demo: true)
+        XCTAssertFalse(controller.state.receipts.isEmpty)
+        XCTAssertNil(controller.recentCompletion)
+    }
+
+    func testDismissPreservesHistoryAndSuccessfulStartClearsRecentCompletion() async throws {
+        let controller = WorkJournalController(usesPersistence: false)
+        await controller.start(kind: .refactor, provider: .claude) { self.snapshot($0) }
+        await controller.finishWithoutSnapshot()
+        let first = try XCTUnwrap(controller.recentCompletion)
+
+        controller.dismissRecentCompletion()
+        XCTAssertNil(controller.recentCompletion)
+        XCTAssertEqual(controller.state.receipts.map(\.id), [first.id])
+
+        await controller.start(kind: .debug, provider: .codex) { self.snapshot($0) }
+        await controller.finishWithoutSnapshot()
+        let second = try XCTUnwrap(controller.recentCompletion)
+        XCTAssertNotEqual(first.id, second.id)
+        await controller.deleteReceipt(first.id)
+        XCTAssertEqual(controller.recentCompletion?.id, second.id,
+                       "Deleting another historical receipt must not dismiss the current completion")
+
+        await controller.start(kind: .review, provider: .claude) { self.snapshot($0) }
+        XCTAssertNil(controller.recentCompletion)
+        XCTAssertEqual(controller.state.active?.kind, .review)
+        XCTAssertEqual(controller.state.receipts.map(\.id), [second.id])
+    }
+
+    func testFailedSaveRetainsActiveWithoutShowingCompletionUntilRecovery() async throws {
+        let directory = URL(fileURLWithPath: "/private/tmp/UsageBar-WorkSaveFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = WorkJournalController(persistence: WorkJournalStore(directory: directory))
+        await controller.load()
+        await controller.start(kind: .build, provider: .claude) { self.snapshot($0) }
+        let activeID = try XCTUnwrap(controller.state.active?.id)
+        let archive = directory.appendingPathComponent("work-journal.json")
+        let intact = try Data(contentsOf: archive)
+        let corrupt = Data("invalid archive".utf8)
+        try corrupt.write(to: archive)
+
+        await controller.finish { self.snapshot($0, used: 20) }
+        XCTAssertEqual(controller.state.active?.id, activeID)
+        XCTAssertTrue(controller.state.receipts.isEmpty)
+        XCTAssertNil(controller.recentCompletion)
+        XCTAssertTrue(controller.message?.contains("저장하지 못했어요") ?? false)
+        XCTAssertEqual(try Data(contentsOf: archive), corrupt)
+
+        await controller.finishWithoutSnapshot()
+        XCTAssertEqual(controller.state.active?.id, activeID)
+        XCTAssertNil(controller.recentCompletion)
+
+        try intact.write(to: archive)
+        await controller.finishWithoutSnapshot()
+        XCTAssertNil(controller.state.active)
+        XCTAssertEqual(controller.recentCompletion?.id, activeID)
+        XCTAssertEqual(controller.state.receipts.count, 1)
+    }
+
+    func testFailedDeleteKeepsCompletionUntilReceiptIsActuallyDeleted() async throws {
+        let directory = URL(fileURLWithPath: "/private/tmp/UsageBar-WorkDeleteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = WorkJournalController(persistence: WorkJournalStore(directory: directory))
+        await controller.load()
+        await controller.start(kind: .build, provider: .claude) { self.snapshot($0) }
+        await controller.finishWithoutSnapshot()
+        let receiptID = try XCTUnwrap(controller.recentCompletion?.id)
+        let archive = directory.appendingPathComponent("work-journal.json")
+        let intact = try Data(contentsOf: archive)
+        try Data("invalid archive".utf8).write(to: archive)
+
+        await controller.deleteReceipt(receiptID)
+        XCTAssertEqual(controller.recentCompletion?.id, receiptID)
+        XCTAssertEqual(controller.state.receipts.count, 1)
+        XCTAssertNotNil(controller.message)
+
+        try intact.write(to: archive)
+        await controller.deleteReceipt(receiptID)
+        XCTAssertNil(controller.recentCompletion)
+        XCTAssertTrue(controller.state.receipts.isEmpty)
     }
 }
 

@@ -9,6 +9,8 @@ final class WorkJournalController: ObservableObject {
     @Published private(set) var isBusy = false
     @Published private(set) var isLoaded = false
     @Published private(set) var message: String?
+    /// Shown only for a completion in this process; historical receipts never trigger the panel.
+    @Published private(set) var recentCompletion: WorkReceipt?
     private let persistence: WorkJournalStore?
 
     init(demo: Bool = false, persistence: WorkJournalStore? = nil, usesPersistence: Bool = true) {
@@ -41,6 +43,7 @@ final class WorkJournalController: ObservableObject {
             guard snapshot.provider == provider else { throw ProviderError.unavailable("선택한 서비스의 사용량을 확인하지 못했어요.") }
             let active = try WorkSession.start(kind: kind, snapshot: snapshot, now: Date())
             try await save(WorkJournalState(active: active, receipts: state.receipts))
+            recentCompletion = nil
         } catch {
             message = "시작 전 사용량을 확인하지 못했어요. " + Self.reason(error)
         }
@@ -50,13 +53,18 @@ final class WorkJournalController: ObservableObject {
         guard isLoaded, !isBusy, let active = state.active else { return }
         isBusy = true; message = nil
         defer { isBusy = false }
+        var fetched = false
         do {
             let snapshot = try await fetch(active.provider)
             try Task.checkCancellation()
+            fetched = true
             let receipt = active.finish(snapshot: snapshot, now: Date())
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
+            recentCompletion = receipt
         } catch {
-            message = "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. " + Self.reason(error)
+            message = fetched
+                ? "작업 영수증을 저장하지 못했어요. 진행 중인 기록은 유지했어요. 다시 시도해 주세요."
+                : "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. " + Self.reason(error)
         }
     }
 
@@ -67,6 +75,7 @@ final class WorkJournalController: ObservableObject {
         do {
             let receipt = active.finish(snapshot: nil, now: Date())
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
+            recentCompletion = receipt
         } catch { message = "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요." }
     }
 
@@ -74,7 +83,10 @@ final class WorkJournalController: ObservableObject {
         guard isLoaded, !isBusy, state.active != nil else { return }
         isBusy = true; message = nil
         defer { isBusy = false }
-        do { try await save(WorkJournalState(active: nil, receipts: state.receipts)) }
+        do {
+            try await save(WorkJournalState(active: nil, receipts: state.receipts))
+            recentCompletion = nil
+        }
         catch { message = "진행 중인 기록을 취소하지 못했어요. 다시 시도해 주세요." }
     }
 
@@ -82,8 +94,17 @@ final class WorkJournalController: ObservableObject {
         guard isLoaded, !isBusy else { return }
         isBusy = true; message = nil
         defer { isBusy = false }
-        do { try await save(WorkJournalState(active: state.active, receipts: state.receipts.filter { $0.id != id })) }
+        do {
+            try await save(WorkJournalState(active: state.active, receipts: state.receipts.filter { $0.id != id }))
+            if recentCompletion?.id == id { recentCompletion = nil }
+        }
         catch { message = "작업 영수증을 지우지 못했어요. 다시 시도해 주세요." }
+    }
+
+    func dismissRecentCompletion() {
+        guard !isBusy, recentCompletion != nil else { return }
+        recentCompletion = nil
+        message = nil
     }
 
     private func save(_ next: WorkJournalState) async throws {

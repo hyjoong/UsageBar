@@ -303,6 +303,11 @@ final class AppStore: ObservableObject {
     /// A work boundary must come from a successful live request, never a cached value.
     func workSnapshot(for id: ProviderID) async throws -> ProviderSnapshot {
         if isDemo, let snapshot = states[id]?.snapshot {
+            #if DEBUG
+            if CommandLine.arguments.contains("--ui-work-failure"), workJournal.state.active != nil {
+                throw ProviderError.unavailable("예시 연결 오류: 종료 시 사용량을 확인하지 못했습니다. 기록은 유지되며 다시 시도하거나 한도 비교 없이 종료할 수 있어요.")
+            }
+            #endif
             return ProviderSnapshot(provider: snapshot.provider, accountKey: "demo-only", plan: snapshot.plan,
                 windows: snapshot.windows, fetchedAt: Date(), source: "예시 데이터")
         }
@@ -574,5 +579,22 @@ final class AppStore: ObservableObject {
                                                   resetsAt: snapshot.windows.first?.resetsAt))
             }
         }
+        #if DEBUG
+        if CommandLine.arguments.contains("--ui-stale") || CommandLine.arguments.contains("--ui-reset-due") {
+            let stale = CommandLine.arguments.contains("--ui-stale")
+            for id in ProviderID.allCases {
+                guard let old = states[id]?.snapshot else { continue }
+                let windows = old.windows.map { window in
+                    UsageWindow(id: window.id, label: window.label, usedPercent: stale ? 94 : window.usedPercent,
+                        resetsAt: stale ? window.resetsAt : now.addingTimeInterval(-60),
+                        durationMinutes: window.durationMinutes)
+                }
+                states[id] = ProviderState(snapshot: ProviderSnapshot(provider: id, plan: old.plan,
+                    windows: windows, resetCreditCount: old.resetCreditCount, resetCredits: old.resetCredits,
+                    dailyUsage: old.dailyUsage, fetchedAt: stale ? now.addingTimeInterval(-900) : now,
+                    source: "화면 검증용 예시"))
+            }
+        }
+        #endif
     }
 }
