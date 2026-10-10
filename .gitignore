@@ -1,0 +1,11 @@
+.build/
+.build-*/
+.swiftpm/
+build/
+.DS_Store
+
+# Local credentials and usage cache
+.env
+.env.*
+!.env.example
+usage-cache.json
