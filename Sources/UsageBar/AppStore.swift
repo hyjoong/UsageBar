@@ -74,10 +74,12 @@ final class AppStore: ObservableObject {
     @Published private(set) var notificationMessage: String?
 
     let isDemo: Bool
+    let workJournal: WorkJournalController
     private let defaults: UserDefaults
     private let providers: [ProviderID: any UsageProvider]
     private let historyStore: HistoryStore?
     private var refreshTasks: [ProviderID: Task<Void, Never>] = [:]
+    private var successfulRefreshTokens: [ProviderID: UUID] = [:]
     private var taskTokens: [ProviderID: UUID] = [:]
     @Published private var retryStates: [ProviderID: RetryState] = [:]
     private var observations: [NSObjectProtocol] = []
@@ -100,6 +102,7 @@ final class AppStore: ObservableObject {
     init(demo: Bool = false, providerOverrides: [ProviderID: any UsageProvider]? = nil,
          preferences: UserDefaults = UserDefaults(suiteName: "UsageBar.Preferences")!) {
         isDemo = demo
+        workJournal = WorkJournalController(demo: demo, usesPersistence: providerOverrides == nil)
         defaults = preferences
         providers = providerOverrides ?? (demo ? [:] : [.claude: ClaudeProvider(), .codex: CodexProvider()])
         historyStore = demo || providerOverrides != nil ? nil : HistoryStore()
@@ -263,6 +266,7 @@ final class AppStore: ObservableObject {
         installWorkspaceObservers()
         startupTask = Task { [weak self] in
             guard let self else { return }
+            await self.workJournal.load()
             if let historyStore = self.historyStore {
                 do {
                     let cached = try await historyStore.load()
@@ -296,6 +300,37 @@ final class AppStore: ObservableObject {
         _ = await requestRefresh(id, force: force)
     }
 
+    /// A work boundary must come from a successful live request, never a cached value.
+    func workSnapshot(for id: ProviderID) async throws -> ProviderSnapshot {
+        if isDemo, let snapshot = states[id]?.snapshot {
+            return ProviderSnapshot(provider: snapshot.provider, accountKey: "demo-only", plan: snapshot.plan,
+                windows: snapshot.windows, fetchedAt: Date(), source: "예시 데이터")
+        }
+        guard enabledProviders.contains(id), !sleeping else {
+            throw ProviderError.unavailable("설정에서 \(id.title) 조회를 켜고 다시 시도해 주세요.")
+        }
+        let expectedGeneration = generation
+        let previousSuccess = successfulRefreshTokens[id]
+        if let task = refreshTasks[id], let token = taskTokens[id] {
+            await task.value
+            guard successfulRefreshTokens[id] == token else { throw workSnapshotError(for: id) }
+        } else {
+            let requested = await requestRefresh(id, force: true)
+            guard requested, successfulRefreshTokens[id] != previousSuccess else { throw workSnapshotError(for: id) }
+        }
+        try Task.checkCancellation()
+        guard generation == expectedGeneration, enabledProviders.contains(id), !sleeping,
+              states[id]?.errorMessage == nil, let snapshot = states[id]?.snapshot,
+              (0...60).contains(Date().timeIntervalSince(snapshot.fetchedAt)) else {
+            throw workSnapshotError(for: id)
+        }
+        return snapshot
+    }
+
+    private func workSnapshotError(for id: ProviderID) -> ProviderError {
+        .unavailable(retryMessage(for: id) ?? states[id]?.errorMessage ?? "새 사용량을 확인하지 못했어요. 다시 시도해 주세요.")
+    }
+
     private func requestRefresh(_ id: ProviderID, force: Bool = false) async -> Bool {
         guard !isDemo, !sleeping, enabledProviders.contains(id), refreshTasks[id] == nil, let provider = providers[id] else { return false }
         let now = Date()
@@ -307,7 +342,7 @@ final class AppStore: ObservableObject {
         taskTokens[id] = token
         let task = Task { [weak self] in
             guard let self else { return }
-            await self.performRefresh(id, provider: provider, generation: currentGeneration)
+            await self.performRefresh(id, provider: provider, generation: currentGeneration, token: token)
         }
         refreshTasks[id] = task
         await task.value
@@ -328,7 +363,7 @@ final class AppStore: ObservableObject {
         }
     }
 
-    private func performRefresh(_ id: ProviderID, provider: any UsageProvider, generation expected: Int) async {
+    private func performRefresh(_ id: ProviderID, provider: any UsageProvider, generation expected: Int, token: UUID) async {
         guard !Task.isCancelled, enabledProviders.contains(id), generation == expected else { return }
         states[id]?.isRefreshing = true
         states[id]?.lastAttempt = Date()
@@ -344,6 +379,7 @@ final class AppStore: ObservableObject {
                 historyPoints.removeAll { $0.provider == id }
             }
             states[id]?.snapshot = snapshot
+            successfulRefreshTokens[id] = token
             clockNow = Date()
             states[id]?.errorMessage = nil
             states[id]?.requiresConnection = false

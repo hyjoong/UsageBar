@@ -90,6 +90,7 @@ struct UsagePanel: View {
             }
             .defaultScrollAnchor(.top)
             .id(provider)
+            WorkJournalShortcut(journal: store.workJournal) { showWindow("work-journal") }
             status
             Divider()
             footer
@@ -444,5 +445,41 @@ struct UsagePanel: View {
         if number >= 1_000_000 { return String(format: "%.1fM", Double(number) / 1_000_000) }
         if number >= 1_000 { return String(format: "%.1fK", Double(number) / 1_000) }
         return String(number)
+    }
+}
+
+private struct WorkJournalShortcut: View {
+    @ObservedObject var journal: WorkJournalController
+    let open: () -> Void
+
+    var body: some View {
+        Button(action: open) {
+            HStack(spacing: 8) {
+                Image(systemName: journal.state.active == nil ? "receipt" : "record.circle")
+                    .foregroundStyle(UsageTheme.accent)
+                if let active = journal.state.active {
+                    Text("\(active.kind.title) 기록 중").fontWeight(.medium)
+                    Spacer()
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        let elapsed = context.date.timeIntervalSince(active.startedAt)
+                        let minutes = elapsed.isFinite ? Int(min(max(0, elapsed / 60), Double(Int.max / 2))) : 0
+                        Text("\(minutes)분")
+                            .monospacedDigit()
+                    }
+                } else {
+                    Text("작업 영수증")
+                    Spacer()
+                    Text("이번 작업의 한도 변화").foregroundStyle(UsageTheme.secondaryInk)
+                }
+                Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+            }
+            .font(.system(size: 11))
+            .padding(.horizontal, 12).frame(minHeight: 36)
+            .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(journal.state.active == nil ? "작업 영수증 열기" : "진행 중인 작업 영수증 열기")
+        .padding(.horizontal, 22).padding(.top, 7)
     }
 }

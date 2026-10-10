@@ -27,6 +27,12 @@ struct UsageBarApp: App {
         .defaultSize(width: 760, height: 660)
         .windowResizability(.contentMinSize)
 
+        Window("작업 영수증 · UsageBar", id: "work-journal") {
+            WorkJournalView(store: store)
+        }
+        .defaultSize(width: 560, height: 700)
+        .windowResizability(.contentMinSize)
+
         Window("설정 · UsageBar", id: "settings") {
             PreferencesView(store: store)
         }
@@ -64,6 +70,7 @@ private struct UsageMenuLabel: View {
             openedCheckWindow = true
             if CommandLine.arguments.contains("--ui-settings") { openWindow(id: "settings") }
             if CommandLine.arguments.contains("--ui-history") { openWindow(id: "history") }
+            if CommandLine.arguments.contains("--ui-work-journal") { openWindow(id: "work-journal") }
         }
         #endif
     }
