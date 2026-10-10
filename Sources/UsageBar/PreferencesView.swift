@@ -103,7 +103,7 @@ struct PreferencesView: View {
                 }
 
                 Section {
-                    LabeledContent("버전", value: "0.5.0")
+                    LabeledContent("버전", value: "0.5.1")
                     detail("사용량 기록은 이 Mac에 저장돼요. 대화 내용은 수집하지 않아요.")
                 } header: {
                     sectionTitle("앱 정보", symbol: "info.circle")

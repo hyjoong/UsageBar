@@ -231,7 +231,6 @@ struct WorkJournalView: View {
                 LazyVStack(alignment: .leading, spacing: 20) {
                     ForEach(journal.state.receipts) { receipt in
                         receiptView(receipt)
-                        Divider()
                     }
                 }
             }
@@ -239,41 +238,43 @@ struct WorkJournalView: View {
     }
 
     private func receiptView(_ receipt: WorkReceipt) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("\(receipt.kind.title) · \(Self.durationLabel(receipt.duration))")
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(receipt.kind.title)
                         .font(.system(size: 15, weight: .semibold))
-                    Text("\(receipt.provider.title) · \(receipt.startedAt.formatted(date: .abbreviated, time: .shortened))")
+                    Spacer(minLength: 12)
+                    Text(receipt.provider.title)
+                        .font(.caption)
+                        .foregroundStyle(UsageTheme.secondaryInk)
+                    Menu {
+                        Button("영수증 삭제…", role: .destructive) { receiptToDelete = receipt }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .frame(width: 22, height: 22)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
+                    .disabled(journal.isBusy)
+                    .accessibilityLabel("\(receipt.kind.title) 작업 영수증 추가 메뉴")
+                }
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(Self.durationLabel(receipt.duration))
+                        .font(.system(size: 32, weight: .medium, design: .rounded))
+                        .monospacedDigit()
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel("기록한 시간 \(Self.durationLabel(receipt.duration))")
+                    Text(receipt.startedAt.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption)
                         .foregroundStyle(UsageTheme.secondaryInk)
                 }
-                Spacer()
-                Button {
-                    NSPasteboard.general.clearContents()
-                    if NSPasteboard.general.setString(receipt.copyText, forType: .string) {
-                        copiedReceiptID = String(describing: receipt.id)
-                    }
-                } label: {
-                    Label(copiedReceiptID == String(describing: receipt.id) ? "복사됨" : "요약 복사",
-                          systemImage: copiedReceiptID == String(describing: receipt.id) ? "checkmark" : "doc.on.doc")
-                }
-                .controlSize(.small)
-                .accessibilityLabel("\(receipt.kind.title) 작업 영수증 요약 복사")
-                .accessibilityValue(copiedReceiptID == String(describing: receipt.id) ? "복사 완료" : "")
-                Menu {
-                    Button("영수증 삭제…", role: .destructive) { receiptToDelete = receipt }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .frame(width: 22, height: 22)
-                }
-                .menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
-                .fixedSize()
-                .disabled(journal.isBusy)
-                .accessibilityLabel("\(receipt.kind.title) 작업 영수증 추가 메뉴")
             }
-            VStack(alignment: .leading, spacing: 9) {
+            .padding(20)
+
+            receiptPerforation
+
+            VStack(alignment: .leading, spacing: 12) {
                 Text("관측된 한도 변화")
                     .font(.caption)
                     .foregroundStyle(UsageTheme.secondaryInk)
@@ -283,8 +284,9 @@ struct WorkJournalView: View {
                             Text(row.label).font(.callout)
                             Spacer(minLength: 12)
                             Text(Self.deltaLabel(row.percentagePoints))
-                                .font(.callout)
-                                .monospacedDigit()
+                                .font(row.percentagePoints.map { $0 > 0 } == true
+                                      ? .system(size: 17, weight: .medium, design: .monospaced)
+                                      : .system(size: 12, weight: .regular))
                                 .foregroundStyle(row.percentagePoints == nil ? UsageTheme.secondaryInk : UsageTheme.ink)
                         }
                         if let note = row.note, !note.isEmpty, note != Self.deltaLabel(row.percentagePoints) {
@@ -296,8 +298,45 @@ struct WorkJournalView: View {
                     }
                     .accessibilityElement(children: .combine)
                 }
+
+                HStack {
+                    Spacer(minLength: 0)
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        if NSPasteboard.general.setString(receipt.copyText, forType: .string) {
+                            copiedReceiptID = String(describing: receipt.id)
+                        }
+                    } label: {
+                        Label(copiedReceiptID == String(describing: receipt.id) ? "복사됨" : "요약 복사",
+                              systemImage: copiedReceiptID == String(describing: receipt.id) ? "checkmark" : "doc.on.doc")
+                    }
+                    .controlSize(.small)
+                    .accessibilityLabel("\(receipt.kind.title) 작업 영수증 요약 복사")
+                    .accessibilityValue(copiedReceiptID == String(describing: receipt.id) ? "복사 완료" : "")
+                }
+                .padding(.top, 2)
             }
+            .padding(20)
         }
+        .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var receiptPerforation: some View {
+        HStack(spacing: 0) {
+            Circle()
+                .fill(UsageTheme.canvas)
+                .frame(width: 12, height: 12)
+                .offset(x: -6)
+            ReceiptPerforationLine()
+                .stroke(UsageTheme.secondaryInk.opacity(0.25),
+                        style: StrokeStyle(lineWidth: 1, dash: [3, 5]))
+                .frame(height: 1)
+            Circle()
+                .fill(UsageTheme.canvas)
+                .frame(width: 12, height: 12)
+                .offset(x: 6)
+        }
+        .accessibilityHidden(true)
     }
 
     private static func durationLabel(_ interval: TimeInterval) -> String {
@@ -314,5 +353,14 @@ struct WorkJournalView: View {
         guard let value, value.isFinite else { return "비교 불가" }
         if value == 0 { return "표시상 변화 없음" }
         return "+\(value.formatted(.number.precision(.fractionLength(0...2))))%p"
+    }
+}
+
+private struct ReceiptPerforationLine: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        return path
     }
 }

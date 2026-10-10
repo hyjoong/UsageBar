@@ -30,12 +30,12 @@ struct UsagePanel: View {
             header
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 18) {
                     if let snapshot {
                         if let first = store.trackedWindow(for: provider) {
                             quota(first, prominent: true)
                             connectionNotice
-                            timeline(snapshot)
+                            timeline(snapshot, excluding: first.id)
                             let others = store.sortedWindows(for: provider).filter { $0.id != first.id }
                             if !others.isEmpty {
                                 VStack(alignment: .leading, spacing: 15) {
@@ -86,7 +86,7 @@ struct UsagePanel: View {
                         emptyState
                     }
                 }
-                .padding(22)
+                .padding(.horizontal, 22).padding(.vertical, 16)
             }
             .defaultScrollAnchor(.top)
             .id(provider)
@@ -108,7 +108,7 @@ struct UsagePanel: View {
     }
 
     private var header: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 12) {
             HStack(spacing: 8) {
                 UsageBrandMark().frame(width: 28, height: 28)
                 Text("UsageBar").font(.system(size: 15, weight: .semibold))
@@ -133,7 +133,7 @@ struct UsagePanel: View {
                     .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
                     .lineLimit(2).multilineTextAlignment(.trailing)
             }
-        }.padding(.horizontal, 22).padding(.vertical, 17)
+        }.padding(.horizontal, 22).padding(.vertical, 14)
     }
 
     private func sectionLabel(_ title: String) -> some View {
@@ -155,7 +155,7 @@ struct UsagePanel: View {
     }
 
     private func quota(_ window: UsageWindow, prominent: Bool) -> some View {
-        VStack(alignment: .leading, spacing: prominent ? 12 : 6) {
+        VStack(alignment: .leading, spacing: prominent ? 8 : 6) {
             if prominent {
                 HStack {
                     Text(window.label).font(.system(size: 13, weight: .medium))
@@ -163,16 +163,7 @@ struct UsagePanel: View {
                     Spacer()
                     pin(window, selected: true)
                 }
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(window.remainingPercent, format: .number.precision(.fractionLength(0)))
-                        .font(.system(size: 48, weight: .regular)).tracking(-2).monospacedDigit()
-                    Text("%").font(.system(size: 22)).foregroundStyle(UsageTheme.secondaryInk)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 5) {
-                        Text("남은 한도").font(.system(size: 13, weight: .medium))
-                        Text("\(Int(window.usedPercent.rounded()))% 사용").font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
-                    }
-                }
+                QuotaInstrument(window: window, freshness: store.freshness(for: provider), now: store.clockNow)
             } else {
                 HStack(spacing: 9) {
                     Text(window.label).font(.system(size: 13))
@@ -182,17 +173,19 @@ struct UsagePanel: View {
                     pin(window, selected: false)
                 }
             }
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(UsageTheme.mutedSurface)
-                    Capsule().fill(window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8))
-                        .frame(width: max(0, proxy.size.width * window.remainingPercent / 100))
-                }
-            }.frame(height: prominent ? 6 : 4)
-                .accessibilityLabel("\(window.label) 남은 한도")
-                .accessibilityValue("\(Int(window.remainingPercent.rounded()))퍼센트")
+            if !prominent {
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(UsageTheme.mutedSurface)
+                        Capsule().fill(window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8))
+                            .frame(width: max(0, proxy.size.width * window.remainingPercent / 100))
+                    }
+                }.frame(height: 4)
+                    .accessibilityLabel("\(window.label) 남은 한도")
+                    .accessibilityValue("\(Int(window.remainingPercent.rounded()))퍼센트")
+            }
             if prominent && window.remainingPercent <= 20 {
-                Label("남은 한도가 20% 이하예요", systemImage: "exclamationmark.circle")
+                Label(store.freshness(for: provider) == .current ? "남은 한도가 20% 이하예요" : "마지막 기록에서 20% 이하였어요", systemImage: "exclamationmark.circle")
                     .font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
             }
         }
@@ -254,59 +247,56 @@ struct UsagePanel: View {
             .accessibilityElement(children: .ignore).accessibilityLabel("\(label) \(Int(percent.rounded()))퍼센트")
     }
 
-    private func timeline(_ snapshot: ProviderSnapshot) -> some View {
-        let valid = UsageWindowSelection.validWindows(snapshot.windows)
-        let upcoming = valid.filter { $0.resetsAt != nil }.sorted { $0.resetsAt! < $1.resetsAt! }
+    private struct ResetEvent: Identifiable {
+        let id: String
+        let title: String
+        let date: Date
+        let expiry: Bool
+    }
+
+    @ViewBuilder private func timeline(_ snapshot: ProviderSnapshot, excluding selectedID: String) -> some View {
+        let valid = UsageWindowSelection.validWindows(snapshot.windows).filter { $0.id != selectedID }
+        let resets = valid.compactMap { window in
+            window.resetsAt.map { ResetEvent(id: "window-" + window.id, title: window.label, date: $0, expiry: false) }
+        }
         let credit = snapshot.resetCredits?.filter {
             $0.status.lowercased() == "available" && ($0.expiresAt.map { $0 > store.clockNow } ?? false)
         }.min { $0.expiresAt! < $1.expiresAt! }
-        return VStack(alignment: .leading, spacing: 14) {
-            sectionLabel("리셋 타임라인")
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(upcoming.prefix(3).enumerated()), id: \.element.id) { index, window in
-                    if let date = window.resetsAt {
-                        event(title: window.label, date: date, expiry: false,
-                              first: index == 0, last: index == min(upcoming.count, 3) - 1 && credit == nil)
+        let expiry = credit?.expiresAt.map { [ResetEvent(id: "credit-expiry", title: "첫 초기화권 만료", date: $0, expiry: true)] } ?? []
+        let events = (resets + expiry).sorted { $0.date < $1.date }.prefix(3)
+        if !events.isEmpty || valid.contains(where: { $0.resetsAt == nil }) {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionLabel("다른 리셋 일정")
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(spacing: 0) {
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(UsageTheme.secondaryInk).frame(width: 10, height: 2)
+                                Rectangle().fill(UsageTheme.separator)
+                                    .frame(width: 1, height: index == events.count - 1 ? 0 : 40)
+                            }.frame(width: 10).padding(.top, 7).accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 5) {
+                                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                    Text(event.title).font(.system(size: 12, weight: .medium))
+                                    Spacer(minLength: 3)
+                                    Text(Self.relativeDate(event.date, now: store.clockNow, expiry: event.expiry))
+                                        .font(.system(size: 12)).monospacedDigit()
+                                        .multilineTextAlignment(.trailing)
+                                }
+                                Text(event.date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().weekday().hour().minute()))
+                                    .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                            }.padding(.bottom, index == events.count - 1 ? 0 : 14)
+                        }.accessibilityElement(children: .combine)
                     }
                 }
-                if let date = credit?.expiresAt {
-                    event(title: "첫 초기화권 만료", date: date, expiry: true, first: upcoming.isEmpty, last: true)
-                }
-            }
-            ForEach(valid.filter { $0.resetsAt == nil }) { window in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(window.label) 리셋").font(.system(size: 12, weight: .medium))
-                    Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
-                        .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                ForEach(valid.filter { $0.resetsAt == nil }) { window in
+                    Text("\(window.label) · \(window.resetDescription ?? "리셋 시각 미제공")")
+                        .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func event(title: String, date: Date, expiry: Bool, first: Bool, last: Bool) -> some View {
-        HStack(alignment: .top, spacing: 11) {
-            VStack(spacing: 0) {
-                Circle().fill(first ? UsageTheme.accent : UsageTheme.secondaryInk).frame(width: 6, height: 6)
-                Rectangle().fill(last ? .clear : UsageTheme.separator).frame(width: 1, height: last ? 0 : 42)
-            }.padding(.top, 5).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(title).font(.system(size: 12, weight: .medium))
-                    Spacer(minLength: 3)
-                    TimelineView(.periodic(from: .now, by: 60)) { context in
-                        Text(Self.relativeDate(date, now: context.date, expiry: expiry))
-                            .font(.system(size: 12, weight: first ? .semibold : .regular))
-                            .foregroundStyle(first ? UsageTheme.accent : UsageTheme.ink)
-                            .monospacedDigit().multilineTextAlignment(.trailing)
-                    }
-                }
-                Text(date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().weekday().hour().minute()))
-                    .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
-            }.padding(.bottom, last ? 0 : 15)
-        }.accessibilityElement(children: .combine)
     }
 
     @ViewBuilder private func credits(_ snapshot: ProviderSnapshot) -> some View {
