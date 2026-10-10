@@ -216,7 +216,7 @@ final class AppStore: ObservableObject {
     func selectionNotice(for provider: ProviderID) -> String? {
         guard let savedID = trackedWindowIDs[provider],
               let displayed = trackedWindow(for: provider), displayed.id != savedID else { return nil }
-        return "고정한 한도가 제공되지 않아 \(displayed.label)을 임시로 표시해요."
+        return "고정한 한도 정보가 없어 \(displayed.label) 기준으로 임시 표시해요."
     }
 
     func menuDescription(for provider: ProviderID) -> String {
