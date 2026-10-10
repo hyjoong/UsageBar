@@ -8,6 +8,7 @@ struct WorkJournalPanel: View {
     @ObservedObject private var journal: WorkJournalController
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var kind: WorkKind = .build
+    @State private var isExpanded = false
     @State private var showingError = false
     @State private var copiedID: UUID?
     private let openHistory: () -> Void
@@ -26,14 +27,16 @@ struct WorkJournalPanel: View {
                 activeContent(active)
             } else if let receipt = journal.recentCompletion {
                 completion(receipt)
+            } else if isCollapsed {
+                collapsedIdle
             } else {
                 idle
             }
         }
         .font(.system(size: 11))
-        .padding(10)
+        .padding(isCollapsed ? 0 : 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: 10))
+        .background(isCollapsed ? .clear : UsageTheme.surface, in: RoundedRectangle(cornerRadius: 10))
         .foregroundStyle(UsageTheme.ink)
         .tint(UsageTheme.accent)
         .padding(.horizontal, 22)
@@ -41,16 +44,42 @@ struct WorkJournalPanel: View {
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.16), value: presentationID)
         .task { await journal.load() }
         .onChange(of: journal.recentCompletion?.id) { _, _ in copiedID = nil }
+        .onChange(of: journal.state.active?.id) { _, _ in isExpanded = false }
         .onChange(of: journal.message) { _, message in
             if message == nil { showingError = false }
         }
     }
 
+    private var isCollapsed: Bool {
+        journal.isLoaded && journal.state.active == nil && journal.recentCompletion == nil
+            && journal.message == nil && !journal.isBusy && !isExpanded
+    }
+
+    private var collapsedIdle: some View {
+        Button { isExpanded = true } label: {
+            HStack {
+                Label("작업 기록", systemImage: "receipt")
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right").font(.system(size: 10))
+            }
+            .foregroundStyle(UsageTheme.secondaryInk)
+            .frame(minHeight: 28)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("작업 기록 펼치기")
+        .help("필요할 때 작업 구간을 기록하고 영수증을 확인합니다")
+    }
+
     private var idle: some View {
         Group {
             HStack(spacing: 7) {
-                Label("작업 영수증", systemImage: "receipt")
-                    .fontWeight(.medium)
+                Button { isExpanded = false } label: {
+                    Label("작업 기록", systemImage: "chevron.down").fontWeight(.medium)
+                }
+                .buttonStyle(.plain)
+                .disabled(journal.isBusy || journal.message != nil)
+                .accessibilityLabel("작업 기록 접기")
                 Text(store.selectedProvider.title)
                     .foregroundStyle(UsageTheme.secondaryInk)
                 Spacer(minLength: 4)
@@ -165,10 +194,13 @@ struct WorkJournalPanel: View {
             HStack(spacing: 8) {
                 historyButton
                 Spacer(minLength: 4)
-                Button("다음 작업") { journal.dismissRecentCompletion() }
+                Button("닫기") {
+                    isExpanded = false
+                    journal.dismissRecentCompletion()
+                }
                     .buttonStyle(.plain)
                     .disabled(journal.isBusy)
-                    .help("영수증을 기록에 보관하고 다음 작업을 준비합니다")
+                    .help("영수증은 전체 기록에 보관하고 완료 표시를 닫습니다")
                 Button {
                     NSPasteboard.general.clearContents()
                     if NSPasteboard.general.setString(receipt.copyText, forType: .string) { copiedID = receipt.id }
@@ -254,7 +286,7 @@ struct WorkJournalPanel: View {
         if !journal.isLoaded { return "loading" }
         if let active = journal.state.active { return "active-\(active.id)" }
         if let receipt = journal.recentCompletion { return "receipt-\(receipt.id)" }
-        return "idle"
+        return isCollapsed ? "idle-collapsed" : "idle-expanded"
     }
 
     private static func durationLabel(_ interval: TimeInterval) -> String {
