@@ -20,8 +20,11 @@ struct UsagePanel: View {
     private var provider: ProviderID { store.selectedProvider }
     private var snapshot: ProviderSnapshot? { store.selectedState.snapshot }
     private var demo: Bool { store.isDemo }
+    private var needsConnectionSetup: Bool {
+        store.selectedState.requiresConnection || store.selectedState.errorMessage == nil
+    }
     private var planLabel: String {
-        guard let snapshot else { return "연결 확인" }
+        guard let snapshot else { return needsConnectionSetup ? "연결 확인" : "조회 대기" }
         let plan = snapshot.plan?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return plan.isEmpty ? "계정 사용량" : plan
     }
@@ -321,8 +324,9 @@ struct UsagePanel: View {
                 Text(provider == .claude ? "Claude Code의 사용량 화면을 확인하고 있어요." : "로그인된 Codex 계정의 한도를 확인하고 있어요.")
                     .foregroundStyle(UsageTheme.secondaryInk).font(.caption)
             } else {
-                Image(systemName: "link.circle").font(.system(size: 30)).foregroundStyle(provider.tint)
-                Text("\(provider.title) 연결 확인").font(.headline)
+                Image(systemName: needsConnectionSetup ? "link.circle" : "exclamationmark.circle")
+                    .font(.system(size: 30)).foregroundStyle(provider.tint)
+                Text(needsConnectionSetup ? "\(provider.title) 연결 확인" : "한도를 불러오지 못했어요").font(.headline)
                 Text(store.selectedState.errorMessage ?? (provider == .claude ? "로그인된 Claude Code의 한도와 리셋 시각을 확인해요." : "로그인된 Codex의 한도와 토큰 기록을 확인해요."))
                     .font(.callout).foregroundStyle(UsageTheme.secondaryInk).fixedSize(horizontal: false, vertical: true)
                 Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
@@ -331,7 +335,7 @@ struct UsagePanel: View {
                 if let retry = store.retryMessage(for: provider) {
                     Text(retry).font(.caption).foregroundStyle(UsageTheme.secondaryInk)
                 }
-                if provider == .claude {
+                if provider == .claude && needsConnectionSetup {
                     Button("Claude 연결 설정") { openClaudeSetup() }
                         .buttonStyle(.bordered)
                     Button("Claude Code 설치 안내") {

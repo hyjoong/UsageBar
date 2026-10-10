@@ -131,6 +131,18 @@ final class AppStoreTests: XCTestCase {
         XCTAssertNotNil(store.states[.codex]?.snapshot, "Turning off queries must retain existing history/snapshots")
     }
 
+    func testUnsupportedAccountKeepsConnectionRecoveryAvailable() async {
+        for id in ProviderID.allCases {
+            let provider = StubProvider(id, failure: .unsupported("Subscription login required"))
+            let store = AppStore(providerOverrides: [id: provider], preferences: preferences())
+            await store.refresh(id, force: true)
+            XCTAssertNil(store.states[id]?.snapshot)
+            XCTAssertTrue(store.states[id]?.requiresConnection ?? false,
+                          "An API account needs login recovery, not only a retry countdown")
+            XCTAssertTrue(store.canRefresh(id), "Manual retry must remain available after correcting login")
+        }
+    }
+
     func testRateLimitCannotBeBypassedByForceOrToggle() async {
         let claude = StubProvider(.claude, failure: .rateLimited(retryAfter: 600))
         let store = AppStore(providerOverrides: [.claude: claude], preferences: preferences())

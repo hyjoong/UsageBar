@@ -352,6 +352,73 @@ final class ClaudeProviderTests: XCTestCase {
         XCTAssertLessThan(Date().timeIntervalSince(started), 3)
     }
 
+    func testCancelledFetchStartsReplacementBeforeOldCleanupAndKeepsReplacementShared() async throws {
+        let firstStarted = expectation(description: "Original probe started")
+        let firstCancelled = expectation(description: "Original probe received cancellation")
+        let replacementStarted = expectation(description: "Replacement probe starts before old cleanup")
+        let gate = ClaudeFetchOperationGate(onStart: { call in
+            if call == 1 { firstStarted.fulfill() }
+            if call == 2 { replacementStarted.fulfill() }
+        }, onCancel: { call in
+            if call == 1 { firstCancelled.fulfill() }
+        })
+        addTeardownBlock { await gate.cancelPending() }
+        let provider = ClaudeProvider(fetchOperation: { try await gate.run() })
+        let original = Task { try await provider.fetch() }
+        await fulfillment(of: [firstStarted], timeout: 2)
+        original.cancel()
+        await fulfillment(of: [firstCancelled], timeout: 2)
+
+        let replacement = Task { try await provider.fetch() }
+        await fulfillment(of: [replacementStarted], timeout: 2)
+        let callsBeforeCleanup = await gate.calls
+        guard callsBeforeCleanup == 2 else {
+            await gate.cancelPending()
+            _ = await original.result
+            _ = await replacement.result
+            return XCTFail("The replacement joined the cancelled probe instead of starting a fresh one")
+        }
+
+        await gate.complete(1, with: .failure(CancellationError()))
+        do { _ = try await original.value; XCTFail("The original caller was cancelled") }
+        catch is CancellationError { }
+        catch { XCTFail("Unexpected original result: \(error)") }
+
+        // Enter on the provider actor itself: no other provider completion can
+        // run between this signal and fetch() examining the current shared task.
+        let joined = expectation(description: "Third caller joins replacement")
+        let third = Task { try await fetchOnProviderActor(provider) { joined.fulfill() } }
+        await fulfillment(of: [joined], timeout: 2)
+        let fresh = ProviderSnapshot(provider: .claude, windows: [], source: "fresh-after-cancellation")
+        await gate.complete(2, with: .success(fresh))
+        let secondResult = try await replacement.value
+        let thirdResult = try await third.value
+        XCTAssertEqual(secondResult, fresh)
+        XCTAssertEqual(thirdResult, fresh)
+        let calls = await gate.calls
+        XCTAssertEqual(calls, 2, "Old cleanup must not clear the replacement and launch a third probe")
+    }
+
+    func testConcurrentLiveFetchesShareOneProbe() async throws {
+        let started = expectation(description: "Probe started")
+        let gate = ClaudeFetchOperationGate(maxCalls: 1, onStart: { call in if call == 1 { started.fulfill() } })
+        addTeardownBlock { await gate.cancelPending() }
+        let provider = ClaudeProvider(fetchOperation: { try await gate.run() })
+        let first = Task { try await provider.fetch() }
+        await fulfillment(of: [started], timeout: 2)
+        let joined = expectation(description: "Second caller enters provider")
+        let second = Task { try await fetchOnProviderActor(provider) { joined.fulfill() } }
+        await fulfillment(of: [joined], timeout: 2)
+        let snapshot = ProviderSnapshot(provider: .claude, windows: [], source: "shared-live-probe")
+        await gate.complete(1, with: .success(snapshot))
+        let firstResult = try await first.value
+        let secondResult = try await second.value
+        XCTAssertEqual(firstResult, snapshot)
+        XCTAssertEqual(secondResult, snapshot)
+        let calls = await gate.calls
+        XCTAssertEqual(calls, 1)
+    }
+
     private func windows(_ text: String) throws -> [UsageWindow] {
         guard case .usage(let result) = ClaudeUsageParser.inspect(text, now: now, timeZone: seoul) else {
             throw NSError(domain: "ClaudeFixture", code: 1, userInfo: [NSLocalizedDescriptionKey: "Fixture did not contain a completed quota"])
@@ -387,5 +454,50 @@ final class ClaudeProviderTests: XCTestCase {
     private func writeExecutable(_ script: String, to url: URL) throws {
         try script.write(to: url, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: url.path)
+    }
+}
+
+private func fetchOnProviderActor(_ provider: isolated ClaudeProvider,
+                                  entered: @Sendable () -> Void) async throws -> ProviderSnapshot {
+    entered()
+    return try await provider.fetch()
+}
+
+/// Models a cancelled CLI probe whose process cleanup has not finished yet.
+private actor ClaudeFetchOperationGate {
+    private(set) var calls = 0
+    private var pending: [Int: CheckedContinuation<ProviderSnapshot, Error>] = [:]
+    private let maxCalls: Int
+    private let onStart: @Sendable (Int) -> Void
+    private let onCancel: @Sendable (Int) -> Void
+
+    init(maxCalls: Int = 2, onStart: @escaping @Sendable (Int) -> Void,
+         onCancel: @escaping @Sendable (Int) -> Void = { _ in }) {
+        self.maxCalls = maxCalls
+        self.onStart = onStart
+        self.onCancel = onCancel
+    }
+
+    func run() async throws -> ProviderSnapshot {
+        calls += 1
+        let call = calls
+        // An unexpected extra probe fails immediately instead of hanging a regression.
+        guard call <= maxCalls else { throw ProviderError.unavailable("unexpected extra probe") }
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                pending[call] = continuation
+                onStart(call)
+            }
+        } onCancel: { onCancel(call) }
+    }
+
+    func complete(_ call: Int, with result: Result<ProviderSnapshot, Error>) {
+        pending.removeValue(forKey: call)?.resume(with: result)
+    }
+
+    func cancelPending() {
+        let values = Array(pending.values)
+        pending.removeAll()
+        for continuation in values { continuation.resume(throwing: CancellationError()) }
     }
 }

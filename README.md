@@ -144,6 +144,13 @@ Claude만 사용한다면 **설정 → 연결 → Codex 사용량 조회**를 �
 | 새 버전으로 바꾸고 싶어요 | 현재는 자동 업데이트가 없습니다. 기존 앱을 종료한 뒤 새 `.app`으로 교체하고 다시 실행하세요. 소스 빌드는 저장소를 갱신한 뒤 빌드 명령을 다시 실행합니다. |
 | 기록이 사라질까 걱정돼요 | 기록은 `.app` 밖의 Application Support 폴더에 저장됩니다. 앱 교체만으로 삭제되지 않습니다. 문제 해결을 위해 이 폴더를 지우기 전에 필요한 파일을 백업하세요. |
 
+최초 조회에서 요청 제한이 발생하면 존재하지 않는 이전 값을 표시하지 않고, 재시도 대기 시간을 안내합니다. 일시적인 조회 실패에서는 설치 안내를 숨기고, 로그인·초기 설정이 필요한 경우에 연결 설정을 표시합니다.
+
+<details>
+<summary>요청 제한 화면 · 예시 데이터</summary>
+<img src="docs/images/rate-limited.jpg" alt="첫 조회가 요청 제한에 걸려 5분 후 재시도하도록 안내하는 UsageBar 예시 화면" width="392" />
+</details>
+
 ## 지원 범위와 개인정보
 
 | 서비스 | 표시하는 정보 | 제한 |
@@ -190,6 +197,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-work-failure` | 작업 시작 후 종료 조회 실패·재시도·한도 비교 없이 종료 |
 | `--demo --ui-check --ui-stale` | 오래된 낮은 잔여율과 이전 기록 안내 |
 | `--demo --ui-check --ui-reset-due` | 리셋 시각이 지났지만 새 값은 확인하지 못한 상태 |
+| `--demo --ui-check --ui-rate-limited` | 저장된 값 없이 요청 제한이 발생한 상태 |
+| `--demo --ui-check --ui-connection-required` | 로그인·초기 연결 설정이 필요한 상태 |
 | 위 옵션에 `--ui-light` 또는 `--ui-dark` 추가 | 예시 앱의 밝은 모드 또는 어두운 모드 |
 
 주요 코드:
@@ -201,6 +210,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 - `Resources`: 앱 정보와 네이티브 아이콘. 빌드 스크립트는 포함된 `AppIcon.icns`를 재사용합니다.
 
 0.6에서는 테스트 119개를 통과하고, 예시 앱에서 패널 내 작업 시작·서비스 전환·종료·영수증 복사, 조회 실패 후 시간만 저장하기, 다크·라이트 화면을 확인했습니다. 2026-10-10 개발 환경에서 Claude Team과 Codex 실제 조회를 확인했습니다. 설치된 CLI의 출력이나 프로토콜이 바뀌면 연결 코드를 조정해야 할 수 있습니다.
+
+0.6.2에서는 테스트 122개를 통과했습니다. 취소 직후 대체 조회·동시 조회 공유·지원하지 않는 계정의 연결 복구를 추가 검증하고, 예시 앱에서 요청 제한과 최초 연결 화면을 확인했습니다. Mac의 실제 잠자기·깨우기 대신 취소된 조회의 정리를 지연시키는 테스트로 동시성 문제를 재현했습니다.
 
 ## UI 방향과 참고한 제품
 
@@ -216,8 +227,9 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 - [ClaudeBar](https://github.com/tddworks/ClaudeBar), [nerlichman/claudebar](https://github.com/nerlichman/claudebar): 실행 중인 세션과 알림.
 - [PokeTokenBar](https://github.com/chattymin/PokeTokenBar/blob/main/README.ko.md): 메뉴바 표시 항목과 리셋 카운트다운.
 - [SwiftUI MenuBarExtra](https://developer.apple.com/documentation/swiftui/menubarextra): 네이티브 메뉴 막대 구성.
+- [Apple 상태 피드백](https://developer.apple.com/design/human-interface-guidelines/feedback): 현재 상태와 다음 행동을 화면 안에서 안내하는 구성.
 
-UsageBar는 **사용자가 정한 작업 구간을 대화 로그 없이 비교하는 흐름**에 집중합니다. 참고한 문서에서 같은 흐름을 확인하지 못했지만 시장 최초 기능으로 단정하지는 않습니다. 사용 속도 계산·CSV 내보내기·상태 처리는 직접 구현했으며, 참고 앱의 인증 방식이나 계정 데이터 수집 코드를 가져오지 않았습니다.
+UsageBar는 **남은 한도와 리셋 시각을 빠르게 확인하는 흐름**을 중심에 둡니다. 작업 구간 비교와 영수증은 필요할 때만 펼치는 선택 기능입니다. 사용 속도 계산·CSV 내보내기·상태 처리는 직접 구현했으며, 참고 앱의 인증 방식이나 계정 데이터 수집 코드를 가져오지 않았습니다.
 
 아이콘은 외부 로고를 사용하지 않은 자체 U 게이지 마크입니다. 원본은 `Resources/UsageBar-mark.svg`이며 다음 명령으로 앱 아이콘을 다시 만들 수 있습니다.
 
@@ -229,6 +241,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
+| 0.6.2 | 취소된 Claude 조회가 잠자기 복귀 직후 새 조회를 막는 문제 수정. 이전 값 없는 요청 제한과 계정 연결 문제의 복구 안내 구분. |
 | 0.6.1 | 작업 기록을 기본 한 줄로 접어 한도 표시 공간 확보. 진행 중·오류 상태는 계속 표시하고 완료 카드 닫기 후 기록 보존. |
 | 0.6 | 보조 한도의 잔여율·리셋 안내 통합, 메뉴바 패널 안에서 작업 시작·종료·완료 요약 복사. |
 | 0.5.1 | 눈금 계기판과 티켓 형태의 작업 영수증, 오래된 값의 시각적 구분. |

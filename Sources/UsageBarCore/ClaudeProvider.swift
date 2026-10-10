@@ -3,10 +3,16 @@ import CryptoKit
 
 public actor ClaudeProvider: UsageProvider {
     public nonisolated let id: ProviderID = .claude
-    private let executablePath: String?
-    private var inFlight: Task<ProviderSnapshot, Error>?
+    private let fetchOperation: @Sendable () async throws -> ProviderSnapshot
+    private var inFlight: (id: UUID, task: Task<ProviderSnapshot, Error>)?
 
-    public init(executablePath: String? = nil) { self.executablePath = executablePath }
+    public init(executablePath: String? = nil) {
+        fetchOperation = { try await Self.fetchSnapshot(executablePath: executablePath) }
+    }
+
+    init(fetchOperation: @escaping @Sendable () async throws -> ProviderSnapshot) {
+        self.fetchOperation = fetchOperation
+    }
 
     public static var connectionDirectoryURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
@@ -93,13 +99,23 @@ public actor ClaudeProvider: UsageProvider {
     }
 
     public func fetch() async throws -> ProviderSnapshot {
-        if let inFlight { return try await inFlight.value }
-        let executablePath = self.executablePath
-        let task = Task { try await Self.fetchSnapshot(executablePath: executablePath) }
-        inFlight = task
-        defer { inFlight = nil }
+        try Task.checkCancellation()
+        if let inFlight, !inFlight.task.isCancelled {
+            let snapshot = try await inFlight.task.value
+            try Task.checkCancellation()
+            return snapshot
+        }
+        let operation = fetchOperation
+        let id = UUID()
+        let task = Task { try await operation() }
+        inFlight = (id, task)
+        // Wake-up can replace a cancelled probe before its process finishes exiting.
+        // The old caller must not clear the replacement when that cleanup completes.
+        defer { if inFlight?.id == id { inFlight = nil } }
         return try await withTaskCancellationHandler {
-            try await task.value
+            let snapshot = try await task.value
+            try Task.checkCancellation()
+            return snapshot
         } onCancel: { task.cancel() }
     }
 

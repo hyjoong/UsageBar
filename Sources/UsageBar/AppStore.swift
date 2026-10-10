@@ -412,7 +412,7 @@ final class AppStore: ObservableObject {
             var delay = min(300, 30 * pow(2, Double(min(attempt - 1, 4))))
             if let providerError = error as? ProviderError {
                 switch providerError {
-                case .setupRequired, .authenticationRequired: connection = true
+                case .setupRequired, .authenticationRequired, .unsupported: connection = true
                 case .rateLimited(let retryAfter):
                     limited = true
                     delay = max(1, retryAfter ?? min(3_600, 300 * pow(2, Double(min(attempt - 1, 4)))))
@@ -580,6 +580,19 @@ final class AppStore: ObservableObject {
             }
         }
         #if DEBUG
+        if CommandLine.arguments.contains("--ui-rate-limited") {
+            for id in ProviderID.allCases {
+                states[id] = ProviderState(errorMessage: ProviderError.rateLimited(retryAfter: 300).localizedDescription)
+                retryStates[id] = RetryState(attempts: 1, notBefore: now.addingTimeInterval(300), rateLimited: true)
+            }
+            historyPoints = []
+        }
+        if CommandLine.arguments.contains("--ui-connection-required") {
+            for id in ProviderID.allCases {
+                states[id] = ProviderState(errorMessage: "처음 한 번 터미널에서 연결을 확인해 주세요.", requiresConnection: true)
+            }
+            historyPoints = []
+        }
         if CommandLine.arguments.contains("--ui-stale") || CommandLine.arguments.contains("--ui-reset-due") {
             let stale = CommandLine.arguments.contains("--ui-stale")
             for id in ProviderID.allCases {
