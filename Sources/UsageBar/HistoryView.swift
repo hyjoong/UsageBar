@@ -54,7 +54,8 @@ struct HistoryView: View {
     var body: some View {
         let now = Date()
         let points = limitPoints(now: now)
-        let records = tokenRecords(now: now)
+        let tokenDays = tokenDayDomain(now: now)
+        let records = tokenRecords(in: tokenDays)
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 7) {
@@ -107,13 +108,15 @@ struct HistoryView: View {
                 .disabled(isExporting || (kind == "tokens" ? records.isEmpty : points.isEmpty))
                 .help("현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요.")
             }
-            if kind == "tokens" { tokens(records) } else { limits(points) }
+            if kind == "tokens" { tokens(records, dayDomain: tokenDays) } else { limits(points) }
             Rectangle().fill(UsageTheme.separator).frame(height: 1)
             if let message = store.storageNotice {
                 Text(message).font(.system(size: 12)).foregroundStyle(UsageTheme.warning)
             }
             HStack {
-                Label(kind == "tokens" ? "제공자가 반환한 일별 토큰" : "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요", systemImage: "info.circle")
+                Label(kind == "tokens"
+                      ? (records.isEmpty ? "제공자가 반환한 일별 토큰" : "빈 날짜: 기록 없음 · 점과 0: 제공된 0 토큰")
+                      : "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요", systemImage: "info.circle")
                 Spacer()
                 if store.isDemo { Text("예시 데이터") }
             }.font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
@@ -136,7 +139,7 @@ struct HistoryView: View {
         }
     }
 
-    @ViewBuilder private func tokens(_ records: [DailyUsage]) -> some View {
+    @ViewBuilder private func tokens(_ records: [DailyUsage], dayDomain: [String]) -> some View {
         if records.isEmpty {
             emptyState(title: "토큰 기록이 없어요", symbol: "chart.bar",
                        detail: selectedProvider == .claude
@@ -156,15 +159,32 @@ struct HistoryView: View {
                     .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
             }
             Chart(records) { record in
-                BarMark(x: .value("날짜", String(record.day.suffix(5))), y: .value("토큰", record.tokens))
-                    .foregroundStyle(UsageTheme.accent).cornerRadius(3)
-                    .accessibilityLabel("\(record.day), \(record.tokens) 토큰")
+                if record.tokens == 0 {
+                    PointMark(x: .value("날짜", record.day), y: .value("토큰", record.tokens))
+                        .foregroundStyle(UsageTheme.accent)
+                        .symbolSize(24)
+                        .annotation(position: .top, spacing: 4) {
+                            Text("0").font(.system(size: 10)).foregroundStyle(UsageTheme.secondaryInk)
+                                .accessibilityHidden(true)
+                        }
+                        .accessibilityLabel("\(record.day), \(record.tokens) 토큰")
+                } else {
+                    BarMark(x: .value("날짜", record.day), y: .value("토큰", record.tokens))
+                        .foregroundStyle(UsageTheme.accent).cornerRadius(3)
+                        .accessibilityLabel("\(record.day), \(record.tokens) 토큰")
+                }
             }
+            // Reserve calendar slots without inventing zero-valued records for absent days.
+            .chartXScale(domain: dayDomain)
             .chartXAxis {
-                AxisMarks { value in
-                    AxisValueLabel {
+                AxisMarks(values: Self.tokenAxisDays(dayDomain)) { value in
+                    AxisValueLabel(anchor: dayDomain.count > 7
+                                   ? (value.as(String.self) == dayDomain.first ? .topLeading
+                                      : value.as(String.self) == dayDomain.last ? .topTrailing : .top)
+                                   : nil) {
                         if let day = value.as(String.self) {
-                            Text(day).font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                            Text(String(day.suffix(5))).font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                                .fixedSize(horizontal: true, vertical: false)
                         }
                     }
                 }
@@ -288,18 +308,33 @@ struct HistoryView: View {
         }.sorted { $0.date == $1.date ? $0.windowID < $1.windowID : $0.date < $1.date }
     }
 
-    private func tokenRecords(now: Date) -> [DailyUsage] {
+    private func tokenDayDomain(now: Date) -> [String] {
         let formatter = Self.dayFormatter()
         let calendar = formatter.calendar!
         let today = calendar.startOfDay(for: now)
-        let cutoff = calendar.date(byAdding: .day, value: 1 - days, to: today) ?? today
-        let first = formatter.string(from: cutoff)
-        let last = formatter.string(from: today)
+        return (0..<days).compactMap { offset in
+            calendar.date(byAdding: .day, value: 1 - days + offset, to: today)
+                .map { formatter.string(from: $0) }
+        }
+    }
+
+    private func tokenRecords(in dayDomain: [String]) -> [DailyUsage] {
+        guard let first = dayDomain.first, let last = dayDomain.last else { return [] }
+        let formatter = Self.dayFormatter()
         return (snapshot?.dailyUsage ?? []).filter {
             guard $0.tokens >= 0, $0.day.count == 10, $0.day >= first, $0.day <= last,
                   let date = formatter.date(from: $0.day) else { return false }
             return formatter.string(from: date) == $0.day
         }.sorted { $0.day < $1.day }
+    }
+
+    private static func tokenAxisDays(_ days: [String]) -> [String] {
+        guard days.count > 7, let last = days.last else { return days }
+        // Weekly labels plus the final date; avoid adjacent labels at the right edge.
+        let weekly = stride(from: 0, to: days.count - 1, by: 7)
+            .filter { days.count - 1 - $0 >= 4 }
+            .map { days[$0] }
+        return weekly + [last]
     }
 
     private func export(csv: String, now: Date) {

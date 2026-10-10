@@ -131,6 +131,15 @@ Claude만 사용한다면 **설정 → 연결 → Codex 사용량 조회**를 �
 
 오래된 값은 **이전 기록**으로 표시합니다. 리셋 시간이 지나도 새 조회가 성공하기 전에는 잔여율을 100%로 바꾸지 않습니다. `사용 속도`는 기간 경과율과 한도 사용률을 비교한 참고값이며, 미래 사용량을 보장하는 예측은 아닙니다.
 
+### 일별 토큰 기록 읽기
+
+Codex가 제공한 일별 기록은 **오늘을 포함한 달력 날짜**로 표시합니다. 날짜가 비어 있어도 그래프의 하루 간격은 유지합니다. 빈 날짜는 기록 없음, 점과 `0`은 제공자가 반환한 0토큰을 뜻합니다. 합계와 CSV에는 제공된 기록만 포함합니다. 현재 UsageBar의 Claude 연결은 일별 토큰 기록을 지원하지 않습니다.
+
+<details>
+<summary>누락 날짜와 0토큰 구분 · 예시 데이터</summary>
+<img src="docs/images/history-gaps.jpg" alt="10월 7일은 기록이 없어 비어 있고, 10월 9일은 점과 0으로 표시한 Codex 일별 토큰 예시" width="760" />
+</details>
+
 ## 문제가 생겼을 때
 
 | 증상 | 확인할 내용 |
@@ -193,6 +202,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check` | 메뉴바 패널을 담은 검증 창 |
 | `--demo --ui-settings` | 설정 창 |
 | `--demo --ui-history` | 사용 기록 창 |
+| `--demo --ui-history --ui-history-gaps` | Codex 일별 기록에서 누락일과 명시적인 0토큰 비교 |
 | `--demo --ui-work-journal` | 작업 영수증 창 |
 | `--demo --ui-check --ui-work-failure` | 작업 시작 후 종료 조회 실패·재시도·한도 비교 없이 종료 |
 | `--demo --ui-check --ui-stale` | 오래된 낮은 잔여율과 이전 기록 안내 |
@@ -215,6 +225,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 
 0.6.3에서도 테스트 122개를 통과했고, 예시 앱의 사용 기록·작업 영수증·패널 검증 창에서 설정 단축키와 앱 메뉴의 설정 항목을 확인했습니다.
 
+0.6.4는 테스트 122개와 예시 데이터의 오늘·7일·30일 화면 검증을 통과했습니다. 누락일과 0토큰을 포함한 기록을 실제 앱에서 CSV로 내보내 수정 전후 파일이 동일한 것을 확인했습니다.
+
 ## UI 방향과 참고한 제품
 
 **한눈에 확인 → 짧은 작업 → 필요한 때 상세 기록** 순서로 구성합니다. 구리색 계기판과 티켓 형태를 유지하면서, 한도·리셋 정보를 붙이고 작업 시작·종료에 필요한 창 이동을 줄이는 방향입니다.
@@ -231,6 +243,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 - [SwiftUI MenuBarExtra](https://developer.apple.com/documentation/swiftui/menubarextra): 네이티브 메뉴 막대 구성.
 - [SwiftUI 앱 메뉴 구성](https://developer.apple.com/documentation/swiftui/building-and-customizing-the-menu-bar-with-swiftui): 창 사이에서 공통으로 쓰는 설정 명령과 단축키.
 - [Apple 상태 피드백](https://developer.apple.com/design/human-interface-guidelines/feedback): 현재 상태와 다음 행동을 화면 안에서 안내하는 구성.
+- [ccusage 일별 보고서](https://ccusage.com/guide/daily-reports): 오늘을 포함한 달력 날짜 범위와 일별 기록 표시.
 
 UsageBar는 **남은 한도와 리셋 시각을 빠르게 확인하는 흐름**을 중심에 둡니다. 작업 구간 비교와 영수증은 필요할 때만 펼치는 선택 기능입니다. 사용 속도 계산·CSV 내보내기·상태 처리는 직접 구현했으며, 참고 앱의 인증 방식이나 계정 데이터 수집 코드를 가져오지 않았습니다.
 
@@ -244,6 +257,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
+| 0.6.4 | 일별 토큰의 누락 날짜 간격 보존, 실제 0토큰을 점과 숫자로 구분. 합계·CSV에는 제공된 기록만 유지. |
 | 0.6.3 | 앱 공통 설정 명령 추가. 사용 기록·작업 영수증 창에서도 `⌘,`로 기존 설정 창 열기. |
 | 0.6.2 | 취소된 Claude 조회가 잠자기 복귀 직후 새 조회를 막는 문제 수정. 이전 값 없는 요청 제한과 계정 연결 문제의 복구 안내 구분. |
 | 0.6.1 | 작업 기록을 기본 한 줄로 접어 한도 표시 공간 확보. 진행 중·오류 상태는 계속 표시하고 완료 카드 닫기 후 기록 보존. |

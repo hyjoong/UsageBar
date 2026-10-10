@@ -580,6 +580,16 @@ final class AppStore: ObservableObject {
             }
         }
         #if DEBUG
+        if CommandLine.arguments.contains("--ui-history-gaps"), let old = states[.codex]?.snapshot {
+            let records = (old.dailyUsage ?? []).enumerated().compactMap { index, record -> DailyUsage? in
+                if index == 2 { return nil }
+                return DailyUsage(day: record.day, tokens: index == 4 ? 0 : record.tokens)
+            }
+            states[.codex] = ProviderState(snapshot: ProviderSnapshot(provider: .codex, plan: old.plan,
+                windows: old.windows, resetCreditCount: old.resetCreditCount, resetCredits: old.resetCredits,
+                dailyUsage: records, fetchedAt: old.fetchedAt, source: "화면 검증용 예시"))
+            selectedProvider = .codex
+        }
         if CommandLine.arguments.contains("--ui-rate-limited") {
             for id in ProviderID.allCases {
                 states[id] = ProviderState(errorMessage: ProviderError.rateLimited(retryAfter: 300).localizedDescription)
