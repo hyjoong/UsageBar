@@ -243,9 +243,12 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | 옵션 | 확인할 화면 |
 | --- | --- |
 | `--demo --ui-check` | 메뉴바 패널을 담은 검증 창 |
+| `--demo --ui-check --ui-codex` | Codex를 선택한 패널 (초기화권·일별 토큰 포함) |
+| `--demo --ui-check --ui-journal-active` | 진행 중인 작업 기록 카드 |
+| `--demo --ui-check --ui-journal-receipt` | 방금 완료한 작업 영수증 카드 |
 | `--demo --ui-settings` | 설정 창 |
 | `--demo --ui-history` | 사용 기록 창 |
-| `--demo --ui-history --ui-history-gaps` | Codex 일별 기록에서 누락일과 명시적인 0토큰 비교 |
+| `--demo --ui-history --ui-history-gaps --ui-history-tokens` | Codex 일별 토큰 탭에서 누락일과 명시적인 0토큰 비교 |
 | `--demo --ui-work-journal` | 작업 영수증 창 |
 | `--demo --ui-check --ui-work-failure` | 작업 시작 후 종료 조회 실패·재시도·한도 비교 없이 종료 |
 | `--demo --ui-check --ui-stale` | 오래된 낮은 잔여율과 이전 기록 안내 |
@@ -253,6 +256,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-rate-limited` | 저장된 값 없이 요청 제한이 발생한 상태 |
 | `--demo --ui-check --ui-connection-required` | 로그인·초기 연결 설정이 필요한 상태 |
 | 위 옵션에 `--ui-light` 또는 `--ui-dark` 추가 | 예시 앱의 밝은 모드 또는 어두운 모드 |
+| 빌드한 `.app`에 `-AppleLanguages '(en)'` 추가 | 영어 UI (번들의 `en.lproj` 필요) |
 
 주요 코드:
 
@@ -271,6 +275,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 0.6.4는 테스트 122개와 예시 데이터의 오늘·7일·30일 화면 검증을 통과했습니다. 누락일과 0토큰을 포함한 기록을 실제 앱에서 CSV로 내보내 수정 전후 파일이 동일한 것을 확인했습니다.
 
 0.7.0은 테스트 132개를 통과했습니다. 별도 bundle ID와 일회성 테스트 키를 사용한 localhost 예시 앱에서 빌드 100 → 101 다운로드·서명 확인·설치·재실행, 최신 버전 안내, 변조된 ZIP 및 appcast 본문 거부, HTTP 404 후 설정 복귀를 확인했습니다. 재실행 인자가 없어도 예시 모드를 유지하며 실제 계정·저장 파일에 접근하지 않습니다. 이 테스트는 Apple 공증이나 배포본의 Gatekeeper 검증을 대신하지 않습니다.
+
+0.8.0은 테스트 132개를 통과했습니다. 예시 앱에서 패널의 Claude·Codex·오래된 기록·연결 필요·요청 제한 상태, 작업 기록의 대기·진행·완료 카드, 사용 기록·설정·영수증 창을 다크·라이트 모드로 캡처해 확인했고, 빌드한 번들을 `-AppleLanguages`로 영어와 한국어 각각 실행해 모든 화면의 번역과 잘림을 점검했습니다. 카탈로그 키는 컴파일러 추출(`-emit-localized-strings`)과 `xcstringstool sync`로 맞추므로 누락 검사가 자동입니다.
 
 ## UI 방향과 참고한 제품
 
@@ -302,7 +308,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
-| 0.8 (준비 중) | 패널 개편: 한 줄 헤더, 세그먼트 게이지 통일, 내용에 맞는 높이, 작업 시작 풀다운, 번호 순서 연결 안내. 사용 기록 차트 연결선, 설정·영수증 창 정리. 영어 UI 추가(시스템 언어 따름). |
+| 0.8.0 | 패널 개편: 한 줄 헤더, 세그먼트 게이지 통일, 내용에 맞는 높이, 작업 시작 풀다운, 번호 순서 연결 안내. 사용 기록 차트 연결선, 설정·영수증 창 정리. 영어 UI 추가(시스템 언어 따름). |
 | 0.7.0 | Sparkle 앱 내 업데이트, 자동 확인 선택, 패널의 조용한 새 버전 안내, 저장 중 재시작 대기. GitHub Releases 공개 배포 준비 중. |
 | 0.6.4 | 일별 토큰의 누락 날짜 간격 보존, 실제 0토큰을 점과 숫자로 구분. 합계·CSV에는 제공된 기록만 유지. |
 | 0.6.3 | 앱 공통 설정 명령 추가. 사용 기록·작업 영수증 창에서도 `⌘,`로 기존 설정 창 열기. |
@@ -356,7 +362,7 @@ zsh scripts/prepare-release.sh \
   --keychain-profile YOUR_EXISTING_NOTARY_PROFILE \
   --generate-appcast \
   --eddsa-account hyjoong.UsageBar.production \
-  --release-notes docs/releases/0.7.0.md \
+  --release-notes docs/releases/0.8.0.md \
   --sparkle-tools .build/artifacts/sparkle/Sparkle/bin \
   --download-url-prefix 'https://github.com/hyjoong/UsageBar/releases/download/YOUR_RELEASE_TAG/'
 ```
