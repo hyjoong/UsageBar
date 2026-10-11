@@ -10,6 +10,33 @@ enum MenuBarDisplayMode: String, CaseIterable, Identifiable {
     var title: String { self == .selected ? String(localized: "선택한 서비스") : String(localized: "사용 중인 서비스 모두") }
 }
 
+/// UI language. Localization is resolved at launch, so a change needs a relaunch.
+enum UsageLanguage: String, CaseIterable, Identifiable {
+    case system, ko, en
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .system: String(localized: "시스템 설정 따르기")
+        case .ko: "한국어"
+        case .en: "English"
+        }
+    }
+    /// What AppleLanguages must contain for this choice, or nil to follow the system.
+    var appleLanguages: [String]? {
+        switch self {
+        case .system: nil
+        case .ko: ["ko", "en"]
+        case .en: ["en", "ko"]
+        }
+    }
+
+    static func current(from defaults: UserDefaults = .standard) -> UsageLanguage {
+        guard defaults.bool(forKey: "usageBarLanguageOverride"),
+              let first = defaults.stringArray(forKey: "AppleLanguages")?.first else { return .system }
+        return first.hasPrefix("ko") ? .ko : (first.hasPrefix("en") ? .en : .system)
+    }
+}
+
 enum UsageAppearanceMode: String, CaseIterable, Identifiable {
     case dark, light, system
     var id: String { rawValue }
@@ -48,6 +75,22 @@ final class AppStore: ObservableObject {
             applyAppearance()
         }
     }
+    @Published var language: UsageLanguage = .system {
+        didSet {
+            guard !isDemo, language != oldValue else { return }
+            let standard = UserDefaults.standard
+            if let languages = language.appleLanguages {
+                standard.set(languages, forKey: "AppleLanguages")
+                standard.set(true, forKey: "usageBarLanguageOverride")
+            } else {
+                standard.removeObject(forKey: "AppleLanguages")
+                standard.removeObject(forKey: "usageBarLanguageOverride")
+            }
+            needsRelaunchForLanguage = language != languageAtLaunch
+        }
+    }
+    @Published private(set) var needsRelaunchForLanguage = false
+    private var languageAtLaunch: UsageLanguage = .system
     @Published private(set) var states: [ProviderID: ProviderState] = [:]
     @Published private(set) var clockNow = Date()
     @Published var menuBarDisplayMode: MenuBarDisplayMode = .selected {
@@ -112,6 +155,8 @@ final class AppStore: ObservableObject {
             installDemo()
         } else {
             appearanceMode = UsageAppearanceMode(rawValue: defaults.string(forKey: "appearanceMode") ?? "") ?? .dark
+            languageAtLaunch = UsageLanguage.current()
+            language = languageAtLaunch
             selectedProvider = ProviderID(rawValue: defaults.string(forKey: "selectedProvider") ?? "") ?? .claude
             menuBarDisplayMode = MenuBarDisplayMode(rawValue: defaults.string(forKey: "menuBarDisplayMode") ?? "") ?? .selected
             if defaults.object(forKey: "showPercentage") != nil { showPercentage = defaults.bool(forKey: "showPercentage") }
@@ -135,6 +180,16 @@ final class AppStore: ObservableObject {
 
     func applyAppearance() {
         NSApplication.shared.appearance = appearanceMode.appearance
+    }
+
+    /// Quits and reopens the app bundle so the new language takes effect.
+    func relaunch() {
+        let path = Bundle.main.bundlePath
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", "sleep 0.7; /usr/bin/open \"$0\"", path]
+        try? task.run()
+        NSApplication.shared.terminate(nil)
     }
 
     var selectedState: ProviderState { states[selectedProvider] ?? ProviderState() }

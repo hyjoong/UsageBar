@@ -19,6 +19,16 @@ struct PreferencesView: View {
                 Picker("화면 모드", selection: $store.appearanceMode) {
                     ForEach(UsageAppearanceMode.allCases) { Text($0.title).tag($0) }
                 }
+                Picker("언어", selection: $store.language) {
+                    ForEach(UsageLanguage.allCases) { Text($0.title).tag($0) }
+                }
+                if store.needsRelaunchForLanguage {
+                    HStack {
+                        detail("언어는 다시 실행한 뒤 적용돼요.", color: UsageTheme.warning)
+                        Spacer()
+                        Button("지금 다시 실행") { store.relaunch() }
+                    }
+                }
                 Toggle("로그인 시 UsageBar 실행", isOn: Binding(
                     get: { launchAtLogin.isEnabled },
                     set: { launchAtLogin.setEnabled($0) }

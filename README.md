@@ -109,6 +109,9 @@ That is the last successful check. Verify your internet connection and the CLI l
 **Refresh is greyed out.**
 The service is rate limiting requests. UsageBar shows when it can check again.
 
+**Can I change the language?**
+It follows your system language by default. Settings → General → **Language** switches between Korean and English; the change applies after a relaunch, and there is a button for that.
+
 **Does it work on Intel Macs?**
 Releases are built for Apple Silicon. Intel builds have not been tested.
 

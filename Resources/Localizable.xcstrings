@@ -3448,6 +3448,38 @@
         }
       }
     },
+    "언어": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어"
+          }
+        }
+      }
+    },
+    "언어는 다시 실행한 뒤 적용돼요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The language applies after a relaunch."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어는 다시 실행한 뒤 적용돼요."
+          }
+        }
+      }
+    },
     "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요.": {
       "localizations": {
         "en": {
@@ -4788,6 +4820,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "주간 한도 · 예시"
+          }
+        }
+      }
+    },
+    "지금 다시 실행": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relaunch now"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 다시 실행"
           }
         }
       }
