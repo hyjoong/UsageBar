@@ -4,10 +4,12 @@ import UsageBarCore
 
 struct PreferencesView: View {
     @ObservedObject var store: AppStore
+    @ObservedObject var updates: AppUpdateController
     @StateObject private var launchAtLogin: LaunchAtLoginStore
 
-    init(store: AppStore) {
+    init(store: AppStore, updates: AppUpdateController) {
         self.store = store
+        self.updates = updates
         _launchAtLogin = StateObject(wrappedValue: LaunchAtLoginStore(demo: store.isDemo))
     }
 
@@ -103,7 +105,22 @@ struct PreferencesView: View {
                 }
 
                 Section {
-                    LabeledContent("버전", value: "0.6.4")
+                    LabeledContent("버전", value: updates.version)
+                    if let version = updates.availableVersion {
+                        detail("\(version) 버전으로 업데이트할 수 있어요.", color: UsageTheme.accent)
+                    }
+                    Button("업데이트 확인…") { updates.checkForUpdates() }
+                        .disabled(!updates.canCheckForUpdates)
+                    if updates.configuration.isReady {
+                        Toggle("새 버전 자동 확인", isOn: Binding(
+                            get: { updates.automaticallyChecks }, set: { updates.setAutomaticChecks($0) }
+                        ))
+                        detail("자동 확인을 켜도 설치와 앱 재시작은 직접 선택해요.")
+                        if let checked = updates.lastCheckedAt {
+                            detail("마지막 확인 시도: \(checked.formatted(date: .abbreviated, time: .shortened))")
+                        }
+                    }
+                    detail(updates.message)
                     detail("사용량 기록은 이 Mac에 저장돼요. 대화 내용은 수집하지 않아요.")
                 } header: {
                     sectionTitle("앱 정보", symbol: "info.circle")

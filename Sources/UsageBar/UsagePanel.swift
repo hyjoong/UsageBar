@@ -13,6 +13,7 @@ extension ProviderID {
 
 struct UsagePanel: View {
     @ObservedObject var store: AppStore
+    @ObservedObject var updates: AppUpdateController
     @Environment(\.openWindow) private var openWindow
     @State private var showCredits = false
     @State private var showPace = false
@@ -95,6 +96,17 @@ struct UsagePanel: View {
             .id(provider)
             WorkJournalPanel(store: store) { showWindow("work-journal") }
             status
+            if let version = updates.availableVersion {
+                Button { updates.checkForUpdates() } label: {
+                    HStack {
+                        Label("\(version) 업데이트 가능", systemImage: "arrow.down.circle")
+                        Spacer()
+                        Text("확인").foregroundStyle(UsageTheme.accent)
+                    }.font(.system(size: 12)).padding(.horizontal, 22).padding(.vertical, 10)
+                }
+                .buttonStyle(.plain)
+                .disabled(!updates.canCheckForUpdates)
+            }
             Divider()
             footer
         }

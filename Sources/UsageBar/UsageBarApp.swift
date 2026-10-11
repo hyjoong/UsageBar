@@ -5,17 +5,24 @@ import UsageBarCore
 @main
 struct UsageBarApp: App {
     @StateObject private var store: AppStore
+    @StateObject private var updates: AppUpdateController
     @NSApplicationDelegateAdaptor(UsageBarDelegate.self) private var delegate
 
     init() {
-        let model = AppStore(demo: CommandLine.arguments.contains("--demo"))
+        let fixture = UpdateConfiguration.isIsolatedFixture(info: Bundle.main.infoDictionary ?? [:], bundleIdentifier: Bundle.main.bundleIdentifier)
+        let demo = fixture || CommandLine.arguments.contains("--demo")
+        let preferences = UserDefaults(suiteName: demo ? "UsageBar.Preview.Preferences" : "UsageBar.Preferences")!
+        let model = AppStore(demo: demo, preferences: preferences)
+        let updater = AppUpdateController(demo: demo, journal: model.workJournal)
         _store = StateObject(wrappedValue: model)
+        _updates = StateObject(wrappedValue: updater)
         UsageBarDelegate.store = model
+        UsageBarDelegate.updates = updater
     }
 
     var body: some Scene {
         MenuBarExtra {
-            UsagePanel(store: store)
+            UsagePanel(store: store, updates: updates)
         } label: {
             UsageMenuLabel(store: store)
         }
@@ -34,18 +41,23 @@ struct UsageBarApp: App {
         .windowResizability(.contentMinSize)
 
         Window("설정 · UsageBar", id: "settings") {
-            PreferencesView(store: store)
+            PreferencesView(store: store, updates: updates)
         }
         .defaultSize(width: 500, height: 650)
         .windowResizability(.contentSize)
-        .commands { UsageBarCommands() }
+        .commands { UsageBarCommands(updates: updates) }
     }
 }
 
 private struct UsageBarCommands: Commands {
     @Environment(\.openWindow) private var openWindow
+    @ObservedObject var updates: AppUpdateController
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button("업데이트 확인…") { updates.checkForUpdates() }
+                .disabled(!updates.canCheckForUpdates)
+        }
         CommandGroup(replacing: .appSettings) {
             Button("설정…") {
                 openWindow(id: "settings")
@@ -83,7 +95,7 @@ private struct UsageMenuLabel: View {
         .task {
             guard store.isDemo, !openedCheckWindow else { return }
             openedCheckWindow = true
-            if CommandLine.arguments.contains("--ui-settings") { openWindow(id: "settings") }
+            if CommandLine.arguments.contains("--ui-settings") || UpdateConfiguration.isIsolatedFixture(info: Bundle.main.infoDictionary ?? [:], bundleIdentifier: Bundle.main.bundleIdentifier) { openWindow(id: "settings") }
             if CommandLine.arguments.contains("--ui-history") { openWindow(id: "history") }
             if CommandLine.arguments.contains("--ui-work-journal") { openWindow(id: "work-journal") }
         }
@@ -94,6 +106,7 @@ private struct UsageMenuLabel: View {
 @MainActor
 final class UsageBarDelegate: NSObject, NSApplicationDelegate {
     static var store: AppStore?
+    static var updates: AppUpdateController?
     #if DEBUG
     private var checkWindow: NSWindow?
     #endif
@@ -107,9 +120,10 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
         }
         #endif
         Self.store?.start()
+        Self.updates?.start()
         #if DEBUG
-        if CommandLine.arguments.contains("--ui-check"), let store = Self.store, store.isDemo {
-            let window = NSWindow(contentViewController: NSHostingController(rootView: UsagePanel(store: store)))
+        if CommandLine.arguments.contains("--ui-check"), let store = Self.store, let updates = Self.updates, store.isDemo {
+            let window = NSWindow(contentViewController: NSHostingController(rootView: UsagePanel(store: store, updates: updates)))
             window.title = "UsageBar · 예시 화면 검증"
             window.styleMask = [.titled, .closable]
             window.isRestorable = false

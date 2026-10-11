@@ -46,6 +46,7 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 
 - **macOS 14 이상**
 - **Swift 5.10 이상을 지원하는 Xcode 또는 Command Line Tools**
+- **Python 3** (빌드·배포 설정 검증에 사용)
 - 이 비공개 GitHub 저장소에 접근할 수 있는 계정
 
 터미널에서 실행합니다. GitHub 인증이 필요하면 먼저 해당 계정의 저장소 접근을 설정하세요.
@@ -59,7 +60,26 @@ open build/UsageBar.app
 
 빌드 결과는 `build/UsageBar.app`입니다. 위의 Finder 설치 방법으로 응용 프로그램 폴더에 복사할 수 있습니다. 소스 저장소를 내려받는 것만으로 앱이 설치되지는 않습니다.
 
-기본은 release 빌드이며 `zsh scripts/build-app.sh debug`로 디버그 앱을 만들 수 있습니다. 빌드 스크립트는 현재 Mac의 기본 아키텍처로 빌드합니다. 현재 확인한 로컬 결과물은 **Apple Silicon(arm64)** 용이며, Intel용 배포본은 아직 검증하지 않았습니다. 외부 패키지 의존성은 없습니다.
+기본은 release 빌드이며 `zsh scripts/build-app.sh debug`로 디버그 앱을 만들 수 있습니다. 빌드 스크립트는 현재 Mac의 기본 아키텍처로 빌드합니다. 현재 확인한 로컬 결과물은 **Apple Silicon(arm64)** 용이며, Intel용 배포본은 아직 검증하지 않았습니다. 앱 내 업데이트에는 [Sparkle 2.10.0](https://github.com/sparkle-project/Sparkle/releases/tag/2.10.0)을 사용하며, 최초 빌드에는 패키지를 내려받을 인터넷 연결이 필요합니다.
+
+### 새 버전으로 업데이트
+
+0.7.0부터 앱 내 업데이트를 지원합니다. **현재는 공개 배포 경로가 설정되지 않은 개발용 빌드이며, 다른 사용자가 받을 업데이트는 아직 게시하지 않았습니다.** 배포자가 HTTPS 경로와 업데이트 서명 키를 설정해 빌드한 앱에서는 다음 순서로 사용합니다.
+
+1. U 아이콘 → **설정** → **앱 정보**에서 **업데이트 확인…**을 누릅니다. 창이 열린 상태에서는 앱 메뉴에서도 확인할 수 있습니다.
+2. 새 버전이 있으면 변경 내용을 확인하고 설치합니다. 다운로드와 서명 확인 후 앱을 교체하고 재실행합니다.
+3. **새 버전 자동 확인**을 켜면 주기적으로 확인합니다. 자동 설치는 하지 않으며, 백그라운드에서 발견한 업데이트는 메뉴바 패널 안에 표시합니다.
+
+설정과 저장된 기록은 앱 밖에 보관되어 업데이트 후에도 유지됩니다. 진행 중인 작업을 자동으로 종료하지 않으며, 기록 저장 중에는 업데이트 재시작을 잠시 미룹니다. 업데이트 확인 실패나 서명 오류에서는 기존 앱을 계속 사용합니다.
+
+0.6.4 이하에는 업데이트 기능이 없으므로 업데이트를 지원하는 배포본을 **한 번 직접 설치**해야 합니다. 소스 빌드는 저장소를 갱신한 뒤 빌드 명령을 다시 실행합니다. 배포 경로가 없는 개발용 빌드·일반 예시 모드는 실제 업데이트 서버에 접근하지 않습니다.
+
+<details>
+<summary>업데이트 설정 · 격리된 예시 앱</summary>
+<img src="docs/images/update-test.jpg" width="520" alt="업데이트 예시 앱의 버전, 업데이트 확인 버튼과 새 버전 자동 확인 설정" />
+
+localhost에서 예시 빌드 100 → 101 설치·재실행을 검증한 화면입니다. 화면의 0.7.1은 테스트용 버전이며 실제 공개 배포 버전이 아닙니다. 계정 사용량은 모두 예시입니다.
+</details>
 
 ## 처음 연결하기
 
@@ -150,7 +170,7 @@ Codex가 제공한 일별 기록은 **오늘을 포함한 달력 날짜**로 표
 | 이전 기록이나 조회 오류가 보여요 | 마지막 성공 조회값일 수 있습니다. 인터넷과 CLI 로그인 상태를 확인한 뒤 새로고침합니다. 더보기 메뉴에서는 공식 서비스 장애 현황도 열 수 있습니다. |
 | 새로고침이 잠겨 있어요 | 서비스가 요청을 제한하면 **다시 확인할 수 있는 시간**을 안내합니다. 해당 시간까지 기다려 주세요. 서비스를 껐다 켜도 대기 시간은 유지됩니다. |
 | 작업 종료 조회가 실패해요 | 기록은 진행 상태로 유지됩니다. 재시도하거나 **한도 비교 없이 종료**할 수 있습니다. |
-| 새 버전으로 바꾸고 싶어요 | 현재는 자동 업데이트가 없습니다. 기존 앱을 종료한 뒤 새 `.app`으로 교체하고 다시 실행하세요. 소스 빌드는 저장소를 갱신한 뒤 빌드 명령을 다시 실행합니다. |
+| 새 버전으로 바꾸고 싶어요 | 업데이트가 설정된 0.7.0 이상 배포본은 설정 → 앱 정보 → **업데이트 확인…**을 누릅니다. 0.6.4 이하나 배포 경로가 없는 개발용 앱은 종료 후 새 `.app`으로 교체합니다. |
 | 기록이 사라질까 걱정돼요 | 기록은 `.app` 밖의 Application Support 폴더에 저장됩니다. 앱 교체만으로 삭제되지 않습니다. 문제 해결을 위해 이 폴더를 지우기 전에 필요한 파일을 백업하세요. |
 
 최초 조회에서 요청 제한이 발생하면 존재하지 않는 이전 값을 표시하지 않고, 재시도 대기 시간을 안내합니다. 일시적인 조회 실패에서는 설치 안내를 숨기고, 로그인·초기 설정이 필요한 경우에 연결 설정을 표시합니다.
@@ -227,6 +247,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 
 0.6.4는 테스트 122개와 예시 데이터의 오늘·7일·30일 화면 검증을 통과했습니다. 누락일과 0토큰을 포함한 기록을 실제 앱에서 CSV로 내보내 수정 전후 파일이 동일한 것을 확인했습니다.
 
+0.7.0은 테스트 132개를 통과했습니다. 별도 bundle ID와 일회성 테스트 키를 사용한 localhost 예시 앱에서 빌드 100 → 101 다운로드·서명 확인·설치·재실행, 최신 버전 안내, 변조된 ZIP 및 appcast 본문 거부, HTTP 404 후 설정 복귀를 확인했습니다. 재실행 인자가 없어도 예시 모드를 유지하며 실제 계정·저장 파일에 접근하지 않습니다. 이 테스트는 Apple 공증이나 배포본의 Gatekeeper 검증을 대신하지 않습니다.
+
 ## UI 방향과 참고한 제품
 
 **한눈에 확인 → 짧은 작업 → 필요한 때 상세 기록** 순서로 구성합니다. 구리색 계기판과 티켓 형태를 유지하면서, 한도·리셋 정보를 붙이고 작업 시작·종료에 필요한 창 이동을 줄이는 방향입니다.
@@ -257,6 +279,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
+| 0.7.0 | Sparkle 앱 내 업데이트, 자동 확인 선택, 패널의 조용한 새 버전 안내, 저장 중 재시작 대기. 배포 채널 설정 후 활성화. |
 | 0.6.4 | 일별 토큰의 누락 날짜 간격 보존, 실제 0토큰을 점과 숫자로 구분. 합계·CSV에는 제공된 기록만 유지. |
 | 0.6.3 | 앱 공통 설정 명령 추가. 사용 기록·작업 영수증 창에서도 `⌘,`로 기존 설정 창 열기. |
 | 0.6.2 | 취소된 Claude 조회가 잠자기 복귀 직후 새 조회를 막는 문제 수정. 이전 값 없는 요청 제한과 계정 연결 문제의 복구 안내 구분. |
@@ -276,7 +299,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 - 멈춘 작업에서 다음에 할 일 한 줄 남기기.
 - 실제 조회로 한도 회복을 확인한 뒤 보내는 일회성 알림.
 - 인증 정보·계정 식별자·사용량을 제외한 연결 진단 정보 복사.
-- Developer ID 서명·공증 배포와 자동 업데이트.
+- 공개 업데이트 채널 운영과 다른 Mac의 첫 설치 검증.
 
 ## 직접 배포 준비
 
@@ -286,6 +309,30 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 2. Developer ID Application 인증서로 서명하고 Hardened Runtime과 secure timestamp를 적용합니다. 배포본에는 `get-task-allow`를 포함하지 않습니다. [Apple 서명 요건](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
 3. ZIP 또는 DMG를 만들어 `xcrun notarytool submit --wait`로 제출한 뒤 Accepted 결과와 공증 로그를 확인합니다. [공증 절차](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
 4. `xcrun stapler`로 티켓을 첨부합니다. ZIP 배포라면 내부 `.app`에 첨부한 뒤 ZIP을 다시 만듭니다. [티켓 첨부](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
-5. 다른 Mac에서 실제 다운로드본의 Gatekeeper 통과·첫 실행·Claude/Codex 연결·로그인 시 실행을 검증합니다. [배포본 테스트](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)
+5. 이 Mac에서 실제 다운로드본의 서명·공증 상태와 설치·실행을 검증합니다. 가능하면 다른 Mac에서도 Gatekeeper·첫 실행·Claude/Codex 연결·로그인 시 실행을 확인해 개발 환경의 영향을 배제합니다. [배포본 테스트](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)
 
-직접 배포에서는 App Sandbox가 선택 사항입니다. 외부 CLI를 실행하는 현재 구조는 Hardened Runtime을 적용한 상태에서도 검증해야 합니다. 소스 저장소를 private로 유지하더라도 일반 사용자에게 배포하려면 다운로드 경로를 별도로 준비해야 합니다. 첫 배포가 안정된 뒤 [Sparkle](https://github.com/sparkle-project/Sparkle#readme)의 HTTPS appcast와 업데이트 서명을 도입할 수 있습니다.
+직접 배포에서는 App Sandbox가 선택 사항입니다. 외부 CLI를 실행하는 현재 구조는 Hardened Runtime을 적용한 상태에서도 검증해야 합니다. 소스 저장소는 private로 유지하고 앱 파일과 appcast만 별도로 제공할 수 있습니다. 비공개 저장소의 다운로드 주소나 GitHub 토큰을 앱에 넣지 않습니다.
+
+Sparkle은 HTTPS appcast와 Ed25519 공개 키가 모두 설정된 빌드에서만 시작합니다. 업데이트 ZIP뿐 아니라 appcast도 서명 검증하며, 압축을 풀기 전에 업데이트 서명을 확인합니다. 배포 URL·공개 키는 빌드 시 넣고, 개인 키와 Apple 공증 인증 정보는 저장소에 보관하지 않습니다. [Sparkle 배포 안내](https://sparkle-project.org/documentation/)
+
+배포용 도구는 다음 두 단계로 나뉩니다. 실제 인증서 이름·공개 배포 URL·공개 키를 지정해야 하며, 기본 빌드는 기존처럼 ad hoc 서명을 사용합니다.
+
+```sh
+USAGEBAR_SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' \
+USAGEBAR_FEED_URL='https://YOUR-DOMAIN/appcast.xml' \
+USAGEBAR_PUBLIC_ED_KEY='YOUR_PUBLIC_ED25519_KEY' \
+zsh scripts/build-app.sh release
+
+zsh scripts/prepare-release.sh \
+  --keychain-profile YOUR_EXISTING_NOTARY_PROFILE \
+  --generate-appcast \
+  --eddsa-account YOUR_SPARKLE_KEYCHAIN_ACCOUNT \
+  --sparkle-tools .build/artifacts/sparkle/Sparkle/bin \
+  --download-url-prefix 'https://YOUR-DOMAIN/downloads/'
+```
+
+`build-app.sh`는 Sparkle 구성요소를 앱에 포함하고 안쪽부터 서명합니다. `prepare-release.sh`는 원본 앱을 보존하고 복사본만 Apple에 제출하여 공증·티켓 첨부 후 ZIP과 서명된 appcast를 만듭니다. 공증 성공, 동일 서명 팀, 서명 검증을 통과해야 완료됩니다. 두 스크립트 모두 공개 업로드를 하지 않습니다. 명령 옵션은 `--help`로 확인할 수 있습니다.
+
+업데이트 서명 키는 Sparkle의 `generate_keys --account YOUR_SPARKLE_KEYCHAIN_ACCOUNT`로 한 번 준비하고 출력되는 **공개 키만** 빌드에 사용합니다. 기존 키를 매 배포마다 새로 만들거나 개인 키를 저장소에 넣지 마세요. appcast 생성 시 지정한 Keychain 계정의 공개 키가 앱에 포함된 키와 일치하는지도 확인합니다.
+
+새 배포에서는 `CFBundleVersion`을 반드시 증가시킵니다. `prepare-release.sh`가 만든 appcast에는 해당 릴리스만 포함되므로 기존 배포 기록·지원 아키텍처를 검토한 후 게시하세요. 이미 공개된 ZIP을 덮어쓰기보다 버전별 파일을 유지하고, ZIP 업로드 후 appcast를 갱신합니다.
