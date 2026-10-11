@@ -74,3 +74,47 @@ struct UsageBrandMark: View {
         return image
     }()
 }
+
+/// Type scale shared by the panel and windows. Names describe the role, not the point size,
+/// so a later visual pass can retune sizes in one place.
+enum UsageType {
+    // Numerals
+    static let display = Font.system(size: 56, weight: .light, design: .rounded)
+    static let displayUnit = Font.system(size: 24, weight: .light)
+    static let metric = Font.system(size: 30, weight: .medium)
+    static let duration = Font.system(size: 19, weight: .medium, design: .rounded)
+    static let durationCompact = Font.system(size: 17, weight: .medium, design: .rounded)
+    static let emphasis = Font.system(size: 15, weight: .medium)
+
+    // Text
+    static let windowTitle = Font.system(size: 24, weight: .semibold)
+    static let title = Font.system(size: 15, weight: .semibold)
+    static let headline = Font.system(size: 13, weight: .medium)
+    static let body = Font.system(size: 13)
+    static let label = Font.system(size: 12, weight: .medium)
+    static let secondary = Font.system(size: 12)
+    static let sectionHeading = Font.system(size: 11, weight: .semibold)
+    static let captionMedium = Font.system(size: 11, weight: .medium)
+    static let caption = Font.system(size: 11)
+    static let captionMono = Font.system(size: 11, design: .monospaced)
+    static let micro = Font.system(size: 10)
+}
+
+/// Spacing scale. Insets frame a surface; the rest separate content inside it.
+enum UsageSpacing {
+    static let panelInset: CGFloat = 22
+    static let windowInset: CGFloat = 28
+    static let section: CGFloat = 18
+    static let group: CGFloat = 12
+    static let item: CGFloat = 8
+    static let compact: CGFloat = 6
+    static let tight: CGFloat = 4
+    /// Minimum hit size for icon buttons and tappable rows.
+    static let control: CGFloat = 28
+}
+
+enum UsageRadius {
+    static let card: CGFloat = 14
+    static let panelCard: CGFloat = 10
+    static let control: CGFloat = 7
+}

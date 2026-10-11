@@ -33,13 +33,13 @@ struct WorkJournalPanel: View {
                 idle
             }
         }
-        .font(.system(size: 11))
+        .font(UsageType.caption)
         .padding(isCollapsed ? 0 : 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isCollapsed ? .clear : UsageTheme.surface, in: RoundedRectangle(cornerRadius: 10))
+        .background(isCollapsed ? .clear : UsageTheme.surface, in: RoundedRectangle(cornerRadius: UsageRadius.panelCard))
         .foregroundStyle(UsageTheme.ink)
         .tint(UsageTheme.accent)
-        .padding(.horizontal, 22)
+        .padding(.horizontal, UsageSpacing.panelInset)
         .padding(.top, 7)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.16), value: presentationID)
         .task { await journal.load() }
@@ -60,10 +60,10 @@ struct WorkJournalPanel: View {
             HStack {
                 Label("작업 기록", systemImage: "receipt")
                 Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.system(size: 10))
+                Image(systemName: "chevron.right").font(UsageType.micro)
             }
             .foregroundStyle(UsageTheme.secondaryInk)
-            .frame(minHeight: 28)
+            .frame(minHeight: UsageSpacing.control)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -85,7 +85,7 @@ struct WorkJournalPanel: View {
                 Spacer(minLength: 4)
                 historyButton
             }
-            HStack(spacing: 8) {
+            HStack(spacing: UsageSpacing.item) {
                 Picker("작업 유형", selection: $kind) {
                     ForEach(WorkKind.allCases) { item in Text(item.title).tag(item) }
                 }
@@ -123,10 +123,10 @@ struct WorkJournalPanel: View {
                 Spacer(minLength: 4)
                 historyButton
             }
-            HStack(spacing: 8) {
+            HStack(spacing: UsageSpacing.item) {
                 TimelineView(.periodic(from: .now, by: 60)) { context in
                     Text(Self.durationLabel(context.date.timeIntervalSince(active.startedAt)))
-                        .font(.system(size: 19, weight: .medium, design: .rounded))
+                        .font(UsageType.duration)
                         .monospacedDigit()
                         .accessibilityLabel("기록 경과 시간 \(Self.durationLabel(context.date.timeIntervalSince(active.startedAt)))")
                 }
@@ -154,7 +154,7 @@ struct WorkJournalPanel: View {
                 .help("\(active.provider.title)의 종료 한도를 확인하고 영수증을 저장합니다")
             }
             if journal.message != nil {
-                HStack(spacing: 6) {
+                HStack(spacing: UsageSpacing.compact) {
                     errorDetails("기록을 유지했어요")
                     Spacer(minLength: 4)
                     Button("한도 비교 없이 종료") { Task { await journal.finishWithoutSnapshot() } }
@@ -175,23 +175,23 @@ struct WorkJournalPanel: View {
                 Text(receipt.provider.title).foregroundStyle(UsageTheme.secondaryInk)
                 Spacer(minLength: 4)
                 Text(Self.durationLabel(receipt.duration))
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .font(UsageType.durationCompact)
                     .monospacedDigit()
             }
             PanelReceiptPerforation()
                 .stroke(UsageTheme.secondaryInk.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
                 .frame(height: 1)
                 .accessibilityHidden(true)
-            VStack(spacing: 4) {
+            VStack(spacing: UsageSpacing.tight) {
                 ForEach(Array(receipt.rows.prefix(2))) { row in
                     receiptRow(row)
                 }
             }
             Text("계정 전체 변화 · 다른 창·기기 사용 포함")
-                .font(.system(size: 10))
+                .font(UsageType.micro)
                 .foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 8) {
+            HStack(spacing: UsageSpacing.item) {
                 historyButton
                 Spacer(minLength: 4)
                 Button("닫기") {
@@ -230,7 +230,7 @@ struct WorkJournalPanel: View {
     }
 
     private var loading: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: UsageSpacing.item) {
             if journal.message != nil {
                 errorDetails("기록을 읽지 못했어요")
                 Spacer(minLength: 4)
@@ -258,14 +258,14 @@ struct WorkJournalPanel: View {
     private func errorDetails(_ title: String) -> some View {
         Button { showingError.toggle() } label: {
             Label(title + " · 자세히", systemImage: "exclamationmark.circle")
-                .font(.system(size: 10))
+                .font(UsageType.micro)
                 .foregroundStyle(UsageTheme.warning)
         }
         .buttonStyle(.plain)
         .help(journal.message ?? title)
         .accessibilityLabel(title + ". " + (journal.message ?? "") + " 오류 자세히 보기")
         .popover(isPresented: $showingError, arrowEdge: .top) {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: UsageSpacing.group) {
                 Text(journal.message ?? title)
                     .font(.callout)
                     .fixedSize(horizontal: false, vertical: true)

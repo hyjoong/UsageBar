@@ -13,18 +13,18 @@ struct QuotaInstrument: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: UsageSpacing.tight) {
                 Text(window.remainingPercent, format: .number.precision(.fractionLength(0)))
-                    .font(.system(size: 56, weight: .light, design: .rounded))
+                    .font(UsageType.display)
                     .tracking(-3).monospacedDigit()
-                Text("%").font(.system(size: 24, weight: .light)).foregroundStyle(UsageTheme.secondaryInk)
+                Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 5) {
                     Text(current ? "남은 한도" : "이전 기록")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(UsageType.label)
                         .foregroundStyle(current ? UsageTheme.ink : UsageTheme.warning)
                     Text("\(Int(window.usedPercent.rounded()))% 사용")
-                        .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                 }
             }
             .accessibilityElement(children: .ignore)
@@ -35,30 +35,30 @@ struct QuotaInstrument: View {
             if let date = window.resetsAt {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "arrow.turn.down.right")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(UsageType.label)
                         .foregroundStyle(marker).padding(.top, 2).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("이 한도 리셋").font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
-                        Text(UsagePanel.relativeDate(date, now: now, expiry: false))
-                            .font(.system(size: 15, weight: .medium)).monospacedDigit()
+                    VStack(alignment: .leading, spacing: UsageSpacing.tight) {
+                        Text("이 한도 리셋").font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                        Text(UsageFormat.relativeDate(date, now: now, expiry: false))
+                            .font(UsageType.emphasis).monospacedDigit()
                             .foregroundStyle(date <= now ? UsageTheme.warning : marker)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 6)
-                    Text(date.formatted(.dateTime.locale(Locale(identifier: "ko_KR")).month().day().hour().minute()))
-                        .font(.system(size: 11)).foregroundStyle(UsageTheme.secondaryInk)
+                    Text(date.formatted(UsageFormat.koreanDateTime))
+                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                         .multilineTextAlignment(.trailing).padding(.top, 2)
                 }.accessibilityElement(children: .combine)
             } else {
                 Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
-                    .font(.system(size: 12)).foregroundStyle(UsageTheme.secondaryInk)
+                    .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
     private var scale: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: UsageSpacing.compact) {
             GeometryReader { proxy in
                 let width = max(0, proxy.size.width - 4)
                 let position = width * window.remainingPercent / 100
@@ -93,7 +93,7 @@ struct QuotaInstrument: View {
                     }
                 }
             }.frame(height: 14)
-            .font(.system(size: 11, design: .monospaced)).foregroundStyle(UsageTheme.secondaryInk)
+            .font(UsageType.captionMono).foregroundStyle(UsageTheme.secondaryInk)
         }
         .accessibilityHidden(true)
     }
