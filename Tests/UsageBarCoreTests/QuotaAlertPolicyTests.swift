@@ -74,4 +74,38 @@ final class QuotaAlertPolicyTests: XCTestCase {
         XCTAssertNil(QuotaAlertPolicy.evaluate(previous: first.state, remaining: .nan,
             resetsAt: nil, observedAt: now))
     }
+
+    func testRecoveryNotifiesWhenLowLimitRollsOverToNewPeriod() throws {
+        let expiredReset = now.addingTimeInterval(-60)
+        let nextReset = now.addingTimeInterval(5 * 3_600)
+        let low = QuotaAlertState(remaining: 12, periodResetAt: expiredReset, hasNotified: true)
+        let result = try XCTUnwrap(QuotaAlertPolicy.evaluate(previous: low, remaining: 100,
+            resetsAt: nextReset, observedAt: now))
+        XCTAssertTrue(result.shouldNotifyRecovery)
+        XCTAssertFalse(result.shouldNotify)
+        XCTAssertFalse(result.state.hasNotified)
+    }
+
+    func testRecoveryStaysQuietWhenLimitWasNotLow() throws {
+        let expiredReset = now.addingTimeInterval(-60)
+        let fine = QuotaAlertState(remaining: 64, periodResetAt: expiredReset)
+        let result = try XCTUnwrap(QuotaAlertPolicy.evaluate(previous: fine, remaining: 100,
+            resetsAt: now.addingTimeInterval(5 * 3_600), observedAt: now))
+        XCTAssertFalse(result.shouldNotifyRecovery)
+    }
+
+    func testRecoveryIgnoresResetJitterWithinSamePeriod() throws {
+        let reset = now.addingTimeInterval(3_600)
+        let low = QuotaAlertState(remaining: 15, periodResetAt: reset, hasNotified: true)
+        let result = try XCTUnwrap(QuotaAlertPolicy.evaluate(previous: low, remaining: 16,
+            resetsAt: reset.addingTimeInterval(45), observedAt: now.addingTimeInterval(300)))
+        XCTAssertFalse(result.shouldNotifyRecovery)
+    }
+
+    func testRecoveryWithoutClockNotifiesOnceCapacityReturns() throws {
+        let low = QuotaAlertState(remaining: 5, periodResetAt: nil, hasNotified: true)
+        let result = try XCTUnwrap(QuotaAlertPolicy.evaluate(previous: low, remaining: 97,
+            resetsAt: nil, observedAt: now))
+        XCTAssertTrue(result.shouldNotifyRecovery)
+    }
 }

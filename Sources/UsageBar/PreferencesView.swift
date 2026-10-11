@@ -57,7 +57,11 @@ struct PreferencesView: View {
                     get: { store.notificationsEnabled },
                     set: { value in Task { await store.setNotificationsEnabled(value) } }
                 ))
-                detail("같은 한도에서는 한 번만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
+                Toggle("20% 아래였던 한도가 리셋되면 알림", isOn: Binding(
+                    get: { store.recoveryNotificationsEnabled },
+                    set: { value in Task { await store.setRecoveryNotificationsEnabled(value) } }
+                ))
+                detail("각 한도마다 기간당 한 번씩만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
                 if let message = store.notificationMessage {
                     note(message, color: UsageTheme.warning)
                 }

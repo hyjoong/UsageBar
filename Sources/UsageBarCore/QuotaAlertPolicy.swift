@@ -15,7 +15,10 @@ public struct QuotaAlertState: Equatable, Sendable {
 
 public struct QuotaAlertDecision: Sendable {
     public let state: QuotaAlertState
+    /// The limit just crossed below the threshold in this period.
     public let shouldNotify: Bool
+    /// The limit was at or below the threshold and a new period brought it back above.
+    public let shouldNotifyRecovery: Bool
 }
 
 public enum QuotaAlertPolicy {
@@ -36,9 +39,11 @@ public enum QuotaAlertPolicy {
             && (previous?.remaining ?? 100) <= threshold && remaining > threshold
         let notified = (newPeriod || recoveredWithoutClock) ? false : (previous?.hasNotified ?? false)
         let crossed = previous.map { $0.remaining > threshold && remaining <= threshold } ?? false
+        let recovered = (newPeriod || recoveredWithoutClock)
+            && (previous?.remaining ?? 100) <= threshold && remaining > threshold
         let state = QuotaAlertState(remaining: remaining,
                                    periodResetAt: newPeriod ? resetsAt : (anchor ?? resetsAt),
                                    hasNotified: notified)
-        return QuotaAlertDecision(state: state, shouldNotify: crossed && !notified)
+        return QuotaAlertDecision(state: state, shouldNotify: crossed && !notified, shouldNotifyRecovery: recovered)
     }
 }

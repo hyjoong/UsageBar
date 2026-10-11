@@ -1,0 +1,15 @@
+name: Feature request
+description: An idea for UsageBar. 한국어로 적으셔도 됩니다.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would this help you do?
+      description: Describe the situation first; the feature second.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How might it work?

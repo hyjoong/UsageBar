@@ -1,0 +1,42 @@
+name: Bug report
+description: Something is wrong or looks wrong. 한국어로 적으셔도 됩니다.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: UsageBar version
+      description: Settings → About, e.g. 0.8.1 (18)
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: macOS 15.1, MacBook Pro 14" (M3)
+    validations:
+      required: true
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service
+      options: [Claude, Codex, Both]
+    validations:
+      required: true
+  - type: input
+    id: cli
+    attributes:
+      label: CLI version
+      description: Output of `claude --version` or `codex --version`
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images here. Please blur anything you don't want public; usage percentages are fine.

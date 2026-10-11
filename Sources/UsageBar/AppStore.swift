@@ -69,6 +69,7 @@ final class AppStore: ObservableObject {
         }
     }
     @Published private(set) var notificationsEnabled = false
+    @Published private(set) var recoveryNotificationsEnabled = false
     @Published private(set) var historyPoints: [HistoryPoint] = []
     @Published private(set) var storageNotice: String?
     @Published private(set) var notificationMessage: String?
@@ -123,6 +124,7 @@ final class AppStore: ObservableObject {
                 selectedProvider = activeProviders.first ?? .claude
             }
             notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
+            recoveryNotificationsEnabled = defaults.bool(forKey: "recoveryNotificationsEnabled")
             if let saved = defaults.dictionary(forKey: "trackedWindowIDs") as? [String: String] {
                 trackedWindowIDs = Dictionary(uniqueKeysWithValues: saved.compactMap { key, value in
                     ProviderID(rawValue: key).map { ($0, value) }
@@ -433,25 +435,34 @@ final class AppStore: ObservableObject {
     }
 
     func setNotificationsEnabled(_ enabled: Bool) async {
+        await setNotificationSetting(\.notificationsEnabled, key: "notificationsEnabled", enabled: enabled)
+    }
+
+    func setRecoveryNotificationsEnabled(_ enabled: Bool) async {
+        await setNotificationSetting(\.recoveryNotificationsEnabled, key: "recoveryNotificationsEnabled", enabled: enabled)
+    }
+
+    /// Turning any notification on asks for permission; the stored value reflects what macOS granted.
+    private func setNotificationSetting(_ path: ReferenceWritableKeyPath<AppStore, Bool>, key: String, enabled: Bool) async {
         let settingToken = UUID()
         notificationSettingToken = settingToken
         notificationMessage = nil
-        if isDemo { notificationsEnabled = enabled; return }
+        if isDemo { self[keyPath: path] = enabled; return }
         if !enabled {
-            notificationsEnabled = false
-            defaults.set(false, forKey: "notificationsEnabled")
+            self[keyPath: path] = false
+            defaults.set(false, forKey: key)
             return
         }
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
             guard notificationSettingToken == settingToken else { return }
-            notificationsEnabled = granted
-            defaults.set(granted, forKey: "notificationsEnabled")
+            self[keyPath: path] = granted
+            defaults.set(granted, forKey: key)
             if !granted { notificationMessage = String(localized: "알림 권한이 꺼져 있어요. 시스템 설정에서 변경할 수 있어요.") }
         } catch {
             guard notificationSettingToken == settingToken else { return }
-            notificationsEnabled = false
-            defaults.set(false, forKey: "notificationsEnabled")
+            self[keyPath: path] = false
+            defaults.set(false, forKey: key)
             notificationMessage = String(localized: "알림 권한을 확인하지 못했어요.")
         }
     }
@@ -541,17 +552,33 @@ final class AppStore: ObservableObject {
             guard let decision = QuotaAlertPolicy.evaluate(previous: notificationTracking[key], remaining: remaining,
                 resetsAt: window.resetsAt, observedAt: snapshot.fetchedAt) else { continue }
             var nextState = decision.state
+            let period = nextState.periodResetAt.map { String(Int($0.timeIntervalSince1970)) } ?? "unknown"
             if decision.shouldNotify && notificationsEnabled && !isDemo {
-                let content = UNMutableNotificationContent()
-                content.title = String(localized: "\(snapshot.provider.title) 한도가 얼마 남지 않았어요")
-                content.body = String(localized: "\(window.label) · \(Int(remaining.rounded()))% 남음")
-                content.sound = .default
-                let period = nextState.periodResetAt.map { String(Int($0.timeIntervalSince1970)) } ?? "unknown"
-                let request = UNNotificationRequest(identifier: "usage.\(key).\(period)", content: content, trigger: nil)
-                do { try await UNUserNotificationCenter.current().add(request); nextState.hasNotified = true }
-                catch { notificationMessage = String(localized: "사용량 알림을 보내지 못했어요.") }
+                let delivered = await deliverNotification(id: "usage.\(key).\(period)",
+                    title: String(localized: "\(snapshot.provider.title) 한도가 얼마 남지 않았어요"),
+                    body: String(localized: "\(window.label) · \(Int(remaining.rounded()))% 남음"))
+                if delivered { nextState.hasNotified = true }
+            }
+            if decision.shouldNotifyRecovery && recoveryNotificationsEnabled && !isDemo {
+                _ = await deliverNotification(id: "recovery.\(key).\(period)",
+                    title: String(localized: "\(snapshot.provider.title) 한도가 리셋됐어요"),
+                    body: String(localized: "\(window.label) · \(Int(remaining.rounded()))% 남음"))
             }
             notificationTracking[key] = nextState
+        }
+    }
+
+    private func deliverNotification(id: String, title: String, body: String) async -> Bool {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        do {
+            try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
+            return true
+        } catch {
+            notificationMessage = String(localized: "사용량 알림을 보내지 못했어요.")
+            return false
         }
     }
 

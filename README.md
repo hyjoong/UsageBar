@@ -38,7 +38,7 @@
 - **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
 - **Both services.** Claude Code and Codex side by side, or just the one you use.
 - **Nothing new to log in to.** UsageBar reads the CLI logins already on your Mac. It never asks for a password or an API key.
-- **Stays out of the way.** A menu bar popover that sizes to its content, a floating window when you want it to stay visible, and a 20% low-limit notification if you turn it on.
+- **Stays out of the way.** A menu bar popover that sizes to its content, a floating window when you want it to stay visible, and optional notifications when a limit drops below 20% and when a low limit resets.
 - **English and Korean.** Follows your system language.
 
 <p align="center">
