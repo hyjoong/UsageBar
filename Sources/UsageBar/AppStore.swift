@@ -182,12 +182,13 @@ final class AppStore: ObservableObject {
         NSApplication.shared.appearance = appearanceMode.appearance
     }
 
-    /// Quits and reopens the app bundle so the new language takes effect.
+    /// Quits and reopens the app bundle so the new language takes effect. The helper waits for
+    /// this process to exit first; opening too early would only re-activate the old instance.
     func relaunch() {
-        let path = Bundle.main.bundlePath
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/bin/sh")
-        task.arguments = ["-c", "sleep 0.7; /usr/bin/open \"$0\"", path]
+        task.arguments = ["-c", "while kill -0 \"$1\" 2>/dev/null; do sleep 0.1; done; /usr/bin/open \"$0\"",
+                          Bundle.main.bundlePath, String(ProcessInfo.processInfo.processIdentifier)]
         try? task.run()
         NSApplication.shared.terminate(nil)
     }
