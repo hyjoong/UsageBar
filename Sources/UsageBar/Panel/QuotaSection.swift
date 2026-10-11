@@ -26,20 +26,21 @@ struct QuotaRow: View {
     }
 
     @ViewBuilder private var hero: some View {
-        HStack(spacing: UsageSpacing.compact) {
-            Text(window.label).font(UsageType.headline)
-            staleBadge
-            Spacer()
-            QuotaPinButton(store: store, window: window, selected: true)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: UsageSpacing.compact) {
+                Text(window.label).font(UsageType.headline)
+                staleBadge
+                Spacer()
+                QuotaPinButton(store: store, window: window, selected: true)
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(remaining, format: .number)
+                    .font(UsageType.display).tracking(-2).monospacedDigit()
+                Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
+                Text("남음").font(UsageType.body).foregroundStyle(UsageTheme.secondaryInk).padding(.leading, UsageSpacing.tight)
+            }
+            .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
         }
-        .padding(.bottom, -UsageSpacing.compact)
-        HStack(alignment: .firstTextBaseline, spacing: 3) {
-            Text(remaining, format: .number)
-                .font(UsageType.display).tracking(-2).monospacedDigit()
-            Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
-            Text("남음").font(UsageType.body).foregroundStyle(UsageTheme.secondaryInk).padding(.leading, UsageSpacing.tight)
-        }
-        .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
         QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 10)
     }
 
@@ -71,7 +72,7 @@ struct QuotaRow: View {
                         .foregroundStyle(UsageTheme.secondaryInk)
                 }
             } else {
-                Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
+                Text(window.resetDescription ?? String(localized: "리셋 시각이 제공되지 않았어요"))
                     .foregroundStyle(UsageTheme.secondaryInk)
             }
         }

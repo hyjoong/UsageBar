@@ -65,10 +65,15 @@ swift build -c "$usagebar_mode" --product UsageBar --scratch-path "$usagebar_scr
 usagebar_bin="$(swift build -c "$usagebar_mode" --scratch-path "$usagebar_scratch" --show-bin-path)"
 cp "$usagebar_bin/UsageBar" "$usagebar_bundle/Contents/MacOS/UsageBar"
 cp "$usagebar_root/Resources/setup-claude.command" "$usagebar_bundle/Contents/Resources/setup-claude.command"
-# Korean is the source language (keys), English is compiled from the string catalog.
+# Korean is the source language (keys); English is compiled from the string catalog.
+# xcstringstool ships with Xcode, not the Command Line Tools; without it the app is Korean-only.
 mkdir -p "$usagebar_bundle/Contents/Resources/ko.lproj"
-xcrun xcstringstool compile "$usagebar_root/Resources/Localizable.xcstrings" \
-  --output-directory "$usagebar_bundle/Contents/Resources" >/dev/null
+if xcrun --find xcstringstool >/dev/null 2>&1; then
+  xcrun xcstringstool compile "$usagebar_root/Resources/Localizable.xcstrings" \
+    --output-directory "$usagebar_bundle/Contents/Resources" >/dev/null
+else
+  print -u2 -- "warning: xcstringstool not found (requires Xcode); building without the English localization."
+fi
 chmod +x "$usagebar_bundle/Contents/MacOS/UsageBar" "$usagebar_bundle/Contents/Resources/setup-claude.command"
 if [[ -f "$usagebar_root/Resources/AppIcon.icns" ]]; then
   cp "$usagebar_root/Resources/AppIcon.icns" "$usagebar_bundle/Contents/Resources/AppIcon.icns"

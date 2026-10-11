@@ -60,7 +60,7 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 필요한 환경:
 
 - **macOS 14 이상**
-- **Swift 5.10 이상을 지원하는 Xcode 또는 Command Line Tools**
+- **Swift 5.10 이상을 지원하는 Xcode 또는 Command Line Tools** (영어 UI를 번들에 넣으려면 `xcstringstool`이 포함된 Xcode가 필요하고, 없으면 한국어만 들어간 앱이 만들어집니다)
 - **Python 3** (빌드·배포 설정 검증에 사용)
 - 공개 전에는 이 비공개 GitHub 저장소에 접근할 수 있는 계정
 

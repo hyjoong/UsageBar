@@ -153,17 +153,17 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
 
 /// Keeps the detached panel above other windows so it can stay visible during a long task.
 private struct FloatingWindowConfigurator: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async { configure(view.window) }
-        return view
-    }
-    func updateNSView(_ nsView: NSView, context: Context) { configure(nsView.window) }
-    private func configure(_ window: NSWindow?) {
-        guard let window, window.level != .floating else { return }
-        window.level = .floating
-        window.collectionBehavior.insert(.moveToActiveSpace)
-        window.standardWindowButton(.zoomButton)?.isHidden = true
-        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+    func makeNSView(context: Context) -> NSView { FloatingWindowView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class FloatingWindowView: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window, window.level != .floating else { return }
+            window.level = .floating
+            window.collectionBehavior.insert(.moveToActiveSpace)
+            window.standardWindowButton(.zoomButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        }
     }
 }

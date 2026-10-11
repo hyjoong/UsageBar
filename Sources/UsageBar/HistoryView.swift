@@ -14,9 +14,6 @@ struct HistoryView: View {
     @State private var isExporting = false
     @State private var exportError: String?
 
-    /// Observations further apart than this are not joined by a line; the app was likely closed or asleep.
-    static let lineGap: TimeInterval = 90 * 60
-
     private struct WindowChoice: Identifiable {
         let id: String
         let label: String
@@ -54,7 +51,7 @@ struct HistoryView: View {
             && (0...100).contains(window.usedPercent) && !window.id.isEmpty {
             labels[window.id] = window.label
         }
-        return labels.map { WindowChoice(id: $0.key, label: $0.value.isEmpty ? "이름 없는 한도" : $0.value) }
+        return labels.map { WindowChoice(id: $0.key, label: $0.value.isEmpty ? String(localized: "이름 없는 한도") : $0.value) }
             .sorted { $0.label == $1.label ? $0.id < $1.id : $0.label < $1.label }
     }
 
@@ -86,7 +83,7 @@ struct HistoryView: View {
         .alert("CSV를 저장하지 못했어요", isPresented: Binding(
             get: { exportError != nil }, set: { if !$0 { exportError = nil } }
         )) {
-            Button("확인", role: .cancel) { exportError = nil }
+            Button("닫기", role: .cancel) { exportError = nil }
         } message: {
             Text(exportError ?? String(localized: "다른 저장 위치를 선택해 다시 시도해 주세요."))
         }
@@ -158,7 +155,9 @@ struct HistoryView: View {
             let seriesIndices = Dictionary(uniqueKeysWithValues: allSeries.enumerated().map { ($0.element, $0.offset) })
             let visibleSeries = Array(Set(points.map(\.windowName))).sorted()
             let usesTimeLabels = points.last!.date.timeIntervalSince(points.first!.date) <= 48 * 3_600
-            let segments = Self.segments(points, seriesIndices: seriesIndices)
+            let segments = HistoryLineSegments.split(points).map {
+                Segment(id: $0.id, seriesIndex: seriesIndices[$0.windowName] ?? 0, points: $0.points)
+            }
             VStack(alignment: .leading, spacing: UsageSpacing.tight) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("잔여 한도 추이").font(UsageType.title)
@@ -219,7 +218,7 @@ struct HistoryView: View {
                 ForEach(visibleSeries, id: \.self) { name in
                     HStack(spacing: UsageSpacing.compact) {
                         seriesSymbol(seriesIndices[name] ?? 0)
-                        Text(name.isEmpty ? "이름 없는 한도" : name)
+                        Text(name.isEmpty ? String(localized: "이름 없는 한도") : name)
                             .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -227,27 +226,6 @@ struct HistoryView: View {
                 }
             }
         }
-    }
-
-    /// Splits each series into runs of observations close enough in time to draw a line between.
-    private static func segments(_ points: [HistoryPoint], seriesIndices: [String: Int]) -> [Segment] {
-        var result: [Segment] = []
-        for (name, group) in Dictionary(grouping: points, by: \.windowName).sorted(by: { $0.key < $1.key }) {
-            var run: [HistoryPoint] = []
-            var runIndex = 0
-            func flush() {
-                guard run.count > 1 else { run = []; return }
-                result.append(Segment(id: "\(name)#\(runIndex)", seriesIndex: seriesIndices[name] ?? 0, points: run))
-                runIndex += 1
-                run = []
-            }
-            for point in group.sorted(by: { $0.date < $1.date }) {
-                if let last = run.last, point.date.timeIntervalSince(last.date) > lineGap { flush() }
-                run.append(point)
-            }
-            flush()
-        }
-        return result
     }
 
     // MARK: Tokens

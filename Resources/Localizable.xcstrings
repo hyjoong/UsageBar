@@ -2280,6 +2280,22 @@
         }
       }
     },
+    "리셋 시각이 제공되지 않았어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reset time was provided"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 시각이 제공되지 않았어요"
+          }
+        }
+      }
+    },
     "리셋 확인 필요": {
       "localizations": {
         "en": {
@@ -3972,6 +3988,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 한도를 메뉴바에 표시"
+          }
+        }
+      }
+    },
+    "이름 없는 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unnamed limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름 없는 한도"
           }
         }
       }

@@ -23,11 +23,13 @@ struct PreferencesView: View {
                     get: { launchAtLogin.isEnabled },
                     set: { launchAtLogin.setEnabled($0) }
                 ))
-                if launchAtLogin.requiresApproval || launchAtLogin.errorMessage != nil {
-                    note(launchAtLogin.errorMessage ?? launchAtLogin.statusMessage, color: UsageTheme.warning)
-                    if launchAtLogin.requiresApproval {
-                        Button("로그인 항목 설정 열기") { launchAtLogin.openSystemSettings() }
-                    }
+                note(launchAtLogin.statusMessage,
+                     color: launchAtLogin.requiresApproval ? UsageTheme.warning : UsageTheme.secondaryInk)
+                if let message = launchAtLogin.errorMessage {
+                    note(message, color: UsageTheme.warning)
+                }
+                if launchAtLogin.requiresApproval {
+                    Button("로그인 항목 설정 열기") { launchAtLogin.openSystemSettings() }
                 }
             } header: {
                 sectionTitle("일반", symbol: "gearshape")

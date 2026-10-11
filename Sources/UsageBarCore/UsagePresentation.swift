@@ -64,3 +64,36 @@ public enum UsageWindowSelection {
         }.first
     }
 }
+
+/// Runs of observations close enough in time to join with a line. A gap longer than `maxGap`
+/// (the app was closed or asleep) starts a new run; single observations are left as points.
+public enum HistoryLineSegments {
+    public static let defaultMaxGap: TimeInterval = 90 * 60
+
+    public struct Run: Identifiable, Equatable, Sendable {
+        public let id: String
+        public let windowName: String
+        public let points: [HistoryPoint]
+    }
+
+    public static func split(_ points: [HistoryPoint], maxGap: TimeInterval = defaultMaxGap) -> [Run] {
+        var runs: [Run] = []
+        for (name, group) in Dictionary(grouping: points, by: \.windowName).sorted(by: { $0.key < $1.key }) {
+            var current: [HistoryPoint] = []
+            var index = 0
+            func flush() {
+                if current.count > 1 {
+                    runs.append(Run(id: "\(name)#\(index)", windowName: name, points: current))
+                    index += 1
+                }
+                current = []
+            }
+            for point in group.sorted(by: { $0.date < $1.date }) {
+                if let last = current.last, point.date.timeIntervalSince(last.date) > maxGap { flush() }
+                current.append(point)
+            }
+            flush()
+        }
+        return runs
+    }
+}
