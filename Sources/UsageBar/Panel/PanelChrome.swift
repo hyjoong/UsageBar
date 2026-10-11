@@ -41,6 +41,8 @@ struct PanelFooter: View {
             iconButton("slider.horizontal.3", help: String(localized: "설정")) { openWindow("settings") }
                 .keyboardShortcut(",", modifiers: .command)
             Menu {
+                Button("창으로 열기") { openWindow("panel") }
+                Divider()
                 Button("공식 사용량 화면") { NSWorkspace.shared.open(provider.dashboardURL) }
                 Button("서비스 장애 현황") { NSWorkspace.shared.open(provider.statusURL) }
                 Divider()

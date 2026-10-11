@@ -774,7 +774,6 @@
         }
       }
     },
-    "CL": {},
     "CSV 내보내기": {
       "localizations": {
         "en": {
@@ -807,7 +806,6 @@
         }
       }
     },
-    "CX": {},
     "ChatGPT 로그인으로 사용하는 Codex 구독 한도만 지원해요. API 키 계정의 요금은 제공되지 않아요.": {
       "localizations": {
         "en": {
@@ -1352,6 +1350,7 @@
         }
       }
     },
+    "UsageBar": {},
     "UsageBar · 예시 화면 검증": {
       "localizations": {
         "en": {
@@ -4853,6 +4852,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "진행 중인 작업 추가 메뉴"
+          }
+        }
+      }
+    },
+    "창으로 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open as Window"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창으로 열기"
           }
         }
       }

@@ -591,6 +591,7 @@ final class AppStore: ObservableObject {
             selectedProvider = .codex
         }
         if CommandLine.arguments.contains("--ui-codex") { selectedProvider = .codex }
+        if CommandLine.arguments.contains("--ui-menu-all") { menuBarDisplayMode = .all }
         if CommandLine.arguments.contains("--ui-rate-limited") {
             for id in ProviderID.allCases {
                 states[id] = ProviderState(errorMessage: ProviderError.rateLimited(retryAfter: 300).localizedDescription)

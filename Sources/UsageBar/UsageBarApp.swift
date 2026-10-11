@@ -28,6 +28,13 @@ struct UsageBarApp: App {
         }
         .menuBarExtraStyle(.window)
 
+        Window("UsageBar", id: "panel") {
+            UsagePanel(store: store, updates: updates)
+                .background(FloatingWindowConfigurator())
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.topTrailing)
+
         Window("사용 기록 · UsageBar", id: "history") {
             HistoryView(store: store)
         }
@@ -82,7 +89,8 @@ private struct UsageMenuLabel: View {
             ForEach(store.menuProviders) { provider in
                 HStack(spacing: 4) {
                     if store.menuProviders.count > 1 {
-                        Text(provider == .claude ? "CL" : "CX").font(.system(size: 10, weight: .semibold))
+                        Image(systemName: provider.symbol).font(.system(size: 10, weight: .semibold))
+                            .accessibilityHidden(true)
                     }
                     if store.showPercentage { Text(store.menuTitle(for: provider)).monospacedDigit() }
                 }
@@ -98,6 +106,7 @@ private struct UsageMenuLabel: View {
             if CommandLine.arguments.contains("--ui-settings") || UpdateConfiguration.isIsolatedFixture(info: Bundle.main.infoDictionary ?? [:], bundleIdentifier: Bundle.main.bundleIdentifier) { openWindow(id: "settings") }
             if CommandLine.arguments.contains("--ui-history") { openWindow(id: "history") }
             if CommandLine.arguments.contains("--ui-work-journal") { openWindow(id: "work-journal") }
+            if CommandLine.arguments.contains("--ui-window") { openWindow(id: "panel") }
         }
         #endif
     }
@@ -140,4 +149,21 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) { Self.store?.stop() }
+}
+
+/// Keeps the detached panel above other windows so it can stay visible during a long task.
+private struct FloatingWindowConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async { configure(view.window) }
+        return view
+    }
+    func updateNSView(_ nsView: NSView, context: Context) { configure(nsView.window) }
+    private func configure(_ window: NSWindow?) {
+        guard let window, window.level != .floating else { return }
+        window.level = .floating
+        window.collectionBehavior.insert(.moveToActiveSpace)
+        window.standardWindowButton(.zoomButton)?.isHidden = true
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+    }
 }
