@@ -31,19 +31,19 @@ struct UsageBarApp: App {
         Window("사용 기록 · UsageBar", id: "history") {
             HistoryView(store: store)
         }
-        .defaultSize(width: 760, height: 660)
+        .defaultSize(width: 720, height: 560)
         .windowResizability(.contentMinSize)
 
         Window("작업 영수증 · UsageBar", id: "work-journal") {
             WorkJournalView(store: store)
         }
-        .defaultSize(width: 560, height: 700)
+        .defaultSize(width: 520, height: 600)
         .windowResizability(.contentMinSize)
 
         Window("설정 · UsageBar", id: "settings") {
             PreferencesView(store: store, updates: updates)
         }
-        .defaultSize(width: 500, height: 650)
+        .defaultSize(width: 500, height: 620)
         .windowResizability(.contentSize)
         .commands { UsageBarCommands(updates: updates) }
     }

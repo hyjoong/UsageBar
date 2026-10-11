@@ -81,7 +81,7 @@ enum UsageType {
     // Numerals
     static let display = Font.system(size: 44, weight: .light, design: .rounded)
     static let displayUnit = Font.system(size: 20, weight: .light)
-    static let metric = Font.system(size: 30, weight: .medium)
+    static let metric = Font.system(size: 30, weight: .medium, design: .rounded)
     static let duration = Font.system(size: 19, weight: .medium, design: .rounded)
     static let durationCompact = Font.system(size: 17, weight: .medium, design: .rounded)
     static let emphasis = Font.system(size: 15, weight: .medium)

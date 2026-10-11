@@ -100,7 +100,7 @@ struct WorkJournalPanel: View {
         HStack(spacing: UsageSpacing.item) {
             Image(systemName: "record.circle").foregroundStyle(UsageTheme.accent).accessibilityHidden(true)
             TimelineView(.periodic(from: .now, by: 60)) { context in
-                let label = Self.durationLabel(context.date.timeIntervalSince(active.startedAt))
+                let label = UsageFormat.durationLabel(context.date.timeIntervalSince(active.startedAt))
                 Text(label)
                     .font(UsageType.durationCompact).monospacedDigit()
                     .accessibilityLabel("기록 경과 시간 \(label)")
@@ -142,7 +142,7 @@ struct WorkJournalPanel: View {
     @ViewBuilder private func completion(_ receipt: WorkReceipt) -> some View {
         HStack(spacing: UsageSpacing.item) {
             Image(systemName: "checkmark.circle.fill").foregroundStyle(UsageTheme.accent).accessibilityHidden(true)
-            Text(Self.durationLabel(receipt.duration))
+            Text(UsageFormat.durationLabel(receipt.duration))
                 .font(UsageType.durationCompact).monospacedDigit()
             Text("\(receipt.kind.title) · \(receipt.provider.title)")
                 .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
@@ -167,7 +167,7 @@ struct WorkJournalPanel: View {
             .help("영수증은 전체 기록에 보관하고 이 표시를 닫아요")
             .accessibilityLabel("완료 표시 닫기")
         }
-        Text(Self.summary(receipt.rows))
+        Text(UsageFormat.receiptSummary(receipt.rows, limit: 2))
             .foregroundStyle(UsageTheme.secondaryInk)
             .fixedSize(horizontal: false, vertical: true)
             .help("관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.")
@@ -219,22 +219,5 @@ struct WorkJournalPanel: View {
         if let active = journal.state.active { return "active-\(active.id)" }
         if let receipt = journal.recentCompletion { return "receipt-\(receipt.id)" }
         return "idle"
-    }
-
-    static func durationLabel(_ interval: TimeInterval) -> String {
-        guard interval.isFinite else { return "시간 확인 불가" }
-        let minutes = Int(min(max(0, interval / 60), Double(Int.max / 2)))
-        if minutes == 0 { return "1분 미만" }
-        if minutes < 60 { return "\(minutes)분" }
-        return minutes % 60 == 0 ? "\(minutes / 60)시간" : "\(minutes / 60)시간 \(minutes % 60)분"
-    }
-
-    static func summary(_ rows: [WorkQuotaDelta]) -> String {
-        guard !rows.isEmpty else { return "한도 비교 없이 시간만 기록했어요" }
-        return rows.prefix(2).map { row in
-            guard let value = row.percentagePoints, value.isFinite else { return "\(row.label) 비교 불가" }
-            if value == 0 { return "\(row.label) 변화 없음" }
-            return "\(row.label) +\(value.formatted(.number.precision(.fractionLength(0...2))))%p"
-        }.joined(separator: " · ")
     }
 }

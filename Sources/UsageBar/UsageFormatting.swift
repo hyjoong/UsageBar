@@ -36,6 +36,26 @@ enum UsageFormat {
         return String(number)
     }
 
+    static func durationLabel(_ interval: TimeInterval) -> String {
+        guard interval.isFinite else { return "시간 확인 불가" }
+        let minutes = Int(min(max(0, interval / 60), Double(Int.max / 2)))
+        if minutes == 0 { return "1분 미만" }
+        if minutes < 60 { return "\(minutes)분" }
+        return minutes % 60 == 0 ? "\(minutes / 60)시간" : "\(minutes / 60)시간 \(minutes % 60)분"
+    }
+
+    static func deltaLabel(_ value: Double?) -> String {
+        guard let value, value.isFinite else { return "비교 불가" }
+        if value == 0 { return "변화 없음" }
+        return "+\(value.formatted(.number.precision(.fractionLength(0...2))))%p"
+    }
+
+    /// "5시간 한도 +6%p · 주간 한도 +1%p" for the first `limit` rows of a receipt.
+    static func receiptSummary(_ rows: [WorkQuotaDelta], limit: Int = .max) -> String {
+        guard !rows.isEmpty else { return "한도 비교 없이 시간만 기록했어요" }
+        return rows.prefix(limit).map { "\($0.label) \(deltaLabel($0.percentagePoints))" }.joined(separator: " · ")
+    }
+
     static func creditStatus(_ status: String) -> String {
         switch status.lowercased() {
         case "available": return "사용 가능"
