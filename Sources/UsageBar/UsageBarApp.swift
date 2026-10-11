@@ -98,11 +98,12 @@ private struct UsageMenuLabel: View {
             Image(nsImage: UsageBrandMark.menuImage)
             if store.isDemo { Text("예시").font(.caption2) }
             if let active = journal.state.active {
+                // The label is rendered to an image on every update, so it must not host a TimelineView:
+                // `.periodic(from: .now)` would reschedule on each render and spin the main thread.
+                // The store's clock already ticks once a minute.
                 HStack(spacing: 3) {
                     Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
-                    TimelineView(.periodic(from: .now, by: 60)) { context in
-                        Text(Self.compactDuration(context.date.timeIntervalSince(active.startedAt))).monospacedDigit()
-                    }
+                    Text(Self.compactDuration(store.clockNow.timeIntervalSince(active.startedAt))).monospacedDigit()
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("작업 기록 중")
