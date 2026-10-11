@@ -168,6 +168,7 @@ final class AppStore: ObservableObject {
         states = Dictionary(uniqueKeysWithValues: ProviderID.allCases.map { ($0, ProviderState()) })
         journalObservation = workJournal.$state.map { $0.active?.id }.removeDuplicates()
             .sink { [weak self] _ in Task { await self?.syncWorkReminders() } }
+        workJournal.historyProvider = { [weak self] provider in self?.history(for: provider) ?? [] }
         workJournal.activityCollector = { [weak self] provider, start, end in
             guard let self, self.sessionDetailsEnabled else { return nil }
             if self.isDemo { return .demo }

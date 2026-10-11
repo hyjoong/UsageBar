@@ -189,6 +189,19 @@ struct WorkJournalPanel: View {
                     .padding(.vertical, 2)
                     .help("연한 부분은 작업 후 남은 한도, 진한 부분은 이 작업 구간에 줄어든 한도예요")
             }
+        } else if let primary, let estimate = primary.estimatedPercentagePoints {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(verbatim: "≈+" + estimate.formatted(.number.precision(.fractionLength(0...1))))
+                    .font(UsageType.metric).monospacedDigit().foregroundStyle(UsageTheme.accent)
+                Text(verbatim: "%p").font(UsageType.emphasis).foregroundStyle(UsageTheme.secondaryInk)
+                Text("\(primary.label) · 리셋 통과 추정").foregroundStyle(UsageTheme.secondaryInk)
+                    .padding(.leading, UsageSpacing.tight).lineLimit(1)
+            }
+            if let before = primary.estimatedBeforeReset, let after = primary.estimatedAfterReset {
+                Text("리셋 전 마지막 조회까지 +\(before.formatted(.number.precision(.fractionLength(0...1))))%p, 리셋 후 +\(after.formatted(.number.precision(.fractionLength(0...1))))%p")
+                    .foregroundStyle(UsageTheme.secondaryInk).fixedSize(horizontal: false, vertical: true)
+                    .help("리셋을 지난 구간은 측정값이 아니라 추정값이에요. 5분 간격 조회의 마지막 값과 새 기간의 사용률을 더했어요.")
+            }
         } else if let activity = receipt.activity, !activity.isEmpty {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(verbatim: TokenFormat.compact(activity.outputTokens))

@@ -56,7 +56,12 @@ enum UsageFormat {
     /// "5시간 한도 +6%p · 주간 한도 +1%p" for the first `limit` rows of a receipt.
     static func receiptSummary(_ rows: [WorkQuotaDelta], limit: Int = .max) -> String {
         guard !rows.isEmpty else { return String(localized: "한도 비교 없이 시간만 기록했어요") }
-        return rows.prefix(limit).map { "\($0.label) \(deltaLabel($0.percentagePoints))" }.joined(separator: " · ")
+        return rows.prefix(limit).map { row in
+            if row.percentagePoints == nil, let estimate = row.estimatedPercentagePoints {
+                return "\(row.label) ≈+\(estimate.formatted(.number.precision(.fractionLength(0...1))))%p"
+            }
+            return "\(row.label) \(deltaLabel(row.percentagePoints))"
+        }.joined(separator: " · ")
     }
 
     static func creditStatus(_ status: String) -> String {

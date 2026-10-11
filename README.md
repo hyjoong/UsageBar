@@ -93,7 +93,7 @@ On first launch the panel walks you through the connection in three numbered ste
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
 | Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
-**How to read a receipt.** The numbers are the *account-wide* change over the observed interval. They include other windows and devices and are not a project's token count or cost. When a reset or an account or plan change makes the comparison meaningless, the receipt says why instead of showing a number.
+**How to read a receipt.** The numbers are the *account-wide* change over the observed interval. They include other windows and devices and are not a project's token count or cost. If the session crossed a limit reset, the receipt shows an estimate (≈) pieced together from the last poll before the reset and the new period's usage, and says so. When an account or plan change makes the comparison meaningless, it says why instead of showing a number.
 
 ## FAQ
 

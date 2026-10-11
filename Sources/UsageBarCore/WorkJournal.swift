@@ -35,10 +35,18 @@ public struct WorkQuotaDelta: Codable, Equatable, Identifiable, Sendable {
     /// Account-wide used percent when the session started and ended; nil on receipts from older versions.
     public let usedPercentAtStart: Double?
     public let usedPercentAtEnd: Double?
+    /// When the session crossed a reset, the change pieced together from the last poll before the reset
+    /// plus what the new period shows at the end. An estimate, never a measured value.
+    public let estimatedPercentagePoints: Double?
+    public let estimatedBeforeReset: Double?
+    public let estimatedAfterReset: Double?
     public init(id: String, label: String, percentagePoints: Double?, note: String? = nil,
-                usedPercentAtStart: Double? = nil, usedPercentAtEnd: Double? = nil) {
+                usedPercentAtStart: Double? = nil, usedPercentAtEnd: Double? = nil,
+                estimatedPercentagePoints: Double? = nil, estimatedBeforeReset: Double? = nil, estimatedAfterReset: Double? = nil) {
         self.id = id; self.label = label; self.percentagePoints = percentagePoints; self.note = note
         self.usedPercentAtStart = usedPercentAtStart; self.usedPercentAtEnd = usedPercentAtEnd
+        self.estimatedPercentagePoints = estimatedPercentagePoints
+        self.estimatedBeforeReset = estimatedBeforeReset; self.estimatedAfterReset = estimatedAfterReset
     }
 }
 
@@ -64,7 +72,12 @@ public struct WorkReceipt: Codable, Equatable, Identifiable, Sendable {
         let minutes = Int(min(duration / 60, Double(Int.max / 2)))
         let durationText = minutes == 0 ? String(localized: "1분 미만") : String(localized: "\(minutes)분")
         let results = rows.map { row in
-            guard let value = row.percentagePoints else { return "\(row.label): \(row.note ?? String(localized: "비교 불가"))" }
+            guard let value = row.percentagePoints else {
+                if let estimate = row.estimatedPercentagePoints {
+                    return String(localized: "\(row.label): 약 +\(estimate.formatted(.number.precision(.fractionLength(0...1))))%p (추정, 리셋 통과)")
+                }
+                return "\(row.label): \(row.note ?? String(localized: "비교 불가"))"
+            }
             if value == 0 { return String(localized: "\(row.label): 표시상 변화 없음 (0%p)") }
             return "\(row.label): +\(value.formatted(.number.precision(.fractionLength(0...2))))%p"
         }
@@ -124,7 +137,9 @@ public struct WorkSession: Codable, Equatable, Identifiable, Sendable {
         })
     }
 
-    public func finish(snapshot: ProviderSnapshot?, now: Date = Date()) -> WorkReceipt {
+    /// `samples` are this provider's polled history points; they let a session that crossed a reset
+    /// keep an estimated change instead of nothing.
+    public func finish(snapshot: ProviderSnapshot?, now: Date = Date(), samples: [HistoryPoint] = []) -> WorkReceipt {
         let timeValid = now.timeIntervalSince1970.isFinite && now > startedAt
         // Receipt boundaries describe observations, not button-click time. A fresh poll
         // can predate this action by up to 60 seconds.
@@ -162,10 +177,22 @@ public struct WorkSession: Codable, Equatable, Identifiable, Sendable {
             guard let startReset = checkpoint.resetsAt, let endReset = window.resetsAt else {
                 return unavailable(String(localized: "리셋 시각이 없어 같은 기간인지 확인할 수 없어요."))
             }
-            guard end < startReset, end < endReset, sampledAt < startReset else {
-                return unavailable(String(localized: "작업 구간에 한도 리셋 시각이 포함돼요."))
+            let crossedReset = !(end < startReset && end < endReset && sampledAt < startReset)
+            let resetMoved = abs(endReset.timeIntervalSince(startReset)) > 90
+            if crossedReset || resetMoved {
+                let reason = crossedReset ? String(localized: "작업 구간에 한도 리셋 시각이 포함돼요.") : String(localized: "리셋 시각이 변경됐어요.")
+                if let estimate = Self.estimateAcrossReset(checkpoint: checkpoint, window: window, startReset: startReset,
+                                                           endReset: endReset, samples: samples) {
+                    let before = estimate.before.formatted(.number.precision(.fractionLength(0...1)))
+                    let after = estimate.after.formatted(.number.precision(.fractionLength(0...1)))
+                    return WorkQuotaDelta(id: "quota-\(index)", label: checkpoint.label, percentagePoints: nil,
+                                          note: String(localized: "리셋 통과 · 추정 (리셋 전 +\(before)%p, 리셋 후 +\(after)%p)"),
+                                          usedPercentAtStart: checkpoint.usedPercent,
+                                          estimatedPercentagePoints: estimate.before + estimate.after,
+                                          estimatedBeforeReset: estimate.before, estimatedAfterReset: estimate.after)
+                }
+                return unavailable(reason)
             }
-            guard abs(endReset.timeIntervalSince(startReset)) <= 90 else { return unavailable(String(localized: "리셋 시각이 변경됐어요.")) }
             guard window.usedPercent >= checkpoint.usedPercent else { return unavailable(String(localized: "사용률이 감소해 단순 비교할 수 없어요.")) }
             let delta = window.usedPercent - checkpoint.usedPercent
             return WorkQuotaDelta(id: "quota-\(index)", label: checkpoint.label, percentagePoints: delta,
@@ -173,6 +200,24 @@ public struct WorkSession: Codable, Equatable, Identifiable, Sendable {
                                   usedPercentAtStart: checkpoint.usedPercent, usedPercentAtEnd: window.usedPercent)
         }
         return WorkReceipt(id: id, kind: kind, provider: provider, startedAt: startedAt, endedAt: end, rows: rows)
+    }
+
+    /// Last poll of this window before its reset gives the pre-reset usage; the new period's usage at the
+    /// end is the post-reset part. Needs a sample taken during the session and before the reset.
+    private static func estimateAcrossReset(checkpoint: Checkpoint, window: UsageWindow, startReset: Date,
+                                            endReset: Date, samples: [HistoryPoint]) -> (before: Double, after: Double)? {
+        // Strictly before the reset: a poll taken after it already shows the new period.
+        let candidates = samples.filter {
+            $0.date.timeIntervalSince1970.isFinite && $0.remaining.isFinite && (0...100).contains($0.remaining)
+                && $0.date <= startReset && hash($0.windowID) == checkpoint.windowDigest
+        }
+        guard let last = candidates.max(by: { $0.date < $1.date }) else { return nil }
+        let usedBeforeReset = 100 - last.remaining
+        guard usedBeforeReset >= checkpoint.usedPercent - 0.5 else { return nil }
+        let before = max(0, usedBeforeReset - checkpoint.usedPercent)
+        // Only a genuinely new period starts from zero; a merely shifted reset time keeps the old count.
+        let after = endReset.timeIntervalSince(startReset) > 90 ? window.usedPercent : 0
+        return (before, after)
     }
 
     fileprivate var isValid: Bool {
@@ -285,6 +330,7 @@ public actor WorkJournalStore {
                     && receipt.rows.allSatisfy { row in
                         !row.id.isEmpty && !row.label.isEmpty && row.label.count <= 80
                             && (row.percentagePoints.map { $0.isFinite && (0...100).contains($0) } ?? (row.note != nil))
+                            && (row.estimatedPercentagePoints.map { $0.isFinite && (0...200).contains($0) } ?? true)
                     }
                     && (receipt.activity.map(validActivity) ?? true)
             }

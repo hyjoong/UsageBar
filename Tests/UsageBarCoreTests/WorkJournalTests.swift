@@ -88,6 +88,29 @@ final class WorkJournalTests: XCTestCase {
         let work = try session(snapshot(reset: start.addingTimeInterval(60)))
         XCTAssertTrue(try note(snapshot(30, at: start.addingTimeInterval(120)), session: work).contains("리셋 시각이 포함"))
     }
+    func testCrossingResetEstimatesFromLastPollBeforeReset() throws {
+        let work = try session(snapshot(reset: start.addingTimeInterval(60)))
+        let newPeriod = snapshot(2, at: start.addingTimeInterval(120), reset: start.addingTimeInterval(60 + 18_000))
+        let samples = [
+            HistoryPoint(provider: .claude, date: start.addingTimeInterval(30), remaining: 70, windowName: "세션", windowID: "window-private-id"),
+            HistoryPoint(provider: .claude, date: start.addingTimeInterval(100), remaining: 10, windowName: "세션", windowID: "window-private-id"),
+            HistoryPoint(provider: .claude, date: start.addingTimeInterval(40), remaining: 50, windowName: "다른", windowID: "other-window"),
+        ]
+        let row = try XCTUnwrap(work.finish(snapshot: newPeriod, now: start.addingTimeInterval(120), samples: samples).rows.first)
+        XCTAssertNil(row.percentagePoints)
+        XCTAssertEqual(row.estimatedBeforeReset, 10)
+        XCTAssertEqual(row.estimatedAfterReset, 2)
+        XCTAssertEqual(row.estimatedPercentagePoints, 12)
+        XCTAssertTrue(try XCTUnwrap(row.note).contains("추정"))
+    }
+
+    func testCrossingResetWithoutSamplesStaysUnavailable() throws {
+        let work = try session(snapshot(reset: start.addingTimeInterval(60)))
+        let row = try XCTUnwrap(work.finish(snapshot: snapshot(30, at: start.addingTimeInterval(120)), now: start.addingTimeInterval(120)).rows.first)
+        XCTAssertNil(row.estimatedPercentagePoints)
+        XCTAssertTrue(try XCTUnwrap(row.note).contains("리셋 시각이 포함"))
+    }
+
     func testResetMovementToleranceAndMissingReset() throws {
         XCTAssertTrue(try note(snapshot(30, at: start.addingTimeInterval(120), reset: start.addingTimeInterval(3_091))).contains("리셋 시각이 변경"))
         let close = try session().finish(snapshot: snapshot(30, at: start.addingTimeInterval(120), reset: start.addingTimeInterval(3_090)), now: start.addingTimeInterval(120))

@@ -83,6 +83,22 @@
         }
       }
     },
+    "%@ · 리셋 통과 추정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · estimate across reset"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 리셋 통과 추정"
+          }
+        }
+      }
+    },
     "%@ · 자세히": {
       "localizations": {
         "en": {
@@ -431,6 +447,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@, %lld퍼센트 남음, 이전 기록"
+          }
+        }
+      }
+    },
+    "%@: 약 +%@%%p (추정, 리셋 통과)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: about +%@%%p (estimate, crossed a reset)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: 약 +%@%%p (추정, 리셋 통과)"
           }
         }
       }
@@ -2392,6 +2424,54 @@
         }
       }
     },
+    "리셋 전 마지막 조회까지 +%@%%p, 리셋 후 +%@%%p": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%@%%p up to the last poll before the reset, +%@%%p after it"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 전 마지막 조회까지 +%@%%p, 리셋 후 +%@%%p"
+          }
+        }
+      }
+    },
+    "리셋 통과 · 추정 (리셋 전 +%@%%p, 리셋 후 +%@%%p)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crossed a reset · estimate (+%@%%p before, +%@%%p after)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 통과 · 추정 (리셋 전 +%@%%p, 리셋 후 +%@%%p)"
+          }
+        }
+      }
+    },
+    "리셋 통과 · 추정 (리셋 전 +3%p, 리셋 후 +2%p)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crossed a reset · estimate (+3%p before, +2%p after)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 통과 · 추정 (리셋 전 +3%p, 리셋 후 +2%p)"
+          }
+        }
+      }
+    },
     "리셋 확인 필요": {
       "localizations": {
         "en": {
@@ -2420,6 +2500,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "리셋까지 남은 시간도 표시"
+          }
+        }
+      }
+    },
+    "리셋을 지난 구간은 측정값이 아니라 추정값이에요. 5분 간격 조회의 마지막 값과 새 기간의 사용률을 더했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A session that crossed a reset gets an estimate, not a measurement: the last 5-minute poll before the reset plus the new period's usage."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋을 지난 구간은 측정값이 아니라 추정값이에요. 5분 간격 조회의 마지막 값과 새 기간의 사용률을 더했어요."
           }
         }
       }

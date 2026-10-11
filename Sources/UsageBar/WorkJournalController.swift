@@ -13,6 +13,8 @@ final class WorkJournalController: ObservableObject {
     @Published private(set) var recentCompletion: WorkReceipt?
     /// Gathers model and token details for a finished interval; nil or a nil result leaves the receipt without them.
     var activityCollector: (@MainActor (ProviderID, Date, Date) async -> SessionActivity?)?
+    /// Polled history for a provider, used to estimate a change across a reset.
+    var historyProvider: (@MainActor (ProviderID) -> [HistoryPoint])?
     private let persistence: WorkJournalStore?
 
     init(demo: Bool = false, persistence: WorkJournalStore? = nil, usesPersistence: Bool = true) {
@@ -29,8 +31,9 @@ final class WorkJournalController: ObservableObject {
                 // A session that crossed the 5-hour reset: the primary row can't be compared, tokens carry the headline.
                 var rows = base.rows
                 rows[0] = WorkQuotaDelta(id: rows[0].id, label: rows[0].label, percentagePoints: nil,
-                                         note: String(localized: "작업 구간에 한도 리셋 시각이 포함돼요."),
-                                         usedPercentAtStart: rows[0].usedPercentAtStart)
+                                         note: String(localized: "리셋 통과 · 추정 (리셋 전 +3%p, 리셋 후 +2%p)"),
+                                         usedPercentAtStart: rows[0].usedPercentAtStart,
+                                         estimatedPercentagePoints: 5, estimatedBeforeReset: 3, estimatedAfterReset: 2)
                 recentCompletion = WorkReceipt(id: base.id, kind: .review, provider: base.provider, startedAt: base.startedAt,
                                                endedAt: base.endedAt, rows: rows,
                                                activity: SessionActivity(models: [ModelActivity(model: "claude-fable-5-1", calls: 3, inputTokens: 66, outputTokens: 2_700, cacheReadTokens: 410_000)],
@@ -79,7 +82,7 @@ final class WorkJournalController: ObservableObject {
             let snapshot = try await fetch(active.provider)
             try Task.checkCancellation()
             fetched = true
-            var receipt = active.finish(snapshot: snapshot, now: Date())
+            var receipt = active.finish(snapshot: snapshot, now: Date(), samples: historyProvider?(active.provider) ?? [])
             receipt.activity = await activityCollector?(active.provider, active.startedAt, receipt.endedAt)
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
             recentCompletion = receipt
