@@ -75,10 +75,14 @@ private struct UsageBarCommands: Commands {
     }
 }
 
+extension Notification.Name {
+    static let usageBarReopen = Notification.Name("dev.hyjoong.usagebar.reopen")
+}
+
 private struct UsageMenuLabel: View {
     @ObservedObject var store: AppStore
-    #if DEBUG
     @Environment(\.openWindow) private var openWindow
+    #if DEBUG
     @State private var openedCheckWindow = false
     #endif
 
@@ -96,6 +100,10 @@ private struct UsageMenuLabel: View {
                 }
                 .opacity(store.isStale(for: provider) ? 0.6 : 1)
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .usageBarReopen)) { _ in
+            openWindow(id: "panel")
+            NSApp.activate(ignoringOtherApps: true)
         }
         .help(store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: "\n"))
         .accessibilityLabel("UsageBar, " + store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: ", "))
@@ -145,7 +153,12 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
         #endif
     }
 
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool { false }
+    /// Launching the app again (Spotlight, Finder, Dock) opens the panel as a window. This is the
+    /// only way in when the menu bar is full and macOS hides the status item under the notch.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NotificationCenter.default.post(name: .usageBarReopen, object: nil)
+        return false
+    }
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) { Self.store?.stop() }

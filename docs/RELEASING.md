@@ -8,6 +8,7 @@
 
 - 운영 appcast: `https://github.com/hyjoong/UsageBar/releases/latest/download/appcast.xml`
 - 운영 Ed25519 키: Keychain 계정 `hyjoong.UsageBar.production`. 앱의 `SUPublicEDKey`에는 공개 키만 포함합니다.
+- **0.8.1 (17)**: 메뉴바가 꽉 차 아이콘이 노치에 가려지는 환경에서 앱 재실행으로 패널 창을 여는 수정을 넣어 2026년 10월 11일 다시 서명·공증(`Accepted`)·검증했습니다. `v0.8.1` 초안의 빌드 16 자산을 빌드 17 ZIP·appcast로 교체했고 다시 내려받은 파일이 로컬 체크섬과 일치합니다. 이 Mac(14형 MacBook Pro, 노치 x 663~848pt)에서 아이콘이 x 844~913pt에 배치되어 숨겨지는 것을 확인했고, 재실행으로 창이 열리는 것을 검증했습니다.
 - **0.8.1 (16)**: 리뷰 수정(지역화 누락·알림 버튼 문구·로그인 상태 문구 복원 등)을 반영해 2026년 10월 11일 다시 서명·공증(`Accepted`)·검증하고 `build/releases/0.8.1-16/`에 산출물을 만들었습니다. `v0.8.1` 초안의 빌드 15 자산을 삭제하고 빌드 16 ZIP·appcast로 교체했으며, 다시 내려받은 파일이 로컬 체크섬과 일치합니다. 같은 ZIP을 이 Mac의 응용 프로그램 폴더에 설치해 실제 계정으로 실행했습니다.
 - **0.8.1 (15)**: 2026년 10월 11일 Developer ID 서명, Apple 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper `Notarized Developer ID`를 확인하고 `build/releases/0.8.1-15/`에 ZIP·서명된 appcast·SHA256SUMS를 생성했습니다. `v0.8.1` 비공개 릴리스 초안에 올린 뒤 다시 내려받은 파일이 로컬 체크섬과 일치하는 것을 확인했습니다. 초안에서 내려받은 ZIP에 다운로드 격리 표시를 적용한 복사본으로 Gatekeeper `accepted`·티켓 검증·예시 모드 실행도 확인했습니다. 0.8.0 초안은 0.8.1로 대체되어 삭제했습니다.
 - **0.8.0 (14)**: 2026년 10월 11일 Developer ID 서명, Apple 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper `Notarized Developer ID`를 확인하고 `build/releases/0.8.0-14/`에 ZIP·서명된 appcast·SHA256SUMS를 생성했습니다. 같은 저장소에 `v0.8.0` 비공개 릴리스 초안으로 ZIP과 appcast를 올렸고, 다시 내려받은 파일이 로컬 체크섬과 일치하는 것을 확인했습니다. 저장소 공개와 초안 게시 전까지는 다운로드·앱 내 업데이트가 제공되지 않습니다.
