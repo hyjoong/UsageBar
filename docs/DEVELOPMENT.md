@@ -72,7 +72,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 
 <details>
 <summary>업데이트 설정 · 격리된 예시 앱</summary>
-<img src="docs/images/update-test.jpg" width="520" alt="업데이트 예시 앱의 버전, 업데이트 확인 버튼과 새 버전 자동 확인 설정" />
+<img src="images/update-test.jpg" width="520" alt="업데이트 예시 앱의 버전, 업데이트 확인 버튼과 새 버전 자동 확인 설정" />
 
 localhost에서 예시 빌드 100 → 101 설치·재실행을 검증한 화면입니다. 화면의 0.7.1은 테스트용 버전이며 실제 공개 배포 버전이 아닙니다. 계정 사용량은 모두 예시입니다.
 </details>
