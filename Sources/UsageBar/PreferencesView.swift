@@ -117,7 +117,7 @@ struct PreferencesView: View {
     @ViewBuilder private func windowPicker(for provider: ProviderID) -> some View {
         let windows = store.sortedWindows(for: provider)
         if !windows.isEmpty {
-            Picker("\(provider.title) 한도", selection: Binding(
+            Picker("\(provider.title) 메뉴 막대 한도", selection: Binding(
                 get: { store.trackedWindow(for: provider)?.id ?? "" },
                 set: { store.selectWindow($0, for: provider) }
             )) {

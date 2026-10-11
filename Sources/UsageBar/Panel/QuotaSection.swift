@@ -30,8 +30,6 @@ struct QuotaRow: View {
             HStack(spacing: UsageSpacing.compact) {
                 Text(window.label).font(UsageType.headline)
                 staleBadge
-                Spacer()
-                QuotaPinButton(store: store, window: window, selected: true)
             }
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(remaining, format: .number)
@@ -50,7 +48,6 @@ struct QuotaRow: View {
             staleBadge
             Spacer()
             Text("\(remaining)% 남음").font(UsageType.headline).monospacedDigit()
-            QuotaPinButton(store: store, window: window, selected: false)
         }
         QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 6)
     }
@@ -82,28 +79,6 @@ struct QuotaRow: View {
     }
 }
 
-/// Chooses which window the menu bar shows for the current provider.
-struct QuotaPinButton: View {
-    @ObservedObject var store: AppStore
-    let window: UsageWindow
-    let selected: Bool
-
-    var body: some View {
-        Button { store.selectWindow(window.id, for: store.selectedProvider) } label: {
-            Image(systemName: selected ? "pin.fill" : "pin")
-                .font(UsageType.captionMedium)
-                .foregroundStyle(selected ? UsageTheme.accent : UsageTheme.secondaryInk)
-                .frame(width: UsageSpacing.control, height: UsageSpacing.control)
-                .background(selected ? UsageTheme.accent.opacity(0.10) : .clear,
-                            in: RoundedRectangle(cornerRadius: UsageRadius.control))
-        }
-        .buttonStyle(.plain)
-        .help(selected ? "메뉴바에 표시 중" : "이 한도를 메뉴바에 표시")
-        .accessibilityLabel("\(window.label) 메뉴바에 표시")
-        .accessibilityValue(selected ? "선택됨" : "선택 안 됨")
-    }
-}
-
 /// Selection fallback, fetch errors, retry timing, and the Claude reconnect shortcut.
 struct ConnectionNotice: View {
     @ObservedObject var store: AppStore
@@ -111,11 +86,6 @@ struct ConnectionNotice: View {
     private var provider: ProviderID { store.selectedProvider }
 
     var body: some View {
-        if let notice = store.selectionNotice(for: provider) {
-            Label(notice, systemImage: "pin.slash")
-                .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
-                .fixedSize(horizontal: false, vertical: true)
-        }
         if let message = store.selectedState.errorMessage {
             Label(message, systemImage: "exclamationmark.circle")
                 .font(UsageType.secondary).foregroundStyle(UsageTheme.warning)

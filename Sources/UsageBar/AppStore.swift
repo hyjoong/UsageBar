@@ -235,8 +235,14 @@ final class AppStore: ObservableObject {
         return details.joined(separator: " · ")
     }
 
+    /// The window the menu bar shows: the saved choice, otherwise the shortest window.
     func trackedWindow(for provider: ProviderID) -> UsageWindow? {
         UsageWindowSelection.select(from: states[provider]?.snapshot?.windows ?? [], preferredID: trackedWindowIDs[provider])
+    }
+
+    /// The window the panel leads with: always the shortest one (the 5-hour limit when present).
+    func primaryWindow(for provider: ProviderID) -> UsageWindow? {
+        UsageWindowSelection.select(from: states[provider]?.snapshot?.windows ?? [], preferredID: nil)
     }
 
     func selectWindow(_ id: String, for provider: ProviderID) {

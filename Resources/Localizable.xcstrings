@@ -83,18 +83,18 @@
         }
       }
     },
-    "%@ 메뉴바에 표시": {
+    "%@ 메뉴 막대 한도": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show %@ in the menu bar"
+            "value": "%@ menu bar limit"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 메뉴바에 표시"
+            "value": "%@ 메뉴 막대 한도"
           }
         }
       }
@@ -239,22 +239,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 작업 영수증을 삭제합니다. 삭제한 영수증은 복구할 수 없어요."
-          }
-        }
-      }
-    },
-    "%@ 한도": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ limit"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ 한도"
           }
         }
       }
@@ -2488,22 +2472,6 @@
         }
       }
     },
-    "메뉴바에 표시 중": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shown in the menu bar"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "메뉴바에 표시 중"
-          }
-        }
-      }
-    },
     "모든 한도": {
       "localizations": {
         "en": {
@@ -3028,38 +2996,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "서비스 장애 현황 확인"
-          }
-        }
-      }
-    },
-    "선택 안 됨": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not selected"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "선택 안 됨"
-          }
-        }
-      }
-    },
-    "선택됨": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selected"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "선택됨"
           }
         }
       }
@@ -3972,22 +3908,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 구간의 계정 전체 사용률 변화입니다. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량이나 결제 금액을 뜻하지 않습니다."
-          }
-        }
-      }
-    },
-    "이 한도를 메뉴바에 표시": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show this limit in the menu bar"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이 한도를 메뉴바에 표시"
           }
         }
       }

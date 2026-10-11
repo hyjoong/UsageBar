@@ -55,7 +55,7 @@ struct UsagePanel: View {
     }
 
     @ViewBuilder private func content(_ snapshot: ProviderSnapshot) -> some View {
-        if let first = store.trackedWindow(for: provider) {
+        if let first = store.primaryWindow(for: provider) {
             QuotaRow(store: store, window: first, prominent: true)
             if store.freshness(for: provider) == .current,
                let pace = UsagePace.evaluate(window: first, observedAt: snapshot.fetchedAt, now: store.clockNow) {
