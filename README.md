@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14 or later" />
   <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon" />
   <img src="https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white" alt="Swift 5.10" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" /></a>
 </p>
 
 <p align="center">
@@ -22,6 +23,7 @@
   <a href="#usage">Usage</a> ·
   <a href="#faq">FAQ</a> ·
   <a href="#privacy">Privacy</a> ·
+  <a href="#license">License</a> ·
   <a href="README.ko.md">한국어</a>
 </p>
 
@@ -122,3 +124,7 @@ zsh scripts/build-app.sh       # signed .app in build/
 SwiftUI, AppKit and Swift Charts on Swift Package Manager; in-app updates via [Sparkle](https://sparkle-project.org). UI strings live in `Resources/Localizable.xcstrings` (Korean source, English translations). The source build, demo screens, release process, design notes and changelog are documented in [docs/](docs/) and [CHANGELOG.md](CHANGELOG.md).
 
 Bug reports and pull requests are welcome. If the installed CLI's output or protocol changes, the provider code in `Sources/UsageBarCore` is the place to look.
+
+## License
+
+[MIT](LICENSE) © 2026 Hyunjoong Kim. In-app updates use [Sparkle](https://sparkle-project.org), whose license ships inside the app bundle.

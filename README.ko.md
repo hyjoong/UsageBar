@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14 이상" />
   <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon" />
   <img src="https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white" alt="Swift 5.10" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT 라이선스" /></a>
 </p>
 
 <p align="center">
@@ -22,6 +23,7 @@
   <a href="#사용법">사용법</a> ·
   <a href="#자주-묻는-질문">FAQ</a> ·
   <a href="#개인정보">개인정보</a> ·
+  <a href="#라이선스">라이선스</a> ·
   <a href="README.md">English</a>
 </p>
 
@@ -122,3 +124,7 @@ zsh scripts/build-app.sh       # 서명된 .app을 build/에 생성
 Swift Package Manager 위에 SwiftUI·AppKit·Swift Charts를 쓰고, 앱 내 업데이트는 [Sparkle](https://sparkle-project.org)입니다. UI 문자열은 `Resources/Localizable.xcstrings`(원문 한국어, 영어 번역)에 있습니다. 소스 빌드, 화면 확인 옵션, 배포 절차, 디자인 메모, 변경 이력은 [docs/](docs/)와 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
 
 버그 리포트와 풀 리퀘스트를 환영합니다. 설치된 CLI의 출력이나 프로토콜이 바뀌면 `Sources/UsageBarCore`의 프로바이더 코드를 보면 됩니다.
+
+## 라이선스
+
+[MIT](LICENSE) © 2026 Hyunjoong Kim. 앱 내 업데이트에 쓰는 [Sparkle](https://sparkle-project.org)의 라이선스는 앱 번들 안에 함께 들어 있습니다.
