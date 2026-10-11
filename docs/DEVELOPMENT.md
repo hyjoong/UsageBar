@@ -12,7 +12,7 @@
 터미널에서 실행합니다. 현재는 GitHub 인증과 저장소 접근 권한이 필요하며, public 전환 후에는 누구나 소스를 내려받을 수 있습니다.
 
 ```sh
-git clone --branch codex/initial https://github.com/hyjoong/UsageBar.git
+git clone https://github.com/hyjoong/UsageBar.git
 cd UsageBar
 zsh scripts/build-app.sh
 open build/UsageBar.app
