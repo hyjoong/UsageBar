@@ -29,7 +29,7 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 
 ## 다운로드·설치
 
-**현재는 비공개 저장소의 개인 개발용 앱입니다. 공개 다운로드 링크나 서명·공증을 마친 설치 파일은 아직 제공하지 않습니다.** 아래 두 방법 중 준비된 파일에 맞게 진행하세요.
+**현재는 비공개 저장소의 개인 개발용 앱입니다. 0.7.0 테스트 앱의 Developer ID 서명·Apple 공증은 완료했지만, 공개 다운로드와 업데이트 배포 경로는 아직 준비 중입니다.** 아래 두 방법 중 준비된 파일에 맞게 진행하세요.
 
 ### 이미 빌드한 `UsageBar.app`이 있다면
 
@@ -38,7 +38,7 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 3. 응용 프로그램 폴더의 UsageBar를 엽니다.
 4. 화면 상단 메뉴 막대에서 U 아이콘을 누릅니다. **별도 메인 창이나 Dock 아이콘이 뜨지 않는 것이 정상**입니다.
 
-`.app`을 직접 실행할 수 있으므로 **DMG는 필수가 아닙니다.** 응용 프로그램 폴더에 두면 이후 실행과 로그인 시 자동 실행을 관리하기 편합니다. 현재 로컬 빌드는 ad hoc 서명만 적용되어 있으며, 다른 Mac으로 전달하기 위한 Developer ID 서명·공증 배포본과는 다릅니다.
+`.app`을 직접 실행할 수 있으므로 **DMG는 필수가 아닙니다.** 응용 프로그램 폴더에 두면 이후 실행과 로그인 시 자동 실행을 관리하기 편합니다. 기본 빌드 명령은 ad hoc 서명을 사용합니다. Developer ID 서명·공증을 마친 테스트 앱은 별도로 검증했으며, 아직 공개 배포본은 제공하지 않습니다.
 
 ### 소스에서 빌드한다면
 
@@ -303,7 +303,15 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 ## 직접 배포 준비
 
-현재는 로컬 개발용 앱입니다. Apple Developer 계정으로 다른 Mac에 배포할 때는 다음 단계를 별도로 진행해야 합니다. 실제 서명·공증·업로드는 아직 수행하지 않았습니다.
+2026년 10월 11일, **0.7.0 (12) arm64 테스트 앱**에서 다음 항목을 확인했습니다.
+
+- 앱과 Sparkle 구성요소의 Developer ID 서명, Hardened Runtime, secure timestamp, 동일한 서명 팀 검증.
+- Apple 공증 `Accepted`, 공증 티켓 첨부와 검증, Gatekeeper의 `Notarized Developer ID` 승인.
+- 이 Mac에서 다운로드 격리 표시를 적용한 복사본의 예시 모드 실행. App Translocation 상태에서 프로세스가 실행되는 것을 확인했습니다.
+
+이 테스트 앱에는 공개 업데이트 URL·운영용 공개 키가 없으며 공개 업로드도 하지 않았습니다. 다른 Mac의 첫 설치, 공증 앱의 실제 CLI 연결, 공개 HTTPS 서버를 통한 업데이트는 아직 검증하지 않았습니다. 앞서 별도 예시 앱에서는 로컬 서버를 통한 업데이트 설치·재실행과 변조된 ZIP·피드 거부를 확인했습니다.
+
+공개 배포 경로가 확정되면 URL·운영용 공개 키와 증가한 빌드 번호를 넣어 다시 빌드한 뒤, 다음 절차로 최종 배포본을 검증합니다.
 
 1. 버전·빌드 번호·지원 아키텍처를 확정합니다. 현재 확인한 arm64 앱은 Apple Silicon용이며 Intel 지원에는 별도 빌드와 검증이 필요합니다.
 2. Developer ID Application 인증서로 서명하고 Hardened Runtime과 secure timestamp를 적용합니다. 배포본에는 `get-task-allow`를 포함하지 않습니다. [Apple 서명 요건](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
