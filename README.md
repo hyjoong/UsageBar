@@ -27,9 +27,16 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 
 </details>
 
-## 다운로드·설치
+## 다운로드·설치 — 이용자
 
-**현재는 비공개 저장소의 개인 개발용 앱입니다. 0.7.0 테스트 앱의 Developer ID 서명·Apple 공증은 완료했지만, 공개 다운로드와 업데이트 배포 경로는 아직 준비 중입니다.** 아래 두 방법 중 준비된 파일에 맞게 진행하세요.
+**현재 저장소는 private이며 공개 다운로드는 아직 제공하지 않습니다.** 완성 후 이 저장소(`hyjoong/UsageBar`)를 public으로 전환해 **전체 소스 코드와 앱 릴리스**를 함께 공개할 예정입니다. 공개 전까지는 접근 권한이 있는 개발자가 소스에서 빌드하거나 이미 받은 `.app`을 사용할 수 있습니다.
+
+### 공개 후 ZIP으로 설치하기
+
+1. [GitHub Releases](https://github.com/hyjoong/UsageBar/releases)에서 최신 공개 릴리스의 `UsageBar-버전-빌드.zip`을 받습니다. GitHub가 자동으로 제공하는 **Source code** 파일은 앱 설치 파일이 아닙니다.
+2. ZIP의 압축을 풀고, 나온 `UsageBar.app`을 아래 순서로 설치합니다.
+
+현재 준비하는 배포본은 **macOS 14 이상·Apple Silicon(arm64)** 용입니다. Intel용 배포본은 아직 검증하지 않았습니다. 이 다운로드 절차는 저장소 공개와 릴리스 게시가 끝난 뒤 사용할 수 있습니다.
 
 ### 이미 빌드한 `UsageBar.app`이 있다면
 
@@ -38,7 +45,7 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 3. 응용 프로그램 폴더의 UsageBar를 엽니다.
 4. 화면 상단 메뉴 막대에서 U 아이콘을 누릅니다. **별도 메인 창이나 Dock 아이콘이 뜨지 않는 것이 정상**입니다.
 
-`.app`을 직접 실행할 수 있으므로 **DMG는 필수가 아닙니다.** 응용 프로그램 폴더에 두면 이후 실행과 로그인 시 자동 실행을 관리하기 편합니다. 기본 빌드 명령은 ad hoc 서명을 사용합니다. Developer ID 서명·공증을 마친 테스트 앱은 별도로 검증했으며, 아직 공개 배포본은 제공하지 않습니다.
+`.app`을 직접 실행할 수 있으므로 **DMG는 필수가 아닙니다.** 응용 프로그램 폴더에 두면 이후 실행과 로그인 시 자동 실행을 관리하기 편합니다. 소스의 기본 빌드는 ad hoc 서명을 사용하고, 공개 배포본은 Developer ID 서명·Apple 공증을 거친 ZIP으로 준비합니다.
 
 ### 소스에서 빌드한다면
 
@@ -47,9 +54,9 @@ Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 �
 - **macOS 14 이상**
 - **Swift 5.10 이상을 지원하는 Xcode 또는 Command Line Tools**
 - **Python 3** (빌드·배포 설정 검증에 사용)
-- 이 비공개 GitHub 저장소에 접근할 수 있는 계정
+- 공개 전에는 이 비공개 GitHub 저장소에 접근할 수 있는 계정
 
-터미널에서 실행합니다. GitHub 인증이 필요하면 먼저 해당 계정의 저장소 접근을 설정하세요.
+터미널에서 실행합니다. 현재는 GitHub 인증과 저장소 접근 권한이 필요하며, public 전환 후에는 누구나 소스를 내려받을 수 있습니다.
 
 ```sh
 git clone --branch codex/initial https://github.com/hyjoong/UsageBar.git
@@ -64,7 +71,7 @@ open build/UsageBar.app
 
 ### 새 버전으로 업데이트
 
-0.7.0부터 앱 내 업데이트를 지원합니다. **현재는 공개 배포 경로가 설정되지 않은 개발용 빌드이며, 다른 사용자가 받을 업데이트는 아직 게시하지 않았습니다.** 배포자가 HTTPS 경로와 업데이트 서명 키를 설정해 빌드한 앱에서는 다음 순서로 사용합니다.
+0.7.0부터 앱 내 업데이트를 지원합니다. 최종 배포본은 **이 저장소의 GitHub Releases**에서 업데이트를 받도록 준비 중입니다. **지금은 저장소가 private이고 공개 릴리스가 없으므로, 주소가 설정된 앱에서도 업데이트를 내려받을 수 없습니다.** 저장소 공개와 릴리스 게시 후에는 다음 순서로 사용합니다.
 
 1. U 아이콘 → **설정** → **앱 정보**에서 **업데이트 확인…**을 누릅니다. 창이 열린 상태에서는 앱 메뉴에서도 확인할 수 있습니다.
 2. 새 버전이 있으면 변경 내용을 확인하고 설치합니다. 다운로드와 서명 확인 후 앱을 교체하고 재실행합니다.
@@ -72,7 +79,7 @@ open build/UsageBar.app
 
 설정과 저장된 기록은 앱 밖에 보관되어 업데이트 후에도 유지됩니다. 진행 중인 작업을 자동으로 종료하지 않으며, 기록 저장 중에는 업데이트 재시작을 잠시 미룹니다. 업데이트 확인 실패나 서명 오류에서는 기존 앱을 계속 사용합니다.
 
-0.6.4 이하에는 업데이트 기능이 없으므로 업데이트를 지원하는 배포본을 **한 번 직접 설치**해야 합니다. 소스 빌드는 저장소를 갱신한 뒤 빌드 명령을 다시 실행합니다. 배포 경로가 없는 개발용 빌드·일반 예시 모드는 실제 업데이트 서버에 접근하지 않습니다.
+0.6.4 이하에는 업데이트 기능이 없으므로 업데이트를 지원하는 배포본을 **한 번 직접 설치**해야 합니다. 소스 빌드는 저장소를 갱신한 뒤 빌드 명령을 다시 실행합니다. 배포 경로가 없는 개발용 빌드·일반 예시 모드는 실제 업데이트 서버에 접근하지 않습니다. 앱에는 비공개 저장소 접근용 GitHub 토큰을 포함하지 않습니다.
 
 <details>
 <summary>업데이트 설정 · 격리된 예시 앱</summary>
@@ -171,6 +178,7 @@ Codex가 제공한 일별 기록은 **오늘을 포함한 달력 날짜**로 표
 | 새로고침이 잠겨 있어요 | 서비스가 요청을 제한하면 **다시 확인할 수 있는 시간**을 안내합니다. 해당 시간까지 기다려 주세요. 서비스를 껐다 켜도 대기 시간은 유지됩니다. |
 | 작업 종료 조회가 실패해요 | 기록은 진행 상태로 유지됩니다. 재시도하거나 **한도 비교 없이 종료**할 수 있습니다. |
 | 새 버전으로 바꾸고 싶어요 | 업데이트가 설정된 0.7.0 이상 배포본은 설정 → 앱 정보 → **업데이트 확인…**을 누릅니다. 0.6.4 이하나 배포 경로가 없는 개발용 앱은 종료 후 새 `.app`으로 교체합니다. |
+| 업데이트 확인이 404로 실패해요 | 현재는 저장소와 준비 중인 릴리스가 비공개입니다. 공개 전환과 릴리스 게시 전에는 업데이트를 받을 수 없습니다. 공개 후에도 계속되면 Releases에 해당 버전이 게시되었는지 확인하세요. |
 | 기록이 사라질까 걱정돼요 | 기록은 `.app` 밖의 Application Support 폴더에 저장됩니다. 앱 교체만으로 삭제되지 않습니다. 문제 해결을 위해 이 폴더를 지우기 전에 필요한 파일을 백업하세요. |
 
 최초 조회에서 요청 제한이 발생하면 존재하지 않는 이전 값을 표시하지 않고, 재시도 대기 시간을 안내합니다. 일시적인 조회 실패에서는 설치 안내를 숨기고, 로그인·초기 설정이 필요한 경우에 연결 설정을 표시합니다.
@@ -279,7 +287,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
-| 0.7.0 | Sparkle 앱 내 업데이트, 자동 확인 선택, 패널의 조용한 새 버전 안내, 저장 중 재시작 대기. 배포 채널 설정 후 활성화. |
+| 0.7.0 | Sparkle 앱 내 업데이트, 자동 확인 선택, 패널의 조용한 새 버전 안내, 저장 중 재시작 대기. GitHub Releases 공개 배포 준비 중. |
 | 0.6.4 | 일별 토큰의 누락 날짜 간격 보존, 실제 0토큰을 점과 숫자로 구분. 합계·CSV에는 제공된 기록만 유지. |
 | 0.6.3 | 앱 공통 설정 명령 추가. 사용 기록·작업 영수증 창에서도 `⌘,`로 기존 설정 창 열기. |
 | 0.6.2 | 취소된 Claude 조회가 잠자기 복귀 직후 새 조회를 막는 문제 수정. 이전 값 없는 요청 제한과 계정 연결 문제의 복구 안내 구분. |
@@ -301,7 +309,13 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 - 인증 정보·계정 식별자·사용량을 제외한 연결 진단 정보 복사.
 - 공개 업데이트 채널 운영과 다른 Mac의 첫 설치 검증.
 
-## 직접 배포 준비
+## 배포 준비 — 배포자
+
+**배포 대상은 기존 `hyjoong/UsageBar` 저장소입니다.** 별도의 바이너리 저장소를 만들지 않고, 최종 검증 후 현재 저장소 전체를 public으로 전환할 예정입니다. 그전에는 저장소와 릴리스 초안을 비공개로 유지합니다.
+
+- 운영 appcast: `https://github.com/hyjoong/UsageBar/releases/latest/download/appcast.xml`
+- 운영 Ed25519 키: Keychain 계정 `hyjoong.UsageBar.production`. 앱의 `SUPublicEDKey`에는 공개 키만 포함합니다.
+- **0.7.0 (13)**: 운영 URL·공개 키를 적용한 앱의 Developer ID 서명, Apple 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper를 확인하고 ZIP과 서명된 appcast를 생성했습니다. 공개 게시 없이 비공개 릴리스 초안을 준비 중입니다.
 
 2026년 10월 11일, **0.7.0 (12) arm64 테스트 앱**에서 다음 항목을 확인했습니다.
 
@@ -309,38 +323,37 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 - Apple 공증 `Accepted`, 공증 티켓 첨부와 검증, Gatekeeper의 `Notarized Developer ID` 승인.
 - 이 Mac에서 다운로드 격리 표시를 적용한 복사본의 예시 모드 실행. App Translocation 상태에서 프로세스가 실행되는 것을 확인했습니다.
 
-이 테스트 앱에는 공개 업데이트 URL·운영용 공개 키가 없으며 공개 업로드도 하지 않았습니다. 다른 Mac의 첫 설치, 공증 앱의 실제 CLI 연결, 공개 HTTPS 서버를 통한 업데이트는 아직 검증하지 않았습니다. 앞서 별도 예시 앱에서는 로컬 서버를 통한 업데이트 설치·재실행과 변조된 ZIP·피드 거부를 확인했습니다.
+빌드 12에는 운영 업데이트 URL·공개 키가 없으며 공개 업로드도 하지 않았습니다. 다른 Mac의 첫 설치, 공증 앱의 실제 CLI 연결, 공개 HTTPS 서버를 통한 업데이트는 아직 검증하지 않았습니다. 앞서 별도 예시 앱에서는 로컬 서버를 통한 업데이트 설치·재실행과 변조된 ZIP·피드 거부를 확인했습니다.
 
-공개 배포 경로가 확정되면 URL·운영용 공개 키와 증가한 빌드 번호를 넣어 다시 빌드한 뒤, 다음 절차로 최종 배포본을 검증합니다.
+### 서명·공증·업데이트 파일 만들기
 
-1. 버전·빌드 번호·지원 아키텍처를 확정합니다. 현재 확인한 arm64 앱은 Apple Silicon용이며 Intel 지원에는 별도 빌드와 검증이 필요합니다.
-2. Developer ID Application 인증서로 서명하고 Hardened Runtime과 secure timestamp를 적용합니다. 배포본에는 `get-task-allow`를 포함하지 않습니다. [Apple 서명 요건](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
-3. ZIP 또는 DMG를 만들어 `xcrun notarytool submit --wait`로 제출한 뒤 Accepted 결과와 공증 로그를 확인합니다. [공증 절차](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
-4. `xcrun stapler`로 티켓을 첨부합니다. ZIP 배포라면 내부 `.app`에 첨부한 뒤 ZIP을 다시 만듭니다. [티켓 첨부](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)
-5. 이 Mac에서 실제 다운로드본의 서명·공증 상태와 설치·실행을 검증합니다. 가능하면 다른 Mac에서도 Gatekeeper·첫 실행·Claude/Codex 연결·로그인 시 실행을 확인해 개발 환경의 영향을 배제합니다. [배포본 테스트](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)
+`Resources/Info.plist`의 버전·빌드 번호, 운영 `SUFeedURL`·`SUPublicEDKey`를 확인합니다. 새 배포에서는 `CFBundleVersion`을 반드시 증가시킵니다. 기본 빌드는 ad hoc 서명이며, 아래처럼 실제 Developer ID 인증서를 지정하면 앱과 Sparkle 구성요소를 안쪽부터 서명합니다.
 
-직접 배포에서는 App Sandbox가 선택 사항입니다. 외부 CLI를 실행하는 현재 구조는 Hardened Runtime을 적용한 상태에서도 검증해야 합니다. 소스 저장소는 private로 유지하고 앱 파일과 appcast만 별도로 제공할 수 있습니다. 비공개 저장소의 다운로드 주소나 GitHub 토큰을 앱에 넣지 않습니다.
-
-Sparkle은 HTTPS appcast와 Ed25519 공개 키가 모두 설정된 빌드에서만 시작합니다. 업데이트 ZIP뿐 아니라 appcast도 서명 검증하며, 압축을 풀기 전에 업데이트 서명을 확인합니다. 배포 URL·공개 키는 빌드 시 넣고, 개인 키와 Apple 공증 인증 정보는 저장소에 보관하지 않습니다. [Sparkle 배포 안내](https://sparkle-project.org/documentation/)
-
-배포용 도구는 다음 두 단계로 나뉩니다. 실제 인증서 이름·공개 배포 URL·공개 키를 지정해야 하며, 기본 빌드는 기존처럼 ad hoc 서명을 사용합니다.
+아래의 인증서·공증 프로필·릴리스 태그는 실제 값으로 바꿉니다. 운영 키는 이미 준비되어 있으므로 매 배포마다 새로 만들지 않습니다.
 
 ```sh
 USAGEBAR_SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' \
-USAGEBAR_FEED_URL='https://YOUR-DOMAIN/appcast.xml' \
-USAGEBAR_PUBLIC_ED_KEY='YOUR_PUBLIC_ED25519_KEY' \
 zsh scripts/build-app.sh release
 
 zsh scripts/prepare-release.sh \
   --keychain-profile YOUR_EXISTING_NOTARY_PROFILE \
   --generate-appcast \
-  --eddsa-account YOUR_SPARKLE_KEYCHAIN_ACCOUNT \
+  --eddsa-account hyjoong.UsageBar.production \
+  --release-notes docs/releases/0.7.0.md \
   --sparkle-tools .build/artifacts/sparkle/Sparkle/bin \
-  --download-url-prefix 'https://YOUR-DOMAIN/downloads/'
+  --download-url-prefix 'https://github.com/hyjoong/UsageBar/releases/download/YOUR_RELEASE_TAG/'
 ```
 
-`build-app.sh`는 Sparkle 구성요소를 앱에 포함하고 안쪽부터 서명합니다. `prepare-release.sh`는 원본 앱을 보존하고 복사본만 Apple에 제출하여 공증·티켓 첨부 후 ZIP과 서명된 appcast를 만듭니다. 공증 성공, 동일 서명 팀, 서명 검증을 통과해야 완료됩니다. 두 스크립트 모두 공개 업로드를 하지 않습니다. 명령 옵션은 `--help`로 확인할 수 있습니다.
+`prepare-release.sh`는 원본 앱을 보존하고 복사본만 Apple에 제출합니다. 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper, 코드 서명을 확인한 후 ZIP과 서명된 appcast를 만듭니다. 지정한 Keychain 계정의 공개 키가 앱과 일치해야 하며, 생성한 ZIP과 피드의 서명도 검증합니다. 두 스크립트 모두 공개 업로드를 하지 않습니다. 옵션은 `--help`를 참고하세요. [Apple 공증 절차](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow), [Sparkle 배포 안내](https://sparkle-project.org/documentation/)
 
-업데이트 서명 키는 Sparkle의 `generate_keys --account YOUR_SPARKLE_KEYCHAIN_ACCOUNT`로 한 번 준비하고 출력되는 **공개 키만** 빌드에 사용합니다. 기존 키를 매 배포마다 새로 만들거나 개인 키를 저장소에 넣지 마세요. appcast 생성 시 지정한 Keychain 계정의 공개 키가 앱에 포함된 키와 일치하는지도 확인합니다.
+`--release-notes`로 지정한 `.md`·`.html`·`.txt` 변경 안내는 서명된 appcast 안에 포함합니다. 내용을 바꾸면 appcast를 다시 생성하고 서명을 검증합니다.
 
-새 배포에서는 `CFBundleVersion`을 반드시 증가시킵니다. `prepare-release.sh`가 만든 appcast에는 해당 릴리스만 포함되므로 기존 배포 기록·지원 아키텍처를 검토한 후 게시하세요. 이미 공개된 ZIP을 덮어쓰기보다 버전별 파일을 유지하고, ZIP 업로드 후 appcast를 갱신합니다.
+개인 키·Apple 공증 인증 정보·GitHub 토큰은 저장소와 앱에 넣지 않습니다. 운영 공개 키를 다시 확인할 때는 Sparkle의 `generate_keys --account hyjoong.UsageBar.production -p`를 사용합니다. Sparkle은 HTTPS appcast와 공개 키가 설정된 빌드에서 시작하며, 피드와 ZIP을 검증하고 압축을 풀기 전에 업데이트 서명을 확인합니다.
+
+### 검증 후 공개하기
+
+1. 같은 저장소의 **비공개 릴리스 초안**에 ZIP과 `appcast.xml`을 준비합니다. 피드의 다운로드 주소·버전·아키텍처·서명을 확인합니다. 생성한 피드는 해당 릴리스만 포함하므로 기존 배포 기록이 있다면 함께 검토합니다.
+2. 소스와 배포 파일 검증을 마친 뒤 저장소 전체를 public으로 전환하고 릴리스를 게시합니다. **초안 상태만으로는 공개 다운로드나 앱 내 업데이트가 제공되지 않습니다.**
+3. 공개된 ZIP과 appcast를 다시 내려받아 첫 설치·Gatekeeper·업데이트 확인을 검증합니다. 가능하면 다른 Mac에서 Claude/Codex 연결과 로그인 시 실행도 확인합니다. 외부 CLI를 실행하는 현재 구조는 공증과 별도로 실제 동작 검증이 필요합니다. [배포본 테스트](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)
+
+버전별 ZIP은 유지하고 새 ZIP이 준비된 뒤 appcast를 갱신합니다. GitHub의 `releases/latest` 경로에서 접근할 수 있도록 최종 릴리스가 최신 공개 릴리스로 표시되는지도 확인합니다.

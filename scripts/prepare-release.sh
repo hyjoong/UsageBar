@@ -9,6 +9,7 @@ usagebar_generate=0
 usagebar_account=""
 usagebar_tools=""
 usagebar_download_prefix=""
+usagebar_notes=""
 
 usagebar_help() {
   cat <<'HELP'
@@ -29,6 +30,8 @@ Options:
   --sparkle-tools PATH          Sparkle 2.10.0 bin/ with generate_keys,
                                generate_appcast, and sign_update
   --download-url-prefix URL     HTTPS URL directory that will host the ZIP
+  --release-notes PATH          Optional .md/.html/.txt notes embedded in the
+                               signed appcast (requires --generate-appcast)
 
 All three appcast options are required with --generate-appcast. The account's
 public key must match the app. Private keys never leave the keychain. The app
@@ -45,7 +48,7 @@ while (( $# )); do
   case "$1" in
     --help|-h) usagebar_help; exit 0 ;;
     --generate-appcast) usagebar_generate=1; shift ;;
-    --app|--keychain-profile|--output-dir|--eddsa-account|--sparkle-tools|--download-url-prefix)
+    --app|--keychain-profile|--output-dir|--eddsa-account|--sparkle-tools|--download-url-prefix|--release-notes)
       (( $# >= 2 )) && [[ -n "$2" ]] || usagebar_die "Missing value for $1"
       case "$1" in
         --app) usagebar_app="$2" ;;
@@ -54,12 +57,22 @@ while (( $# )); do
         --eddsa-account) usagebar_account="$2" ;;
         --sparkle-tools) usagebar_tools="$2" ;;
         --download-url-prefix) usagebar_download_prefix="$2" ;;
+        --release-notes) usagebar_notes="$2" ;;
       esac
       shift 2 ;;
     *) usagebar_die "Unknown option: $1 (use --help)" ;;
   esac
 done
 [[ -n "$usagebar_profile" ]] || usagebar_die "An existing --keychain-profile is required."
+if [[ -n "$usagebar_notes" ]]; then
+  [[ "$usagebar_generate" == 1 ]] || usagebar_die "--release-notes requires --generate-appcast."
+  usagebar_notes="${usagebar_notes:A}"
+  [[ -f "$usagebar_notes" && -r "$usagebar_notes" && -s "$usagebar_notes" ]] || usagebar_die "Release notes must be a readable, nonempty file."
+  case "${usagebar_notes:e}" in
+    md|html|txt) ;;
+    *) usagebar_die "Release notes must use .md, .html, or .txt." ;;
+  esac
+fi
 usagebar_python="$(command -v python3)"
 usagebar_support="$usagebar_root/scripts/release-support.py"
 usagebar_app="${usagebar_app:A}"
@@ -111,8 +124,11 @@ usagebar_archive="$usagebar_stage/archives/$usagebar_name.zip"
 
 if [[ "$usagebar_generate" == 1 ]]; then
   usagebar_feed="$usagebar_stage/archives/appcast.xml"
+  if [[ -n "$usagebar_notes" ]]; then
+    cp "$usagebar_notes" "$usagebar_stage/archives/$usagebar_name.${usagebar_notes:e}"
+  fi
   "$usagebar_tools/generate_appcast" --account "$usagebar_account" \
-    --download-url-prefix "$usagebar_download_prefix" --maximum-deltas 0 \
+    --download-url-prefix "$usagebar_download_prefix" --maximum-deltas 0 --embed-release-notes \
     -o "$usagebar_feed" "$usagebar_stage/archives"
   "$usagebar_tools/sign_update" --account "$usagebar_account" --verify "$usagebar_feed"
   usagebar_signature="$("$usagebar_python" "$usagebar_support" appcast-signature "$usagebar_feed" "$usagebar_archive" "$usagebar_build")"
