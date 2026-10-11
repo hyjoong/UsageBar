@@ -11,6 +11,8 @@ final class WorkJournalController: ObservableObject {
     @Published private(set) var message: String?
     /// Shown only for a completion in this process; historical receipts never trigger the panel.
     @Published private(set) var recentCompletion: WorkReceipt?
+    /// Gathers model and token details for a finished interval; nil or a nil result leaves the receipt without them.
+    var activityCollector: (@MainActor (ProviderID, Date, Date) async -> SessionActivity?)?
     private let persistence: WorkJournalStore?
 
     init(demo: Bool = false, persistence: WorkJournalStore? = nil, usesPersistence: Bool = true) {
@@ -66,7 +68,8 @@ final class WorkJournalController: ObservableObject {
             let snapshot = try await fetch(active.provider)
             try Task.checkCancellation()
             fetched = true
-            let receipt = active.finish(snapshot: snapshot, now: Date())
+            var receipt = active.finish(snapshot: snapshot, now: Date())
+            receipt.activity = await activityCollector?(active.provider, active.startedAt, receipt.endedAt)
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
             recentCompletion = receipt
         } catch {
@@ -81,7 +84,8 @@ final class WorkJournalController: ObservableObject {
         isBusy = true; message = nil
         defer { isBusy = false }
         do {
-            let receipt = active.finish(snapshot: nil, now: Date())
+            var receipt = active.finish(snapshot: nil, now: Date())
+            receipt.activity = await activityCollector?(active.provider, active.startedAt, receipt.endedAt)
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
             recentCompletion = receipt
         } catch { message = String(localized: "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요.") }
@@ -167,6 +171,8 @@ final class WorkJournalController: ObservableObject {
                       UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 11, resetsAt: reset.addingTimeInterval(4 * 86_400), durationMinutes: 10_080)],
             fetchedAt: end, source: String(localized: "예시"))
         guard let session = try? WorkSession.start(kind: .refactor, snapshot: before, now: start) else { return WorkJournalState() }
-        return WorkJournalState(receipts: [session.finish(snapshot: after, now: end)])
+        var receipt = session.finish(snapshot: after, now: end)
+        receipt.activity = .demo
+        return WorkJournalState(receipts: [receipt])
     }
 }

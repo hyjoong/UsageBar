@@ -120,6 +120,10 @@ final class AppStore: ObservableObject {
             Task { await syncWorkReminders() }
         }
     }
+    /// Adds models, tokens and project folders from this Mac's CLI session logs to each receipt.
+    @Published var sessionDetailsEnabled = true {
+        didSet { if !isDemo { defaults.set(sessionDetailsEnabled, forKey: "sessionDetailsEnabled") } }
+    }
     private var journalObservation: AnyCancellable?
     /// UNUserNotificationCenter needs a real app bundle; tests and demo runs must never touch it.
     private let notificationsAvailable: Bool
@@ -164,6 +168,14 @@ final class AppStore: ObservableObject {
         states = Dictionary(uniqueKeysWithValues: ProviderID.allCases.map { ($0, ProviderState()) })
         journalObservation = workJournal.$state.map { $0.active?.id }.removeDuplicates()
             .sink { [weak self] _ in Task { await self?.syncWorkReminders() } }
+        workJournal.activityCollector = { [weak self] provider, start, end in
+            guard let self, self.sessionDetailsEnabled else { return nil }
+            if self.isDemo { return .demo }
+            guard self.historyStore != nil else { return nil }   // tests with fake providers never touch the home folder
+            return await Task.detached(priority: .utility) {
+                LocalSessionLogs.activity(for: provider, between: start, and: end)
+            }.value
+        }
         if demo {
             installDemo()
         } else {
@@ -185,6 +197,9 @@ final class AppStore: ObservableObject {
             recoveryNotificationsEnabled = defaults.bool(forKey: "recoveryNotificationsEnabled")
             if defaults.object(forKey: "workRemindersEnabled") != nil {
                 workRemindersEnabled = defaults.bool(forKey: "workRemindersEnabled")
+            }
+            if defaults.object(forKey: "sessionDetailsEnabled") != nil {
+                sessionDetailsEnabled = defaults.bool(forKey: "sessionDetailsEnabled")
             }
             if let saved = defaults.dictionary(forKey: "trackedWindowIDs") as? [String: String] {
                 trackedWindowIDs = Dictionary(uniqueKeysWithValues: saved.compactMap { key, value in

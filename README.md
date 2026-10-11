@@ -34,7 +34,7 @@
 
 ## Features
 
-- **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took and how many percentage points of each limit it used. No other menu bar app answers "what did this refactor cost me?"
+- **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took, how many percentage points of each limit it used, and which models and projects were involved, with call and token counts from this Mac's CLI session logs. No other menu bar app answers "what did this refactor cost me?"
 - **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time.
 - **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
 - **Both services.** Claude Code and Codex side by side, or just the one you use.
@@ -119,6 +119,7 @@ Releases are built for Apple Silicon. Intel builds have not been tested.
 
 - UsageBar uses each CLI's existing login. It never asks for, stores, or transmits passwords, API keys or tokens.
 - Usage history and receipts live only in `~/Library/Application Support/UsageBar/`. Conversations, project files and raw CLI responses are not stored.
+- Receipt details come from the session logs Claude Code and Codex already keep in `~/.claude` and `~/.codex`. UsageBar reads only timestamps, model names, token counts and the project folder name, and never stores message content. You can turn this off under Settings → Work log.
 - Billing dates, amounts and per-project costs are not shown, and nothing consumes reset credits.
 - No analytics, no telemetry. The only network activity is the CLIs' own usage queries and the signed update check you can turn off.
 

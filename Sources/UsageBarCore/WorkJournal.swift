@@ -44,10 +44,12 @@ public struct WorkReceipt: Codable, Equatable, Identifiable, Sendable {
     public let startedAt: Date
     public let endedAt: Date
     public let rows: [WorkQuotaDelta]
+    /// Models, tokens and project folders from this Mac's local CLI session logs. Absent for older receipts.
+    public var activity: SessionActivity?
     public init(id: UUID = UUID(), kind: WorkKind, provider: ProviderID, startedAt: Date,
-                endedAt: Date, rows: [WorkQuotaDelta]) {
+                endedAt: Date, rows: [WorkQuotaDelta], activity: SessionActivity? = nil) {
         self.id = id; self.kind = kind; self.provider = provider
-        self.startedAt = startedAt; self.endedAt = endedAt; self.rows = rows
+        self.startedAt = startedAt; self.endedAt = endedAt; self.rows = rows; self.activity = activity
     }
     public var duration: TimeInterval {
         let value = endedAt.timeIntervalSince(startedAt)
@@ -61,9 +63,21 @@ public struct WorkReceipt: Codable, Equatable, Identifiable, Sendable {
             if value == 0 { return String(localized: "\(row.label): 표시상 변화 없음 (0%p)") }
             return "\(row.label): +\(value.formatted(.number.precision(.fractionLength(0...2))))%p"
         }
-        return (["\(kind.title) · \(provider.title) · \(durationText)"] + results + [
+        var lines = ["\(kind.title) · \(provider.title) · \(durationText)"] + results + [
             String(localized: "이 구간의 계정 전체 사용률 변화입니다. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량이나 결제 금액을 뜻하지 않습니다.")
-        ]).joined(separator: "\n")
+        ]
+        if let activity, !activity.isEmpty {
+            lines.append(String(localized: "이 Mac의 세션 기록 (모델별)"))
+            for model in activity.models {
+                lines.append(String(localized: "\(model.model): 호출 \(model.calls) · 입력 \(TokenFormat.compact(model.inputTokens)) · 출력 \(TokenFormat.compact(model.outputTokens)) · 캐시 읽기 \(TokenFormat.compact(model.cacheReadTokens))"))
+            }
+            if !activity.projects.isEmpty {
+                let projects = activity.projects.map { "\($0.name) \($0.calls)" }.joined(separator: ", ")
+                lines.append(String(localized: "프로젝트: \(projects)"))
+            }
+            if activity.isPartial { lines.append(String(localized: "세션 기록이 커서 일부만 집계했습니다.")) }
+        }
+        return lines.joined(separator: "\n")
     }
 }
 
@@ -265,6 +279,13 @@ public actor WorkJournalStore {
                         !row.id.isEmpty && !row.label.isEmpty && row.label.count <= 80
                             && (row.percentagePoints.map { $0.isFinite && (0...100).contains($0) } ?? (row.note != nil))
                     }
+                    && (receipt.activity.map(validActivity) ?? true)
             }
+    }
+
+    private static func validActivity(_ activity: SessionActivity) -> Bool {
+        activity.models.count <= 64 && activity.projects.count <= 64
+            && activity.models.allSatisfy { !$0.model.isEmpty && $0.model.count <= 120 && $0.calls >= 0 && $0.inputTokens >= 0 && $0.outputTokens >= 0 }
+            && activity.projects.allSatisfy { !$0.name.isEmpty && $0.name.count <= 120 && $0.calls >= 0 }
     }
 }

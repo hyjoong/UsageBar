@@ -203,6 +203,20 @@ struct WorkJournalView: View {
                 Text(note).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if let activity = receipt.activity, !activity.isEmpty {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(activity.models) { model in
+                        Text(verbatim: UsageFormat.activityLine(model, extraModels: 0))
+                    }
+                    if !activity.projects.isEmpty {
+                        Text("프로젝트: \(activity.projects.map { "\($0.name) \($0.calls)" }.joined(separator: " · "))")
+                    }
+                    if activity.isPartial { Text("세션 기록이 커서 일부만 집계했어요") }
+                }
+                .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                .padding(.top, 2)
+                .help("이 Mac의 Claude Code·Codex 세션 기록에서 집계한 값이에요. 대화 내용은 읽어 저장하지 않아요.")
+            }
         }
         .padding(.vertical, UsageSpacing.group)
         .accessibilityElement(children: .contain)

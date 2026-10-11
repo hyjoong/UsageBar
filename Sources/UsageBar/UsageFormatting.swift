@@ -30,10 +30,13 @@ enum UsageFormat {
         return String(localized: "\(minutes)분 후")
     }
 
-    static func tokenLabel(_ number: Int64) -> String {
-        if number >= 1_000_000 { return String(format: "%.1fM", Double(number) / 1_000_000) }
-        if number >= 1_000 { return String(format: "%.1fK", Double(number) / 1_000) }
-        return String(number)
+    static func tokenLabel(_ number: Int64) -> String { TokenFormat.compact(number) }
+
+    /// "claude-fable-5-1 · 호출 42 · 출력 48K · 입력 1.2M" with an optional "+1" for further models.
+    static func activityLine(_ model: ModelActivity, extraModels: Int) -> String {
+        var line = String(localized: "\(model.model) · 호출 \(model.calls) · 출력 \(TokenFormat.compact(model.outputTokens)) · 입력 \(TokenFormat.compact(model.inputTokens))")
+        if extraModels > 0 { line += " +\(extraModels)" }
+        return line
     }
 
     static func durationLabel(_ interval: TimeInterval) -> String {

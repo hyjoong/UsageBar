@@ -71,13 +71,21 @@ struct PreferencesView: View {
                     get: { store.recoveryNotificationsEnabled },
                     set: { value in Task { await store.setRecoveryNotificationsEnabled(value) } }
                 ))
-                Toggle("작업 기록 중 알림", isOn: $store.workRemindersEnabled)
-                detail("한도 알림은 각 한도마다 기간당 한 번씩만 알려요. 작업 기록 알림은 시작 2시간 뒤와 리셋 10분 전에 오고, 알림에서 바로 종료할 수 있어요. 켤 때 macOS 알림 권한을 요청해요.")
+                detail("각 한도마다 기간당 한 번씩만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
                 if let message = store.notificationMessage {
                     note(message, color: UsageTheme.warning)
                 }
             } header: {
                 sectionTitle("알림", symbol: "bell")
+            }
+
+            Section {
+                Toggle("작업 기록 중 알림", isOn: $store.workRemindersEnabled)
+                detail("시작 2시간 뒤와 리셋 10분 전에 알려요. 알림에서 바로 종료할 수 있어요.")
+                Toggle("영수증에 모델·토큰 상세 포함", isOn: $store.sessionDetailsEnabled)
+                detail("이 Mac의 Claude Code·Codex 세션 기록(~/.claude, ~/.codex)에서 작업 구간의 모델, 호출 수, 토큰 수, 프로젝트 폴더 이름만 집계해요. 대화 내용은 읽어 저장하지 않아요.")
+            } header: {
+                sectionTitle("작업 기록", symbol: "receipt")
             }
 
             Section {

@@ -171,6 +171,11 @@ struct WorkJournalPanel: View {
             .foregroundStyle(UsageTheme.secondaryInk)
             .fixedSize(horizontal: false, vertical: true)
             .help("관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.")
+        if let activity = receipt.activity, let top = activity.models.first {
+            Text(verbatim: UsageFormat.activityLine(top, extraModels: activity.models.count - 1))
+                .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
+                .help("이 Mac의 Claude Code·Codex 세션 기록에서 집계한 모델별 호출과 토큰이에요. 대화 내용은 읽어 저장하지 않아요.")
+        }
         if journal.message != nil { errorDetails(String(localized: "기록 확인이 필요해요")) }
     }
 
