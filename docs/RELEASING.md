@@ -49,6 +49,10 @@ zsh scripts/prepare-release.sh \
 
 개인 키·Apple 공증 인증 정보·GitHub 토큰은 저장소와 앱에 넣지 않습니다. 운영 공개 키를 다시 확인할 때는 Sparkle의 `generate_keys --account hyjoong.UsageBar.production -p`를 사용합니다. Sparkle은 HTTPS appcast와 공개 키가 설정된 빌드에서 시작하며, 피드와 ZIP을 검증하고 압축을 풀기 전에 업데이트 서명을 확인합니다.
 
+### Homebrew cask 갱신
+
+릴리스마다 [hyjoong/homebrew-tap](https://github.com/hyjoong/homebrew-tap)의 `Casks/usagebar.rb`에서 `version`(`버전,빌드`)과 `sha256`(`SHA256SUMS.txt`의 ZIP 값)을 새 값으로 바꾸고 `brew style hyjoong/tap`으로 검사한 뒤 푸시합니다. 릴리스가 게시된 뒤에 올려야 `brew install --cask hyjoong/tap/usagebar`가 동작합니다.
+
 ### 검증 후 공개하기
 
 1. 같은 저장소의 **비공개 릴리스 초안**에 ZIP과 `appcast.xml`을 준비합니다. 피드의 다운로드 주소·버전·아키텍처·서명을 확인합니다. 생성한 피드는 해당 릴리스만 포함하므로 기존 배포 기록이 있다면 함께 검토합니다.

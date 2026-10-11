@@ -28,7 +28,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/panel-ko.jpg" width="360" alt="UsageBar 패널: 5시간 한도 68% 남음, 세그먼트 게이지, 리셋 시각, 주간 한도, 작업 기록 행" />
+  <img src="docs/images/flow-ko.gif" width="360" alt="UsageBar 패널: 5시간 한도 게이지, 이어서 작업을 시작하고 끝내면 한도 변화 영수증이 남는 흐름" />
 </p>
 
 ## 기능
@@ -53,9 +53,18 @@
 
 **필요한 것:** macOS 14 이상의 Apple Silicon Mac, 그리고 구독 계정으로 로그인한 [Claude Code](https://code.claude.com/docs/en/quickstart) 또는 [Codex](https://github.com/openai/codex) CLI.
 
+**Homebrew**
+
+```sh
+brew install --cask hyjoong/tap/usagebar
+```
+
+**직접 설치**
+
 1. [최신 릴리스](https://github.com/hyjoong/UsageBar/releases/latest)에서 `UsageBar-버전-빌드.zip`을 받습니다. GitHub가 자동으로 붙이는 *Source code*는 앱이 아닙니다.
 2. 압축을 풀고 `UsageBar.app`을 **응용 프로그램** 폴더로 옮깁니다.
-3. 열고 메뉴 막대의 **U** 아이콘을 누릅니다. 별도 창이나 Dock 아이콘은 뜨지 않습니다.
+
+그다음 열고 메뉴 막대의 **U** 아이콘을 누릅니다. 별도 창이나 Dock 아이콘은 뜨지 않습니다.
 
 앱은 Developer ID로 서명되고 Apple 공증을 거쳤습니다. 새 버전은 설정 → 앱 정보 → **업데이트 확인…**으로 그 자리에서 설치되며, 설정과 기록은 유지됩니다.
 

@@ -127,12 +127,28 @@ final class WorkJournalController: ObservableObject {
     }
 
     #if DEBUG
+    /// Scripted demo for recordings: idle → active session → receipt, without any clicks.
+    func runDemoFlow(fetch: @escaping (ProviderID) async throws -> ProviderSnapshot) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            if let active = Self.demoActiveSession() {
+                state = WorkJournalState(active: active, receipts: state.receipts)
+            }
+            try? await Task.sleep(for: .seconds(3.5))
+            await finish(fetch: fetch)
+        }
+    }
+
+    /// Matches the demo snapshot (plan, reset times, window ids) so finishing yields real deltas.
     private static func demoActiveSession() -> WorkSession? {
-        let start = Date().addingTimeInterval(-47 * 60)
-        let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "예시"),
-            windows: [UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 22,
-                                  resetsAt: start.addingTimeInterval(3 * 3_600), durationMinutes: 300)],
-            fetchedAt: start, source: String(localized: "예시"))
+        let now = Date()
+        let start = now.addingTimeInterval(-47 * 60)
+        let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "Max · 예시"),
+            windows: [UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 10,
+                                  resetsAt: now.addingTimeInterval(5 * 86_400), durationMinutes: 10_080),
+                      UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 22,
+                                  resetsAt: now.addingTimeInterval(3 * 3_600), durationMinutes: 300)],
+            fetchedAt: start, source: String(localized: "예시 데이터"))
         return try? WorkSession.start(kind: .debug, snapshot: snapshot, now: start)
     }
     #endif

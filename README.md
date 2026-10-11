@@ -28,7 +28,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/panel-en.jpg" width="360" alt="UsageBar panel: 5-hour limit 68% left, segmented gauge, reset time, weekly limit, work log row" />
+  <img src="docs/images/flow-en.gif" width="360" alt="UsageBar panel: the 5-hour limit gauge, then a work session that starts, runs, and finishes with a receipt of the limit change" />
 </p>
 
 ## Features
@@ -53,9 +53,18 @@
 
 **Requirements:** macOS 14 or later on Apple Silicon, and the [Claude Code](https://code.claude.com/docs/en/quickstart) or [Codex](https://github.com/openai/codex) CLI logged in with a subscription account.
 
+**Homebrew**
+
+```sh
+brew install --cask hyjoong/tap/usagebar
+```
+
+**Manual**
+
 1. Download `UsageBar-<version>-<build>.zip` from the [latest release](https://github.com/hyjoong/UsageBar/releases/latest). The automatic *Source code* archives are not the app.
 2. Unzip it and move `UsageBar.app` to **Applications**.
-3. Open it and click the **U** icon in the menu bar. There is no main window or Dock icon.
+
+Then open it and click the **U** icon in the menu bar. There is no main window or Dock icon.
 
 The app is signed with a Developer ID and notarized by Apple. Updates install in place from Settings → About → **Check for Updates…**; settings and history are kept.
 

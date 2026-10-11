@@ -44,6 +44,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-journal-receipt` | 방금 완료한 작업 영수증 카드 |
 | `--demo --ui-window` | 패널을 떠 있는 창으로 연 상태 |
 | `--demo --ui-menu-all` | 메뉴바에 두 서비스를 함께 표시 |
+| `--demo --ui-window --ui-demo-flow` | 클릭 없이 작업 시작 → 진행 → 영수증까지 자동 진행 (README GIF 녹화용, `scripts/record-demo-flow.sh`) |
 | `--demo --ui-settings` | 설정 창 |
 | `--demo --ui-history` | 사용 기록 창 |
 | `--demo --ui-history --ui-history-gaps --ui-history-tokens` | Codex 일별 토큰 탭에서 누락일과 명시적인 0토큰 비교 |

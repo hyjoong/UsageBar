@@ -115,6 +115,9 @@ private struct UsageMenuLabel: View {
             if CommandLine.arguments.contains("--ui-history") { openWindow(id: "history") }
             if CommandLine.arguments.contains("--ui-work-journal") { openWindow(id: "work-journal") }
             if CommandLine.arguments.contains("--ui-window") { openWindow(id: "panel") }
+            if CommandLine.arguments.contains("--ui-demo-flow") {
+                store.workJournal.runDemoFlow { id in try await store.workSnapshot(for: id) }
+            }
         }
         #endif
     }
