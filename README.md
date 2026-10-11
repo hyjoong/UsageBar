@@ -5,8 +5,8 @@
 <h1 align="center">UsageBar</h1>
 
 <p align="center">
-  Claude Code and Codex subscription limits in your Mac's menu bar,<br />
-  with a receipt for what each work session cost you.
+  A receipt for every work session: how much of your Claude Code or Codex limit it used.<br />
+  Plus the remaining limits and reset times, always in your Mac's menu bar.
 </p>
 
 <p align="center">
@@ -34,8 +34,8 @@
 
 ## Features
 
+- **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took and how many percentage points of each limit it used. No other menu bar app answers "what did this refactor cost me?"
 - **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time.
-- **Work receipts.** Pick a session type, do your work, press Finish. The receipt records the duration and how many percentage points each limit moved.
 - **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
 - **Both services.** Claude Code and Codex side by side, or just the one you use.
 - **Nothing new to log in to.** UsageBar reads the CLI logins already on your Mac. It never asks for a password or an API key.
@@ -43,12 +43,12 @@
 - **English and Korean.** Follows your system language.
 
 <p align="center">
-  <img src="docs/images/panel-codex-en.jpg" width="31%" alt="Codex panel: limit gauges, reset credits with expiry, latest daily tokens" />
   <img src="docs/images/receipts-en.jpg" width="31%" alt="Receipts window: active session card and finished receipts" />
+  <img src="docs/images/panel-codex-en.jpg" width="31%" alt="Codex panel: limit gauges, reset credits with expiry, latest daily tokens" />
   <img src="docs/images/history-en.jpg" width="31%" alt="History window: remaining limit over time, period picker, CSV export" />
 </p>
 
-<p align="center"><sub>Codex panel · Receipts · History. All screenshots use demo data.</sub></p>
+<p align="center"><sub>Receipts · Codex panel · History. All screenshots use demo data.</sub></p>
 
 ## Install
 

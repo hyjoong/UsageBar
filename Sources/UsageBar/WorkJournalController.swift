@@ -130,11 +130,11 @@ final class WorkJournalController: ObservableObject {
     /// Scripted demo for recordings: idle → active session → receipt, without any clicks.
     func runDemoFlow(fetch: @escaping (ProviderID) async throws -> ProviderSnapshot) {
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(1.5))
+            try? await Task.sleep(for: .seconds(1.0))
             if let active = Self.demoActiveSession() {
                 state = WorkJournalState(active: active, receipts: state.receipts)
             }
-            try? await Task.sleep(for: .seconds(3.5))
+            try? await Task.sleep(for: .seconds(2.5))
             await finish(fetch: fetch)
         }
     }

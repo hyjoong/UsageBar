@@ -5,8 +5,8 @@
 <h1 align="center">UsageBar</h1>
 
 <p align="center">
-  Claude Code와 Codex의 구독 한도를 메뉴 막대에서.<br />
-  작업 하나가 한도를 얼마나 썼는지 영수증으로 남깁니다.
+  작업 하나가 Claude Code·Codex 한도를 몇 % 썼는지, 영수증으로 남깁니다.<br />
+  남은 한도와 리셋 시각은 항상 메뉴 막대에.
 </p>
 
 <p align="center">
@@ -34,8 +34,8 @@
 
 ## 기능
 
+- **작업 영수증.** 작업 유형을 고르고 일한 뒤 종료를 누르면, 소요 시간과 한도별 변화(%p)가 영수증으로 남습니다. "이 리팩터링에 한도를 얼마나 썼나"에 답하는 메뉴바 앱은 이것뿐입니다.
 - **한눈에.** 5시간 한도를 큰 숫자와 20칸 게이지로, 정확한 리셋 시각과 함께 봅니다. 주간 한도는 아래에 이어지고, 메뉴 막대에는 잔여율이 항상 떠 있습니다.
-- **작업 영수증.** 작업 유형을 고르고 일한 뒤 종료를 누르면, 소요 시간과 한도별 변화(%p)가 영수증으로 남습니다.
 - **사용 기록.** 잔여 한도 추이와 Codex 일별 토큰을 차트로 보고 CSV로 내보냅니다.
 - **두 서비스.** Claude Code와 Codex를 나란히, 또는 쓰는 것만.
 - **새로 로그인할 것 없음.** 이 Mac에 있는 CLI 로그인 상태를 그대로 읽습니다. 비밀번호나 API 키를 묻지 않습니다.
@@ -43,12 +43,12 @@
 - **한국어와 영어.** 시스템 언어를 따릅니다.
 
 <p align="center">
-  <img src="docs/images/panel-codex-ko.jpg" width="31%" alt="Codex 패널: 한도 게이지, 초기화권 수와 만료, 최근 일별 토큰" />
   <img src="docs/images/receipts-ko.jpg" width="31%" alt="작업 영수증 창: 진행 중인 작업 카드와 완료된 영수증 목록" />
+  <img src="docs/images/panel-codex-ko.jpg" width="31%" alt="Codex 패널: 한도 게이지, 초기화권 수와 만료, 최근 일별 토큰" />
   <img src="docs/images/history-ko.jpg" width="31%" alt="사용 기록 창: 잔여 한도 추이 차트, 기간 선택, CSV 내보내기" />
 </p>
 
-<p align="center"><sub>Codex 패널 · 작업 영수증 · 사용 기록. 모든 스크린샷은 예시 데이터입니다.</sub></p>
+<p align="center"><sub>작업 영수증 · Codex 패널 · 사용 기록. 모든 스크린샷은 예시 데이터입니다.</sub></p>
 
 ## 설치
 
