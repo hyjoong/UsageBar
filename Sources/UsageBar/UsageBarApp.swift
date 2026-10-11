@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UserNotifications
 import UsageBarCore
 
 @main
@@ -81,15 +82,31 @@ extension Notification.Name {
 
 private struct UsageMenuLabel: View {
     @ObservedObject var store: AppStore
+    @ObservedObject private var journal: WorkJournalController
     @Environment(\.openWindow) private var openWindow
     #if DEBUG
     @State private var openedCheckWindow = false
     #endif
 
+    init(store: AppStore) {
+        self.store = store
+        _journal = ObservedObject(wrappedValue: store.workJournal)
+    }
+
     var body: some View {
         HStack(spacing: 7) {
             Image(nsImage: UsageBrandMark.menuImage)
             if store.isDemo { Text("예시").font(.caption2) }
+            if let active = journal.state.active {
+                HStack(spacing: 3) {
+                    Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        Text(Self.compactDuration(context.date.timeIntervalSince(active.startedAt))).monospacedDigit()
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("작업 기록 중")
+            }
             ForEach(store.menuProviders) { provider in
                 HStack(spacing: 4) {
                     if store.menuProviders.count > 1 {
@@ -121,6 +138,12 @@ private struct UsageMenuLabel: View {
         }
         #endif
     }
+
+    /// Short enough for the menu bar: minutes under an hour, whole hours after.
+    private static func compactDuration(_ interval: TimeInterval) -> String {
+        let minutes = max(0, Int(interval / 60))
+        return minutes < 60 ? String(localized: "\(minutes)분") : String(localized: "\(minutes / 60)시간")
+    }
 }
 
 @MainActor
@@ -130,9 +153,17 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
     #if DEBUG
     private var checkWindow: NSWindow?
     #endif
+    static let workSessionCategory = "work-session"
+    static let finishAction = "work.finish"
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         Self.store?.applyAppearance()
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        let finish = UNNotificationAction(identifier: Self.finishAction, title: String(localized: "작업 종료"), options: [])
+        center.setNotificationCategories([UNNotificationCategory(identifier: Self.workSessionCategory, actions: [finish],
+                                                                intentIdentifiers: [], options: [])])
         #if DEBUG
         if Self.store?.isDemo == true {
             if CommandLine.arguments.contains("--ui-dark") { Self.store?.appearanceMode = .dark }
@@ -165,6 +196,29 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { false }
 
     func applicationWillTerminate(_ notification: Notification) { Self.store?.stop() }
+}
+
+extension UsageBarDelegate: UNUserNotificationCenterDelegate {
+    /// The Finish button ends the session without opening the panel; tapping the banner opens the panel window.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                            withCompletionHandler completionHandler: @escaping () -> Void) {
+        let action = response.actionIdentifier
+        Task { @MainActor in
+            if let store = UsageBarDelegate.store {
+                if action == UsageBarDelegate.finishAction {
+                    await store.workJournal.finish { id in try await store.workSnapshot(for: id) }
+                } else {
+                    NotificationCenter.default.post(name: .usageBarReopen, object: nil)
+                }
+            }
+            completionHandler()
+        }
+    }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
 }
 
 /// Keeps the detached panel above other windows so it can stay visible during a long task.

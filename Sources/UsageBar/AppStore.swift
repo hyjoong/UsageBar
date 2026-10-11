@@ -113,6 +113,16 @@ final class AppStore: ObservableObject {
     }
     @Published private(set) var notificationsEnabled = false
     @Published private(set) var recoveryNotificationsEnabled = false
+    /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
+    @Published var workRemindersEnabled = true {
+        didSet {
+            if !isDemo { defaults.set(workRemindersEnabled, forKey: "workRemindersEnabled") }
+            Task { await syncWorkReminders() }
+        }
+    }
+    private var journalObservation: AnyCancellable?
+    /// UNUserNotificationCenter needs a real app bundle; tests and demo runs must never touch it.
+    private let notificationsAvailable: Bool
     @Published private(set) var historyPoints: [HistoryPoint] = []
     @Published private(set) var storageNotice: String?
     @Published private(set) var notificationMessage: String?
@@ -150,7 +160,10 @@ final class AppStore: ObservableObject {
         defaults = preferences
         providers = providerOverrides ?? (demo ? [:] : [.claude: ClaudeProvider(), .codex: CodexProvider()])
         historyStore = demo || providerOverrides != nil ? nil : HistoryStore()
+        notificationsAvailable = !demo && providerOverrides == nil && Bundle.main.bundleIdentifier != nil
         states = Dictionary(uniqueKeysWithValues: ProviderID.allCases.map { ($0, ProviderState()) })
+        journalObservation = workJournal.$state.map { $0.active?.id }.removeDuplicates()
+            .sink { [weak self] _ in Task { await self?.syncWorkReminders() } }
         if demo {
             installDemo()
         } else {
@@ -170,11 +183,43 @@ final class AppStore: ObservableObject {
             }
             notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
             recoveryNotificationsEnabled = defaults.bool(forKey: "recoveryNotificationsEnabled")
+            if defaults.object(forKey: "workRemindersEnabled") != nil {
+                workRemindersEnabled = defaults.bool(forKey: "workRemindersEnabled")
+            }
             if let saved = defaults.dictionary(forKey: "trackedWindowIDs") as? [String: String] {
                 trackedWindowIDs = Dictionary(uniqueKeysWithValues: saved.compactMap { key, value in
                     ProviderID(rawValue: key).map { ($0, value) }
                 })
             }
+        }
+    }
+
+    /// Keeps pending session reminders in step with the active session and the current reset time.
+    func syncWorkReminders() async {
+        guard notificationsAvailable else { return }
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: WorkReminderKind.allIdentifiers)
+        guard workRemindersEnabled, let active = workJournal.state.active else { return }
+        let plan = WorkReminderPlan.reminders(startedAt: active.startedAt,
+                                              resetsAt: primaryWindow(for: active.provider)?.resetsAt, now: Date())
+        guard !plan.isEmpty else { return }
+        if await center.notificationSettings().authorizationStatus == .notDetermined {
+            _ = try? await center.requestAuthorization(options: [.alert, .sound])
+        }
+        for reminder in plan {
+            let content = UNMutableNotificationContent()
+            content.categoryIdentifier = UsageBarDelegate.workSessionCategory
+            content.sound = .default
+            switch reminder.kind {
+            case .checkIn:
+                content.title = String(localized: "작업 기록이 아직 진행 중이에요")
+                content.body = String(localized: "\(active.kind.title) · \(active.provider.title) · 시작한 지 2시간")
+            case .beforeReset:
+                content.title = String(localized: "\(active.provider.title) 한도 리셋 10분 전")
+                content.body = String(localized: "지금 종료해야 이번 작업의 한도 변화를 비교할 수 있어요")
+            }
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, reminder.fireAt.timeIntervalSinceNow), repeats: false)
+            try? await center.add(UNNotificationRequest(identifier: reminder.kind.notificationIdentifier, content: content, trigger: trigger))
         }
     }
 
@@ -466,6 +511,7 @@ final class AppStore: ObservableObject {
             }
             guard !Task.isCancelled, generation == expected else { return }
             await updateNotifications(snapshot)
+            if workJournal.state.active?.provider == snapshot.provider { await syncWorkReminders() }
         } catch is CancellationError {
             // Cancellation is not a failed account connection and must not replace a cached value.
         } catch {

@@ -71,7 +71,8 @@ struct PreferencesView: View {
                     get: { store.recoveryNotificationsEnabled },
                     set: { value in Task { await store.setRecoveryNotificationsEnabled(value) } }
                 ))
-                detail("각 한도마다 기간당 한 번씩만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
+                Toggle("작업 기록 중 알림", isOn: $store.workRemindersEnabled)
+                detail("한도 알림은 각 한도마다 기간당 한 번씩만 알려요. 작업 기록 알림은 시작 2시간 뒤와 리셋 10분 전에 오고, 알림에서 바로 종료할 수 있어요. 켤 때 macOS 알림 권한을 요청해요.")
                 if let message = store.notificationMessage {
                     note(message, color: UsageTheme.warning)
                 }
