@@ -200,8 +200,12 @@ final class AppStore: ObservableObject {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: WorkReminderKind.allIdentifiers)
         guard workRemindersEnabled, let active = workJournal.state.active else { return }
+        // Hidden override for testing the flow without waiting two hours:
+        // defaults write dev.hyjoong.usagebar workReminderCheckInMinutes 1
+        let checkInMinutes = UserDefaults.standard.integer(forKey: "workReminderCheckInMinutes")
         let plan = WorkReminderPlan.reminders(startedAt: active.startedAt,
-                                              resetsAt: primaryWindow(for: active.provider)?.resetsAt, now: Date())
+                                              resetsAt: primaryWindow(for: active.provider)?.resetsAt, now: Date(),
+                                              checkInAfter: TimeInterval(checkInMinutes > 0 ? checkInMinutes : 120) * 60)
         guard !plan.isEmpty else { return }
         if await center.notificationSettings().authorizationStatus == .notDetermined {
             _ = try? await center.requestAuthorization(options: [.alert, .sound])

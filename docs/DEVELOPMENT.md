@@ -77,3 +77,12 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 
 localhost에서 예시 빌드 100 → 101 설치·재실행을 검증한 화면입니다. 화면의 0.7.1은 테스트용 버전이며 실제 공개 배포 버전이 아닙니다. 계정 사용량은 모두 예시입니다.
 </details>
+
+## 작업 기록 알림 빠르게 확인하기
+
+2시간을 기다리지 않고 알림 흐름을 확인하려면 체크인 간격을 분 단위로 덮어쓸 수 있습니다. 앱을 다시 실행할 필요는 없고, 다음 작업 시작부터 적용됩니다.
+
+```sh
+defaults write dev.hyjoong.usagebar workReminderCheckInMinutes 1   # 1분 뒤 알림
+defaults delete dev.hyjoong.usagebar workReminderCheckInMinutes    # 원래대로(120분)
+```
