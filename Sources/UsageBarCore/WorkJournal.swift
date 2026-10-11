@@ -32,8 +32,13 @@ public struct WorkQuotaDelta: Codable, Equatable, Identifiable, Sendable {
     public let label: String
     public let percentagePoints: Double?
     public let note: String?
-    public init(id: String, label: String, percentagePoints: Double?, note: String? = nil) {
+    /// Account-wide used percent when the session started and ended; nil on receipts from older versions.
+    public let usedPercentAtStart: Double?
+    public let usedPercentAtEnd: Double?
+    public init(id: String, label: String, percentagePoints: Double?, note: String? = nil,
+                usedPercentAtStart: Double? = nil, usedPercentAtEnd: Double? = nil) {
         self.id = id; self.label = label; self.percentagePoints = percentagePoints; self.note = note
+        self.usedPercentAtStart = usedPercentAtStart; self.usedPercentAtEnd = usedPercentAtEnd
     }
 }
 
@@ -146,7 +151,8 @@ public struct WorkSession: Codable, Equatable, Identifiable, Sendable {
 
         let rows = checkpoints.enumerated().map { index, checkpoint -> WorkQuotaDelta in
             func unavailable(_ note: String) -> WorkQuotaDelta {
-                WorkQuotaDelta(id: "quota-\(index)", label: checkpoint.label, percentagePoints: nil, note: note)
+                WorkQuotaDelta(id: "quota-\(index)", label: checkpoint.label, percentagePoints: nil, note: note,
+                               usedPercentAtStart: checkpoint.usedPercent)
             }
             if let generalIssue { return unavailable(generalIssue) }
             let matches = snapshot?.windows.filter { Self.hash($0.id) == checkpoint.windowDigest } ?? []
@@ -163,7 +169,8 @@ public struct WorkSession: Codable, Equatable, Identifiable, Sendable {
             guard window.usedPercent >= checkpoint.usedPercent else { return unavailable(String(localized: "사용률이 감소해 단순 비교할 수 없어요.")) }
             let delta = window.usedPercent - checkpoint.usedPercent
             return WorkQuotaDelta(id: "quota-\(index)", label: checkpoint.label, percentagePoints: delta,
-                                  note: delta == 0 ? String(localized: "표시상 변화 없음") : nil)
+                                  note: delta == 0 ? String(localized: "표시상 변화 없음") : nil,
+                                  usedPercentAtStart: checkpoint.usedPercent, usedPercentAtEnd: window.usedPercent)
         }
         return WorkReceipt(id: id, kind: kind, provider: provider, startedAt: startedAt, endedAt: end, rows: rows)
     }

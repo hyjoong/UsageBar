@@ -8,6 +8,8 @@ struct QuotaGauge: View {
     let remainingPercent: Double
     let tone: Tone
     var height: CGFloat = 10
+    /// Remaining percent before a session; the band between it and `remainingPercent` is the session's slice.
+    var consumedFrom: Double? = nil
 
     private let segments = 20
     private let gap: CGFloat = 2
@@ -21,12 +23,20 @@ struct QuotaGauge: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let width = proxy.size.width
+            let remaining = max(0, min(100, remainingPercent))
             ZStack(alignment: .leading) {
                 track(UsageTheme.mutedSurface)
-                track(fill)
-                    .mask(alignment: .leading) {
-                        Rectangle().frame(width: proxy.size.width * max(0, min(100, remainingPercent)) / 100)
-                    }
+                track(consumedFrom == nil ? fill : fill.opacity(0.35))
+                    .mask(alignment: .leading) { Rectangle().frame(width: width * remaining / 100) }
+                if let consumedFrom {
+                    let before = max(remaining, min(100, consumedFrom))
+                    track(fill)
+                        .mask(alignment: .leading) {
+                            Rectangle().frame(width: width * (before - remaining) / 100)
+                                .offset(x: width * remaining / 100)
+                        }
+                }
             }
         }
         .frame(height: height)

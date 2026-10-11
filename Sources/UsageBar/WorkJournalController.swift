@@ -25,6 +25,17 @@ final class WorkJournalController: ObservableObject {
                 state = WorkJournalState(active: active, receipts: state.receipts)
             }
             if CommandLine.arguments.contains("--ui-journal-receipt") { recentCompletion = state.receipts.first }
+            if CommandLine.arguments.contains("--ui-journal-receipt-reset"), let base = state.receipts.first {
+                // A session that crossed the 5-hour reset: the primary row can't be compared, tokens carry the headline.
+                var rows = base.rows
+                rows[0] = WorkQuotaDelta(id: rows[0].id, label: rows[0].label, percentagePoints: nil,
+                                         note: String(localized: "작업 구간에 한도 리셋 시각이 포함돼요."),
+                                         usedPercentAtStart: rows[0].usedPercentAtStart)
+                recentCompletion = WorkReceipt(id: base.id, kind: .review, provider: base.provider, startedAt: base.startedAt,
+                                               endedAt: base.endedAt, rows: rows,
+                                               activity: SessionActivity(models: [ModelActivity(model: "claude-fable-5-1", calls: 3, inputTokens: 66, outputTokens: 2_700, cacheReadTokens: 410_000)],
+                                                                         projects: [ProjectActivity(name: "UsageBar", calls: 3, outputTokens: 2_700)]))
+            }
             #endif
         }
     }

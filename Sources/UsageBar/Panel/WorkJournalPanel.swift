@@ -167,16 +167,58 @@ struct WorkJournalPanel: View {
             .help("영수증은 전체 기록에 보관하고 이 표시를 닫아요")
             .accessibilityLabel("완료 표시 닫기")
         }
-        Text(UsageFormat.receiptSummary(receipt.rows, limit: 2))
-            .foregroundStyle(UsageTheme.secondaryInk)
-            .fixedSize(horizontal: false, vertical: true)
-            .help("관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.")
+        receiptHeadline(receipt)
+        receiptDetails(receipt)
+        if journal.message != nil { errorDetails(String(localized: "기록 확인이 필요해요")) }
+    }
+
+    /// One number first: the primary limit's slice, or the tokens when the limit can't be compared.
+    @ViewBuilder private func receiptHeadline(_ receipt: WorkReceipt) -> some View {
+        let primary = receipt.rows.first
+        let delta = primary?.percentagePoints ?? 0
+        if let primary, delta > 0 {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(verbatim: "+" + delta.formatted(.number.precision(.fractionLength(0...1))))
+                    .font(UsageType.metric).monospacedDigit().foregroundStyle(UsageTheme.accent)
+                Text(verbatim: "%p").font(UsageType.emphasis).foregroundStyle(UsageTheme.secondaryInk)
+                Text("\(primary.label) 중 이 작업이 쓴 몫").foregroundStyle(UsageTheme.secondaryInk)
+                    .padding(.leading, UsageSpacing.tight).lineLimit(1)
+            }
+            if let start = primary.usedPercentAtStart, let end = primary.usedPercentAtEnd {
+                QuotaGauge(remainingPercent: 100 - end, tone: .current, height: 6, consumedFrom: 100 - start)
+                    .padding(.vertical, 2)
+                    .help("연한 부분은 작업 후 남은 한도, 진한 부분은 이 작업 구간에 줄어든 한도예요")
+            }
+        } else if let activity = receipt.activity, !activity.isEmpty {
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(verbatim: TokenFormat.compact(activity.outputTokens))
+                    .font(UsageType.metric).monospacedDigit().foregroundStyle(UsageTheme.accent)
+                Text("출력 토큰 · 호출 \(activity.calls)").foregroundStyle(UsageTheme.secondaryInk)
+                    .padding(.leading, UsageSpacing.tight).lineLimit(1)
+            }
+            if let primary, let note = primary.note {
+                Text(verbatim: "\(primary.label): \(note)").foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        } else if let primary {
+            Text(verbatim: "\(primary.label) \(UsageFormat.deltaLabel(primary.percentagePoints))"
+                 + (primary.note.map { " · \($0)" } ?? ""))
+                .foregroundStyle(UsageTheme.secondaryInk).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder private func receiptDetails(_ receipt: WorkReceipt) -> some View {
+        let others = Array(receipt.rows.dropFirst())
+        if !others.isEmpty {
+            Text(verbatim: UsageFormat.receiptSummary(others, limit: 2))
+                .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
+                .help("관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.")
+        }
         if let activity = receipt.activity, let top = activity.models.first {
             Text(verbatim: UsageFormat.activityLine(top, extraModels: activity.models.count - 1))
                 .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
                 .help("이 Mac의 Claude Code·Codex 세션 기록에서 집계한 모델별 호출과 토큰이에요. 대화 내용은 읽어 저장하지 않아요.")
         }
-        if journal.message != nil { errorDetails(String(localized: "기록 확인이 필요해요")) }
     }
 
     // MARK: Shared

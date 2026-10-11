@@ -275,6 +275,22 @@
         }
       }
     },
+    "%@ 중 이 작업이 쓴 몫": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "of %@ used by this session"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 중 이 작업이 쓴 몫"
+          }
+        }
+      }
+    },
     "%@ 한도 기준": {
       "localizations": {
         "en": {
@@ -3768,6 +3784,22 @@
         }
       }
     },
+    "연한 부분은 작업 후 남은 한도, 진한 부분은 이 작업 구간에 줄어든 한도예요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light: limit left after the session. Dark: the slice this session used."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연한 부분은 작업 후 남은 한도, 진한 부분은 이 작업 구간에 줄어든 한도예요"
+          }
+        }
+      }
+    },
     "영수증": {
       "localizations": {
         "en": {
@@ -5300,6 +5332,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "추가 한도"
+          }
+        }
+      }
+    },
+    "출력 토큰 · 호출 %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "output tokens · %lld calls"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출력 토큰 · 호출 %lld"
           }
         }
       }
