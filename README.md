@@ -1,82 +1,124 @@
-# UsageBar
-
-Claude Code와 Codex의 남은 구독 한도를 메뉴 막대에서 확인하는 macOS 앱입니다. 작업을 시작하고 끝낼 때 한도가 얼마나 줄었는지 영수증으로 남길 수 있습니다.
-
-[English](README.en.md)
-
 <p align="center">
-  <img src="docs/images/panel-ko.jpg" width="360" alt="UsageBar 패널: 5시간 한도 68% 남음, 세그먼트 게이지, 리셋 시각, 주간 한도, 작업 기록 행" />
+  <img src="docs/images/icon.png" width="96" alt="UsageBar icon" />
 </p>
 
-- **한눈에**: 5시간 한도의 잔여율을 큰 숫자와 게이지로, 리셋 시각과 함께 봅니다. 주간 한도는 아래에 이어집니다.
-- **작업 영수증**: **작업 시작**에서 유형을 고르면 바로 시작하고, 끝낼 때 소요 시간과 한도 변화가 남습니다.
-- **사용 기록**: 한도 변화 추이와 Codex 일별 토큰을 차트로 보고 CSV로 내보냅니다.
-- **그대로 로그인**: 이 Mac에 설치된 Claude Code·Codex CLI의 로그인 상태를 사용합니다. 비밀번호나 API 키를 입력하지 않습니다.
+<h1 align="center">UsageBar</h1>
 
 <p align="center">
-  <img src="docs/images/panel-codex-ko.jpg" width="31%" alt="Codex 패널: 한도 게이지, 초기화권 수와 만료, 최근 일별 토큰" />
-  <img src="docs/images/receipts-ko.jpg" width="31%" alt="작업 영수증 창: 진행 중인 작업 카드와 완료된 영수증 목록" />
-  <img src="docs/images/history-ko.jpg" width="31%" alt="사용 기록 창: 잔여 한도 추이 차트, 기간 선택, CSV 내보내기" />
+  Claude Code and Codex subscription limits in your Mac's menu bar,<br />
+  with a receipt for what each work session cost you.
 </p>
-
-<sub>Codex 패널 · 작업 영수증 · 사용 기록. 모든 스크린샷은 예시 데이터입니다.</sub>
-
-## 설치
-
-macOS 14 이상, Apple Silicon.
-
-1. [Releases](https://github.com/hyjoong/UsageBar/releases)에서 `UsageBar-버전-빌드.zip`을 받습니다. GitHub가 자동으로 붙이는 **Source code**는 설치 파일이 아닙니다.
-2. 압축을 풀고 `UsageBar.app`을 **응용 프로그램** 폴더로 옮긴 뒤 엽니다.
-3. 메뉴 막대의 **U** 아이콘을 누릅니다. 별도 창이나 Dock 아이콘은 뜨지 않습니다.
-
-새 버전은 설정 → 앱 정보 → **업데이트 확인…**으로 설치합니다. 설정과 기록은 유지됩니다.
-
-## 처음 연결하기
-
-처음 실행하면 패널이 연결 단계를 번호 순서로 안내합니다. 한 서비스만 쓴다면 **…만 사용할게요** 링크로 다른 서비스 조회를 끌 수 있습니다.
 
 <p align="center">
-  <img src="docs/images/connect-ko.jpg" width="360" alt="Claude 연결하기: 설치, 터미널 로그인, 돌아와서 확인의 3단계 안내" />
+  <a href="https://github.com/hyjoong/UsageBar/releases"><img src="https://img.shields.io/github/v/release/hyjoong/UsageBar?include_prereleases&label=release" alt="Latest release" /></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14 or later" />
+  <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon" />
+  <img src="https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white" alt="Swift 5.10" />
 </p>
 
-- **Claude**: Claude Code CLI를 설치한 뒤 **연결 설정 열기**를 누르면 터미널이 열립니다. 초기 설정과 구독 계정 로그인을 마치고 **다시 확인**을 누릅니다.
-- **Codex**: Codex CLI를 설치하고 터미널에서 `codex login`으로 ChatGPT 구독 계정에 로그인한 뒤 **다시 확인**을 누릅니다. API 키 계정의 요금은 지원하지 않습니다.
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="README.ko.md">한국어</a>
+</p>
 
-## 사용법
+<p align="center">
+  <img src="docs/images/panel-en.jpg" width="360" alt="UsageBar panel: 5-hour limit 68% left, segmented gauge, reset time, weekly limit, work log row" />
+</p>
 
-| 하고 싶은 일 | 조작 |
+## Features
+
+- **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time.
+- **Work receipts.** Pick a session type, do your work, press Finish. The receipt records the duration and how many percentage points each limit moved.
+- **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
+- **Both services.** Claude Code and Codex side by side, or just the one you use.
+- **Nothing new to log in to.** UsageBar reads the CLI logins already on your Mac. It never asks for a password or an API key.
+- **Stays out of the way.** A menu bar popover that sizes to its content, a floating window when you want it to stay visible, and a 20% low-limit notification if you turn it on.
+- **English and Korean.** Follows your system language.
+
+<p align="center">
+  <img src="docs/images/panel-codex-en.jpg" width="31%" alt="Codex panel: limit gauges, reset credits with expiry, latest daily tokens" />
+  <img src="docs/images/receipts-en.jpg" width="31%" alt="Receipts window: active session card and finished receipts" />
+  <img src="docs/images/history-en.jpg" width="31%" alt="History window: remaining limit over time, period picker, CSV export" />
+</p>
+
+<p align="center"><sub>Codex panel · Receipts · History. All screenshots use demo data.</sub></p>
+
+## Install
+
+**Requirements:** macOS 14 or later on Apple Silicon, and the [Claude Code](https://code.claude.com/docs/en/quickstart) or [Codex](https://github.com/openai/codex) CLI logged in with a subscription account.
+
+1. Download `UsageBar-<version>-<build>.zip` from the [latest release](https://github.com/hyjoong/UsageBar/releases/latest). The automatic *Source code* archives are not the app.
+2. Unzip it and move `UsageBar.app` to **Applications**.
+3. Open it and click the **U** icon in the menu bar. There is no main window or Dock icon.
+
+The app is signed with a Developer ID and notarized by Apple. Updates install in place from Settings → About → **Check for Updates…**; settings and history are kept.
+
+## Connect your accounts
+
+On first launch the panel walks you through the connection in three numbered steps. If you only use one service, the **I only use …** link turns the other one off.
+
+<p align="center">
+  <img src="docs/images/connect-en.jpg" width="360" alt="Connect Claude: install, log in from Terminal, come back and check" />
+</p>
+
+| Service | What to do |
 | --- | --- |
-| 남은 한도 확인 | U 아이콘을 누릅니다. 큰 숫자는 5시간 한도의 잔여율이고, 주간 등 다른 한도는 아래에 이어집니다. |
-| 작업 영수증 남기기 | **작업 시작**에서 유형을 고릅니다. 끝내면 소요 시간과 한도 변화(%p)가 남고, **전체 기록**에서 복사·삭제합니다. |
-| 사용량 변화 확인·내보내기 | 하단 기록 아이콘 → 서비스·기간·한도를 고르고 **CSV 내보내기**. |
-| 패널을 창으로 띄우기 | ⋯ 메뉴 → **창으로 열기**. 다른 창 위에 떠 있어 긴 작업 중에도 보입니다. 앱을 다시 실행해도 같은 창이 열립니다. |
-| Claude·Codex 함께 표시 | 설정 → 메뉴 막대 → **표시할 서비스** → **사용 중인 서비스 모두**. |
-| 로그인 시 실행·알림 | 설정 → **로그인 시 UsageBar 실행**, **남은 한도가 20% 아래로 내려가면 알림**. |
+| **Claude** | Install the Claude Code CLI, press **Open setup** to finish setup and log in from Terminal, then press **Check again**. |
+| **Codex** | Install the Codex CLI, run `codex login` with your ChatGPT subscription account, then press **Check again**. API key billing is not supported. |
 
-영수증의 숫자는 관측 구간의 **계정 전체 사용률 변화**입니다. 다른 창이나 기기의 사용도 포함되며, 특정 프로젝트의 토큰 수나 비용이 아닙니다. 리셋을 지나거나 계정·플랜이 바뀌어 비교할 수 없으면 사유를 표시합니다.
+## Usage
 
-## 문제가 생겼을 때
-
-| 증상 | 확인할 내용 |
+| I want to… | Do this |
 | --- | --- |
-| 아이콘이 안 보여요 | 메뉴 막대가 꽉 차면 macOS가 노치 아래 아이템을 숨깁니다. 제어 센터 항목을 줄이거나 메뉴 막대 정리 앱을 쓰세요. 그 사이에는 UsageBar를 다시 실행하면 패널 창이 열립니다. |
-| 로그인이 필요하다고 나와요 | 터미널에서 해당 CLI 로그인을 마친 뒤 **다시 확인**을 누릅니다. |
-| 이전 기록·조회 오류가 보여요 | 마지막 성공값입니다. 인터넷과 CLI 로그인 상태를 확인한 뒤 새로고침하세요. ⋯ 메뉴에서 서비스 장애 현황을 열 수 있습니다. |
-| 새로고침이 잠겨 있어요 | 서비스가 요청을 제한한 상태입니다. 안내된 시간까지 기다려 주세요. |
+| See remaining limits | Click the U icon. The big number is the 5-hour limit; other limits follow below. |
+| Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
+| Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
+| Keep the panel visible | ⋯ menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
+| Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
+| Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
-## 개인정보
+**How to read a receipt.** The numbers are the *account-wide* change over the observed interval. They include other windows and devices and are not a project's token count or cost. When a reset or an account or plan change makes the comparison meaningless, the receipt says why instead of showing a number.
 
-- 각 CLI의 기존 로그인을 사용하며 비밀번호·API 키·토큰을 입력받거나 저장하지 않습니다.
-- 사용량 기록과 작업 영수증은 `~/Library/Application Support/UsageBar/`에만 저장됩니다. 대화 내용, 프로젝트 파일, CLI 원문 응답은 저장하지 않습니다.
-- 구독 종료일·결제액·프로젝트별 비용은 표시하지 않으며 초기화권을 소비하는 기능도 없습니다.
+## FAQ
 
-상세는 [docs/PRIVACY.md](docs/PRIVACY.md)에 있습니다.
+**The icon is not in my menu bar.**
+When the menu bar is full, macOS hides items that fall under the notch, and a newly added app lands right next to it. Remove a few Control Center items or use a menu bar manager; then ⌘-drag the U icon to the right so it keeps its spot. Until then, launching UsageBar again opens the panel as a window.
 
-## 개발
+**It says a login is needed.**
+Log in with the CLI in Terminal, then press **Check again**. UsageBar never handles the login itself.
+
+**It shows "earlier record" or an error.**
+That is the last successful check. Verify your internet connection and the CLI login, then refresh. The ⋯ menu links to each service's status page.
+
+**Refresh is greyed out.**
+The service is rate limiting requests. UsageBar shows when it can check again.
+
+**Does it work on Intel Macs?**
+Releases are built for Apple Silicon. Intel builds have not been tested.
+
+## Privacy
+
+- UsageBar uses each CLI's existing login. It never asks for, stores, or transmits passwords, API keys or tokens.
+- Usage history and receipts live only in `~/Library/Application Support/UsageBar/`. Conversations, project files and raw CLI responses are not stored.
+- Billing dates, amounts and per-project costs are not shown, and nothing consumes reset credits.
+- No analytics, no telemetry. The only network activity is the CLIs' own usage queries and the signed update check you can turn off.
+
+Details are in [docs/PRIVACY.md](docs/PRIVACY.md) (Korean).
+
+## Development
 
 ```sh
+git clone https://github.com/hyjoong/UsageBar.git
+cd UsageBar
 swift build && swift test
-swift run UsageBar --demo
+swift run UsageBar --demo      # demo data, no account access
+zsh scripts/build-app.sh       # signed .app in build/
 ```
 
-소스 빌드와 화면 확인 옵션은 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), 배포·공증 절차는 [docs/RELEASING.md](docs/RELEASING.md), 디자인 참고는 [docs/DESIGN.md](docs/DESIGN.md), 변경 이력은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
+SwiftUI, AppKit and Swift Charts on Swift Package Manager; in-app updates via [Sparkle](https://sparkle-project.org). UI strings live in `Resources/Localizable.xcstrings` (Korean source, English translations). The source build, demo screens, release process, design notes and changelog are documented in [docs/](docs/) and [CHANGELOG.md](CHANGELOG.md).
+
+Bug reports and pull requests are welcome. If the installed CLI's output or protocol changes, the provider code in `Sources/UsageBarCore` is the place to look.
