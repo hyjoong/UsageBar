@@ -46,6 +46,15 @@ enum UsageFormat {
     }
 
     static let koreanDateTime = Date.FormatStyle.dateTime.locale(Locale(identifier: "ko_KR")).month().day().hour().minute()
+
+    /// Clock time alone when the date is today; otherwise month, day, and time.
+    static func resetClock(_ date: Date, now: Date) -> String {
+        let locale = Locale(identifier: "ko_KR")
+        if Calendar.current.isDate(date, inSameDayAs: now) {
+            return date.formatted(.dateTime.locale(locale).hour().minute())
+        }
+        return date.formatted(.dateTime.locale(locale).month().day().hour().minute())
+    }
 }
 
 /// Opens the bundled Claude connection script in Terminal and reports a user-facing failure message.

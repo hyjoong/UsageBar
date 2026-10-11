@@ -1,77 +1,81 @@
 import SwiftUI
 import UsageBarCore
 
-/// One quota window: the pinned one gets the calibrated instrument, the others a compact bar.
+/// One quota window. The pinned window gets the large numeral; the others share the same gauge at a smaller size.
 struct QuotaRow: View {
     @ObservedObject var store: AppStore
     let window: UsageWindow
     let prominent: Bool
     private var provider: ProviderID { store.selectedProvider }
     private var current: Bool { store.freshness(for: provider) == .current }
+    private var low: Bool { window.remainingPercent <= 20 }
+    private var remaining: Int { Int(window.remainingPercent.rounded()) }
+    private var tone: QuotaGauge.Tone { !current ? .stale : (low ? .low : .current) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: prominent ? UsageSpacing.item : UsageSpacing.compact) {
-            if prominent {
-                HStack {
-                    Text(window.label).font(UsageType.headline)
-                    Text("메뉴바에 표시 중").font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                    Spacer()
-                    QuotaPinButton(store: store, window: window, selected: true)
-                }
-                QuotaInstrument(window: window, freshness: store.freshness(for: provider), now: store.clockNow)
-            } else {
-                HStack(spacing: 9) {
-                    Text(window.label).font(UsageType.body)
-                    Spacer()
-                    Text("\(Int(window.remainingPercent.rounded()))% 남음")
-                        .font(UsageType.headline).monospacedDigit()
-                    QuotaPinButton(store: store, window: window, selected: false)
-                }
-                compactBar
-                resetSummary
-            }
-            if window.remainingPercent <= 20 {
+            if prominent { hero } else { compact }
+            resetLine
+            if low {
                 Label(current ? "남은 한도가 20% 이하예요" : "마지막 기록에서 20% 이하였어요", systemImage: "exclamationmark.circle")
                     .font(UsageType.secondary).foregroundStyle(UsageTheme.warning)
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(window.label), \(remaining)퍼센트 남음\(current ? "" : ", 이전 기록")")
     }
 
-    private var compactBar: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule().fill(UsageTheme.mutedSurface)
-                Capsule().fill(!current
-                    ? UsageTheme.secondaryInk
-                    : (window.remainingPercent <= 20 ? UsageTheme.warning : UsageTheme.ink.opacity(0.8)))
-                    .frame(width: max(0, proxy.size.width * window.remainingPercent / 100))
-            }
-        }.frame(height: 4)
-            .accessibilityLabel("\(window.label) 남은 한도")
-            .accessibilityValue("\(Int(window.remainingPercent.rounded()))퍼센트")
+    @ViewBuilder private var hero: some View {
+        HStack(spacing: UsageSpacing.compact) {
+            Text(window.label).font(UsageType.headline)
+            staleBadge
+            Spacer()
+            QuotaPinButton(store: store, window: window, selected: true)
+        }
+        .padding(.bottom, -UsageSpacing.compact)
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(remaining, format: .number)
+                .font(UsageType.display).tracking(-2).monospacedDigit()
+            Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
+            Text("남음").font(UsageType.body).foregroundStyle(UsageTheme.secondaryInk).padding(.leading, UsageSpacing.tight)
+        }
+        .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
+        QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 10)
     }
 
-    private var resetSummary: some View {
-        HStack(alignment: .top, spacing: UsageSpacing.compact) {
-            Image(systemName: "arrow.turn.down.right")
-                .font(UsageType.micro).padding(.top, 2).accessibilityHidden(true)
+    @ViewBuilder private var compact: some View {
+        HStack(spacing: UsageSpacing.compact) {
+            Text(window.label).font(UsageType.body)
+            staleBadge
+            Spacer()
+            Text("\(remaining)% 남음").font(UsageType.headline).monospacedDigit()
+            QuotaPinButton(store: store, window: window, selected: false)
+        }
+        QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 6)
+    }
+
+    @ViewBuilder private var staleBadge: some View {
+        if !current {
+            Text("이전 기록").font(UsageType.caption).foregroundStyle(UsageTheme.warning)
+        }
+    }
+
+    private var resetLine: some View {
+        Group {
             if let date = window.resetsAt {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("리셋 · \(UsageFormat.relativeDate(date, now: store.clockNow, expiry: false))")
-                        .foregroundStyle(date <= store.clockNow ? UsageTheme.warning : UsageTheme.secondaryInk)
-                    Text(date.formatted(UsageFormat.koreanDateTime))
-                }
+                let overdue = date <= store.clockNow
+                Text(overdue
+                     ? UsageFormat.relativeDate(date, now: store.clockNow, expiry: false)
+                     : "리셋 \(UsageFormat.relativeDate(date, now: store.clockNow, expiry: false)) · \(UsageFormat.resetClock(date, now: store.clockNow))")
+                    .foregroundStyle(overdue ? UsageTheme.warning : UsageTheme.secondaryInk)
             } else {
                 Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-            if !current {
-                Text("이전 기록").foregroundStyle(UsageTheme.warning)
+                    .foregroundStyle(UsageTheme.secondaryInk)
             }
         }
-        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-        .accessibilityElement(children: .combine)
+        .font(prominent ? UsageType.secondary : UsageType.caption)
+        .monospacedDigit()
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 

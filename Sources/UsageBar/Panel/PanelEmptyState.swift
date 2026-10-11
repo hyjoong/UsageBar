@@ -47,6 +47,6 @@ struct PanelEmptyState: View {
                 Button("서비스 장애 현황 확인") { NSWorkspace.shared.open(provider.statusURL) }
                     .font(.caption).buttonStyle(.link)
             }
-        }.frame(maxWidth: .infinity).multilineTextAlignment(.center).padding(.vertical, 26)
+        }.frame(maxWidth: .infinity, minHeight: 240).multilineTextAlignment(.center).padding(.vertical, UsageSpacing.group)
     }
 }

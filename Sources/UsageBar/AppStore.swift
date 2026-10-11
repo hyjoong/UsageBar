@@ -590,6 +590,7 @@ final class AppStore: ObservableObject {
                 dailyUsage: records, fetchedAt: old.fetchedAt, source: "화면 검증용 예시"))
             selectedProvider = .codex
         }
+        if CommandLine.arguments.contains("--ui-codex") { selectedProvider = .codex }
         if CommandLine.arguments.contains("--ui-rate-limited") {
             for id in ProviderID.allCases {
                 states[id] = ProviderState(errorMessage: ProviderError.rateLimited(retryAfter: 300).localizedDescription)

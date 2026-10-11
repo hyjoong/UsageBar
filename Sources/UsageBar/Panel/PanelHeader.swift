@@ -1,7 +1,7 @@
 import SwiftUI
 import UsageBarCore
 
-/// Brand row plus the provider switch and plan label.
+/// Provider switch on the left, plan on the right. The brand lives in the menu bar icon, not here.
 struct PanelHeader: View {
     @ObservedObject var store: AppStore
     private var provider: ProviderID { store.selectedProvider }
@@ -15,28 +15,20 @@ struct PanelHeader: View {
     }
 
     var body: some View {
-        VStack(spacing: UsageSpacing.group) {
-            HStack(spacing: UsageSpacing.item) {
-                UsageBrandMark().frame(width: 28, height: 28)
-                Text("UsageBar").font(UsageType.title)
-                Spacer()
-                Text(store.isDemo ? "예시 데이터" : "계정 전체")
-                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+        HStack(spacing: 14) {
+            if store.activeProviders.count > 1 {
+                Picker("서비스", selection: $store.selectedProvider) {
+                    ForEach(store.activeProviders) { Text($0.title).tag($0) }
+                }.pickerStyle(.segmented).labelsHidden().frame(width: 170)
+            } else {
+                Label(provider.title, systemImage: provider.symbol)
+                    .font(UsageType.headline)
             }
-            HStack(spacing: 14) {
-                if store.activeProviders.count > 1 {
-                    Picker("서비스", selection: $store.selectedProvider) {
-                        ForEach(store.activeProviders) { Text($0.title).tag($0) }
-                    }.pickerStyle(.segmented).labelsHidden().frame(width: 185)
-                } else {
-                    Label(provider.title, systemImage: provider.symbol)
-                        .font(UsageType.headline)
-                }
-                Spacer(minLength: 0)
-                Text(planLabel)
-                    .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
-                    .lineLimit(2).multilineTextAlignment(.trailing)
-            }
-        }.padding(.horizontal, UsageSpacing.panelInset).padding(.vertical, 14)
+            Spacer(minLength: 0)
+            Text(planLabel)
+                .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
+                .lineLimit(2).multilineTextAlignment(.trailing)
+        }
+        .padding(.horizontal, UsageSpacing.panelInset).padding(.vertical, UsageSpacing.group)
     }
 }
