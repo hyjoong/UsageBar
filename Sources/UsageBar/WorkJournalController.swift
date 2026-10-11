@@ -16,7 +16,15 @@ final class WorkJournalController: ObservableObject {
     init(demo: Bool = false, persistence: WorkJournalStore? = nil, usesPersistence: Bool = true) {
         self.persistence = demo || !usesPersistence ? nil : (persistence ?? WorkJournalStore())
         isLoaded = demo || !usesPersistence
-        if demo { state = Self.demoState() }
+        if demo {
+            state = Self.demoState()
+            #if DEBUG
+            if CommandLine.arguments.contains("--ui-journal-active"), let active = Self.demoActiveSession() {
+                state = WorkJournalState(active: active, receipts: state.receipts)
+            }
+            if CommandLine.arguments.contains("--ui-journal-receipt") { recentCompletion = state.receipts.first }
+            #endif
+        }
     }
 
     func load() async {
@@ -117,6 +125,17 @@ final class WorkJournalController: ObservableObject {
         if error is CancellationError { return "조회가 중단됐어요." }
         return (error as? LocalizedError)?.errorDescription ?? "잠시 후 다시 시도해 주세요."
     }
+
+    #if DEBUG
+    private static func demoActiveSession() -> WorkSession? {
+        let start = Date().addingTimeInterval(-47 * 60)
+        let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: "예시",
+            windows: [UsageWindow(id: "session", label: "5시간 한도", usedPercent: 22,
+                                  resetsAt: start.addingTimeInterval(3 * 3_600), durationMinutes: 300)],
+            fetchedAt: start, source: "예시")
+        return try? WorkSession.start(kind: .debug, snapshot: snapshot, now: start)
+    }
+    #endif
 
     private static func demoState() -> WorkJournalState {
         let now = Date()
