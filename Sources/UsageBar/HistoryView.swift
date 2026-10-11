@@ -88,7 +88,7 @@ struct HistoryView: View {
         )) {
             Button("확인", role: .cancel) { exportError = nil }
         } message: {
-            Text(exportError ?? "다른 저장 위치를 선택해 다시 시도해 주세요.")
+            Text(exportError ?? String(localized: "다른 저장 위치를 선택해 다시 시도해 주세요."))
         }
     }
 
@@ -102,7 +102,7 @@ struct HistoryView: View {
             Picker("기록 종류", selection: $kind) {
                 Text("잔여 한도").tag("limits")
                 Text(selectedProvider == .claude ? "일별 토큰 (미지원)" : "일별 토큰").tag("tokens")
-            }.pickerStyle(.segmented).labelsHidden().frame(width: 220)
+            }.pickerStyle(.segmented).labelsHidden().frame(width: 250)
             Spacer()
             Picker("기간", selection: $days) {
                 Text(kind == "tokens" ? "오늘" : "24시간").tag(1)
@@ -166,7 +166,7 @@ struct HistoryView: View {
                     Text("관측값 \(points.count)개").font(UsageType.secondary).monospacedDigit()
                         .foregroundStyle(UsageTheme.secondaryInk)
                 }
-                Text("\(Self.observationDate(points.first!.date)) ~ \(Self.observationDate(points.last!.date))")
+                Text(verbatim: "\(Self.observationDate(points.first!.date)) ~ \(Self.observationDate(points.last!.date))")
                     .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
             }
             Chart {
@@ -334,7 +334,7 @@ struct HistoryView: View {
             .accessibilityHidden(true)
     }
 
-    private func emptyState(title: String, symbol: String, detail: String) -> some View {
+    private func emptyState(title: LocalizedStringKey, symbol: String, detail: LocalizedStringKey) -> some View {
         VStack(spacing: UsageSpacing.group) {
             Image(systemName: symbol).font(.system(size: 27, weight: .light))
                 .foregroundStyle(UsageTheme.secondaryInk)
@@ -387,7 +387,7 @@ struct HistoryView: View {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.commaSeparatedText]
         panel.canCreateDirectories = true
-        panel.title = "사용 기록 내보내기"
+        panel.title = String(localized: "사용 기록 내보내기")
         let filter = kind == "limits" ? (activeWindowID == nil ? "-all-windows" : "-selected-window") : ""
         panel.nameFieldStringValue = "UsageBar-\(selectedProvider.rawValue)-\(kind)-\(days)d\(filter)-\(Self.dayFormatter().string(from: now)).csv"
         exportError = nil
@@ -396,7 +396,7 @@ struct HistoryView: View {
             isExporting = false
             guard response == .OK, let url = panel.url else { return }
             do { try csv.write(to: url, atomically: true, encoding: .utf8) }
-            catch { exportError = "선택한 위치에 파일을 저장할 수 없어요. \(error.localizedDescription)" }
+            catch { exportError = String(localized: "선택한 위치에 파일을 저장할 수 없어요. \(error.localizedDescription)") }
         }
     }
 

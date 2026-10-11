@@ -24,7 +24,7 @@ struct PreferencesView: View {
                     set: { launchAtLogin.setEnabled($0) }
                 ))
                 if launchAtLogin.requiresApproval || launchAtLogin.errorMessage != nil {
-                    detail(launchAtLogin.errorMessage ?? launchAtLogin.statusMessage, color: UsageTheme.warning)
+                    note(launchAtLogin.errorMessage ?? launchAtLogin.statusMessage, color: UsageTheme.warning)
                     if launchAtLogin.requiresApproval {
                         Button("로그인 항목 설정 열기") { launchAtLogin.openSystemSettings() }
                     }
@@ -57,7 +57,7 @@ struct PreferencesView: View {
                 ))
                 detail("같은 한도에서는 한 번만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
                 if let message = store.notificationMessage {
-                    detail(message, color: UsageTheme.warning)
+                    note(message, color: UsageTheme.warning)
                 }
             } header: {
                 sectionTitle("알림", symbol: "bell")
@@ -80,7 +80,7 @@ struct PreferencesView: View {
             Section {
                 LabeledContent("버전", value: updates.version)
                 if let version = updates.availableVersion {
-                    detail("\(version) 버전으로 업데이트할 수 있어요.", color: UsageTheme.accent)
+                    note(String(localized: "\(version) 버전으로 업데이트할 수 있어요."), color: UsageTheme.accent)
                 }
                 Button("업데이트 확인…") { updates.checkForUpdates() }
                     .disabled(!updates.canCheckForUpdates)
@@ -89,10 +89,10 @@ struct PreferencesView: View {
                         get: { updates.automaticallyChecks }, set: { updates.setAutomaticChecks($0) }
                     ))
                     if let checked = updates.lastCheckedAt {
-                        detail("마지막 확인: \(checked.formatted(date: .abbreviated, time: .shortened))")
+                        note(String(localized: "마지막 확인: \(checked.formatted(date: .abbreviated, time: .shortened))"))
                     }
                 }
-                detail(updates.message)
+                note(updates.message)
                 detail("사용량 기록은 이 Mac에만 저장되고, 대화 내용은 수집하지 않아요.")
             } header: {
                 sectionTitle("앱 정보", symbol: "info.circle")
@@ -143,29 +143,34 @@ struct PreferencesView: View {
                     .accessibilityLabel("\(provider.title) 연결 확인")
             }
             if store.enabledProviders.contains(provider), let error = state?.errorMessage {
-                detail(error, color: UsageTheme.warning)
+                note(error, color: UsageTheme.warning)
             }
             if let message = store.retryMessage(for: provider) {
-                detail(message)
+                note(message)
             }
             if let snapshot = state?.snapshot {
-                detail([snapshot.plan.flatMap { $0.isEmpty ? nil : $0 },
-                        "마지막 성공 \(snapshot.fetchedAt.formatted(date: .abbreviated, time: .shortened))"]
+                note([snapshot.plan.flatMap { $0.isEmpty ? nil : $0 },
+                        String(localized: "마지막 성공 \(snapshot.fetchedAt.formatted(date: .abbreviated, time: .shortened))")]
                     .compactMap { $0 }.joined(separator: " · "))
             } else if let attemptedAt = state?.lastAttempt {
-                detail("마지막 확인 \(attemptedAt.formatted(date: .abbreviated, time: .shortened))")
+                note(String(localized: "마지막 확인 \(attemptedAt.formatted(date: .abbreviated, time: .shortened))"))
             }
         }
         .padding(.vertical, UsageSpacing.tight)
     }
 
-    private func sectionTitle(_ title: String, symbol: String) -> some View {
+    private func sectionTitle(_ title: LocalizedStringKey, symbol: String) -> some View {
         Label(title, systemImage: symbol)
             .font(UsageType.sectionHeading)
             .foregroundStyle(UsageTheme.ink)
     }
 
-    private func detail(_ text: String, color: Color = UsageTheme.secondaryInk) -> some View {
+    private func detail(_ key: LocalizedStringKey, color: Color = UsageTheme.secondaryInk) -> some View {
+        Text(key).font(UsageType.secondary).foregroundStyle(color)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func note(_ text: String, color: Color = UsageTheme.secondaryInk) -> some View {
         Text(text).font(UsageType.secondary).foregroundStyle(color)
             .fixedSize(horizontal: false, vertical: true)
     }

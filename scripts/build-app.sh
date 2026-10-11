@@ -65,6 +65,10 @@ swift build -c "$usagebar_mode" --product UsageBar --scratch-path "$usagebar_scr
 usagebar_bin="$(swift build -c "$usagebar_mode" --scratch-path "$usagebar_scratch" --show-bin-path)"
 cp "$usagebar_bin/UsageBar" "$usagebar_bundle/Contents/MacOS/UsageBar"
 cp "$usagebar_root/Resources/setup-claude.command" "$usagebar_bundle/Contents/Resources/setup-claude.command"
+# Korean is the source language (keys), English is compiled from the string catalog.
+mkdir -p "$usagebar_bundle/Contents/Resources/ko.lproj"
+xcrun xcstringstool compile "$usagebar_root/Resources/Localizable.xcstrings" \
+  --output-directory "$usagebar_bundle/Contents/Resources" >/dev/null
 chmod +x "$usagebar_bundle/Contents/MacOS/UsageBar" "$usagebar_bundle/Contents/Resources/setup-claude.command"
 if [[ -f "$usagebar_root/Resources/AppIcon.icns" ]]; then
   cp "$usagebar_root/Resources/AppIcon.icns" "$usagebar_bundle/Contents/Resources/AppIcon.icns"

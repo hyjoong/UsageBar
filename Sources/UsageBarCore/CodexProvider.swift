@@ -17,7 +17,7 @@ public actor CodexProvider: UsageProvider {
                     do { continuation.resume(returning: try Self.fetchSync(path: path, cancellation: cancellation)) }
                     catch is CancellationError { continuation.resume(throwing: CancellationError()) }
                     catch let error as ProviderError { continuation.resume(throwing: error) }
-                    catch { continuation.resume(throwing: ProviderError.unavailable("Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요.")) }
+                    catch { continuation.resume(throwing: ProviderError.unavailable(String(localized: "Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요."))) }
                 }
             }
         } onCancel: { cancellation.cancel() }
@@ -31,7 +31,7 @@ public actor CodexProvider: UsageProvider {
             _ = try CodexRPC.version(executable: executable, cancellation: cancellation,
                                      deadline: min(deadline, ProcessInfo.processInfo.systemUptime + 3))
         } catch is CancellationError { throw CancellationError() }
-        catch { throw ProviderError.setupRequired("Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요.") }
+        catch { throw ProviderError.setupRequired(String(localized: "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요.")) }
 
         let connection = try CodexRPC(executable: executable, arguments: ["app-server", "--listen", "stdio://"],
                                       cancellation: cancellation, deadline: deadline)
@@ -54,7 +54,7 @@ public actor CodexProvider: UsageProvider {
         var candidates: [String]
         if let path, !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let expanded = NSString(string: path).expandingTildeInPath
-            guard expanded.hasPrefix("/") else { throw ProviderError.setupRequired("Codex CLI의 절대 경로를 선택해 주세요.") }
+            guard expanded.hasPrefix("/") else { throw ProviderError.setupRequired(String(localized: "Codex CLI의 절대 경로를 선택해 주세요.")) }
             candidates = [expanded]
         } else {
             let searchPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
@@ -73,7 +73,7 @@ public actor CodexProvider: UsageProvider {
                 return URL(fileURLWithPath: candidate).resolvingSymlinksInPath()
             }
         }
-        throw ProviderError.setupRequired("Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요.")
+        throw ProviderError.setupRequired(String(localized: "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요."))
     }
 }
 
@@ -81,10 +81,10 @@ public actor CodexProvider: UsageProvider {
 enum CodexSnapshotParser {
     static func accountPlan(_ response: [String: Any]) throws -> String? {
         guard let account = response["account"] as? [String: Any] else {
-            throw ProviderError.authenticationRequired("Codex에 ChatGPT 계정으로 로그인해 주세요.")
+            throw ProviderError.authenticationRequired(String(localized: "Codex에 ChatGPT 계정으로 로그인해 주세요."))
         }
         guard account["type"] as? String == "chatgpt" else {
-            throw ProviderError.unsupported("ChatGPT 로그인으로 사용하는 Codex 구독 한도만 지원해요. API 키 계정의 요금은 제공되지 않아요.")
+            throw ProviderError.unsupported(String(localized: "ChatGPT 로그인으로 사용하는 Codex 구독 한도만 지원해요. API 키 계정의 요금은 제공되지 않아요."))
         }
         return account["planType"] as? String
     }
@@ -104,7 +104,7 @@ enum CodexSnapshotParser {
                 guard let window = bucket[slot] as? [String: Any],
                       let used = number(window["usedPercent"]), used >= 0 else { return nil }
                 let duration = integer(window["windowDurationMins"]).flatMap { $0 > 0 ? Int(exactly: $0) : nil }
-                let durationLabel = duration.map(windowLabel) ?? (slot == "primary" ? "기본 한도" : "추가 한도")
+                let durationLabel = duration.map(windowLabel) ?? (slot == "primary" ? String(localized: "기본 한도") : String(localized: "추가 한도"))
                 let scopeLabel = bucket["limitName"] as? String ?? key
                 return UsageWindow(id: key + "." + slot,
                                    label: buckets.count > 1 ? scopeLabel + " · " + durationLabel : durationLabel,
@@ -119,7 +119,7 @@ enum CodexSnapshotParser {
                       let status = credit["status"] as? String else { return nil }
                 // Invalid non-null dates must not accidentally become "no expiry".
                 if let raw = credit["expiresAt"], !(raw is NSNull), timestamp(raw) == nil { return nil }
-                return ResetCredit(id: id, title: credit["title"] as? String ?? "저장된 리셋",
+                return ResetCredit(id: id, title: credit["title"] as? String ?? String(localized: "저장된 리셋"),
                                    expiresAt: timestamp(credit["expiresAt"]), status: status)
             }
         }
@@ -135,11 +135,11 @@ enum CodexSnapshotParser {
     }
 
     private static func windowLabel(_ minutes: Int) -> String {
-        if minutes == 10_080 { return "주간 한도" }
-        if minutes % 1_440 == 0 { return "\(minutes / 1_440)일 한도" }
-        if minutes % 60 == 0 { return "\(minutes / 60)시간 한도" }
-        if minutes > 60 { return "\(minutes / 60)시간 \(minutes % 60)분 한도" }
-        return "\(minutes)분 한도"
+        if minutes == 10_080 { return String(localized: "주간 한도") }
+        if minutes % 1_440 == 0 { return String(localized: "\(minutes / 1_440)일 한도") }
+        if minutes % 60 == 0 { return String(localized: "\(minutes / 60)시간 한도") }
+        if minutes > 60 { return String(localized: "\(minutes / 60)시간 \(minutes % 60)분 한도") }
+        return String(localized: "\(minutes)분 한도")
     }
 
     private static func dailyUsage(_ response: [String: Any]?) -> [DailyUsage]? {

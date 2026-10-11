@@ -38,23 +38,23 @@ public actor ClaudeProvider: UsageProvider {
         let manager = FileManager.default
         guard let executable = resolveExecutable(preferred: nil, environment: environment, home: home,
                                                  knownPaths: knownPaths) else {
-            throw ProviderError.setupRequired("Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요.")
+            throw ProviderError.setupRequired(String(localized: "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요."))
         }
         guard scriptURL.isFileURL, !scriptURL.path.utf8.contains(0),
               scriptURL.resolvingSymlinksInPath().standardizedFileURL.path == scriptURL.standardizedFileURL.path,
               manager.isReadableFile(atPath: scriptURL.path),
               (try? scriptURL.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else {
-            throw ProviderError.setupRequired("Claude 연결 설정 파일을 사용할 수 없어요. build 폴더의 UsageBar.app을 다시 실행해 주세요.")
+            throw ProviderError.setupRequired(String(localized: "Claude 연결 설정 파일을 사용할 수 없어요. build 폴더의 UsageBar.app을 다시 실행해 주세요."))
         }
         let folder = try prepareConnectionDirectory(at: directory)
         let launcher = folder.appendingPathComponent("ConnectClaude.command")
         guard (try? manager.destinationOfSymbolicLink(atPath: launcher.path)) == nil else {
-            throw ProviderError.setupRequired("Claude 연결 실행 파일이 다른 위치로 연결되어 있어요.")
+            throw ProviderError.setupRequired(String(localized: "Claude 연결 실행 파일이 다른 위치로 연결되어 있어요."))
         }
         if manager.fileExists(atPath: launcher.path) {
             let values = try launcher.resourceValues(forKeys: [.isRegularFileKey])
             guard values.isRegularFile == true else {
-                throw ProviderError.setupRequired("Claude 연결 실행 파일의 경로를 확인해 주세요.")
+                throw ProviderError.setupRequired(String(localized: "Claude 연결 실행 파일의 경로를 확인해 주세요."))
             }
         }
         let arguments = ["/bin/zsh", scriptURL.standardizedFileURL.path, "--claude-executable", executable]
@@ -76,11 +76,11 @@ public actor ClaudeProvider: UsageProvider {
             for name in directory.standardizedFileURL.pathComponents.dropFirst() {
                 component.appendPathComponent(name, isDirectory: true)
                 if (try? manager.destinationOfSymbolicLink(atPath: component.path)) != nil {
-                    throw ProviderError.setupRequired("Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요.")
+                    throw ProviderError.setupRequired(String(localized: "Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요."))
                 }
             }
             guard directory.resolvingSymlinksInPath().standardizedFileURL.path == path else {
-                throw ProviderError.setupRequired("Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요.")
+                throw ProviderError.setupRequired(String(localized: "Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요."))
             }
         }
         try validatePath()
@@ -90,12 +90,12 @@ public actor ClaudeProvider: UsageProvider {
             try validatePath()
             let values = try directory.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
             guard values.isDirectory == true, values.isSymbolicLink != true else {
-                throw ProviderError.setupRequired("Claude 연결 폴더를 사용할 수 없어요. 연결 폴더의 경로를 확인해 주세요.")
+                throw ProviderError.setupRequired(String(localized: "Claude 연결 폴더를 사용할 수 없어요. 연결 폴더의 경로를 확인해 주세요."))
             }
             try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: path)
             return directory
         } catch let error as ProviderError { throw error }
-        catch { throw ProviderError.setupRequired("Claude 연결 폴더를 만들지 못했어요. 연결 폴더의 권한을 확인해 주세요.") }
+        catch { throw ProviderError.setupRequired(String(localized: "Claude 연결 폴더를 만들지 못했어요. 연결 폴더의 권한을 확인해 주세요.")) }
     }
 
     public func fetch() async throws -> ProviderSnapshot {
@@ -122,7 +122,7 @@ public actor ClaudeProvider: UsageProvider {
     private static func fetchSnapshot(executablePath: String?) async throws -> ProviderSnapshot {
         var environment = ProcessInfo.processInfo.environment
         guard let executable = resolveExecutable(preferred: executablePath, environment: environment) else {
-            throw ProviderError.setupRequired("Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요.")
+            throw ProviderError.setupRequired(String(localized: "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요."))
         }
         // Run the installed CLI under its own stored login. Never inspect credential values.
         environment.removeValue(forKey: "CLAUDE_CODE_OAUTH_TOKEN")
@@ -212,11 +212,11 @@ enum ClaudeStartupPrompt: String, Sendable {
     var message: String {
         switch self {
         case .folderTrust:
-            return "처음 한 번 Claude 연결 폴더를 확인해야 해요. 연결 설정을 연 뒤 안내를 완료해 주세요."
+            return String(localized: "처음 한 번 Claude 연결 폴더를 확인해야 해요. 연결 설정을 연 뒤 안내를 완료해 주세요.")
         case .terminalStyle:
-            return "Claude Code가 터미널 화면 스타일 선택을 기다리고 있어요. 터미널에서 Claude를 열어 스타일을 선택해 주세요."
+            return String(localized: "Claude Code가 터미널 화면 스타일 선택을 기다리고 있어요. 터미널에서 Claude를 열어 스타일을 선택해 주세요.")
         case .termsAcceptance:
-            return "Claude Code가 약관 확인을 기다리고 있어요. 터미널에서 Claude를 열어 약관을 직접 확인해 주세요."
+            return String(localized: "Claude Code가 약관 확인을 기다리고 있어요. 터미널에서 Claude를 열어 약관을 직접 확인해 주세요.")
         }
     }
 
@@ -238,16 +238,16 @@ enum ClaudeUsageParser {
         if let prompt = ClaudeStartupPrompt.detect(in: text) { return .failure(.setupRequired(prompt.message)) }
         if ["please run /login", "login expired", "not logged in", "please log in", "authentication required",
             "oauth token has expired", "invalid oauth token", "select login method", "how would you like to log in"].contains(where: lower.contains) {
-            return .failure(.authenticationRequired("Claude Code에 다시 로그인해야 해요. 터미널에서 /login을 실행해 주세요."))
+            return .failure(.authenticationRequired(String(localized: "Claude Code에 다시 로그인해야 해요. 터미널에서 /login을 실행해 주세요.")))
         }
         if lower.contains("keychain"), ["denied", "locked", "permission", "password"].contains(where: lower.contains) {
-            return .failure(.authenticationRequired("Claude Code가 로그인 정보에 접근하지 못했어요. 터미널에서 Claude를 열어 확인해 주세요."))
+            return .failure(.authenticationRequired(String(localized: "Claude Code가 로그인 정보에 접근하지 못했어요. 터미널에서 Claude를 열어 확인해 주세요.")))
         }
         if ["rate limited", "rate_limit_error", "too many requests", "http 429", "error 429"].contains(where: lower.contains) {
             return .failure(.rateLimited(retryAfter: 5 * 60))
         }
         if lower.contains("failed to load usage data") {
-            return .failure(.unavailable("Claude가 사용량을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."))
+            return .failure(.unavailable(String(localized: "Claude가 사용량을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.")))
         }
         if lower.range(of: #"(?:loading|fetching)\s+(?:usage|limits)|(?m)^\s*loading(?:\.{3}|…)\s*$"#, options: .regularExpression) != nil {
             return .pending
@@ -276,22 +276,22 @@ enum ClaudeUsageParser {
         }
         if !windows.isEmpty { return .usage(windows) }
         if lower.contains("only available for subscription plans") || lower.contains("api billing") {
-            return .failure(.unsupported("Claude Code에서 구독 한도를 확인할 수 없어요. 구독 계정으로 로그인했는지 확인해 주세요."))
+            return .failure(.unsupported(String(localized: "Claude Code에서 구독 한도를 확인할 수 없어요. 구독 계정으로 로그인했는지 확인해 주세요.")))
         }
         return .pending
     }
 
     private static func heading(_ line: String) -> (id: String, label: String, minutes: Int)? {
         if line.range(of: #"^Current\s+session\b"#, options: [.regularExpression, .caseInsensitive]) != nil {
-            return ("session", "5시간 한도", 300)
+            return ("session", String(localized: "5시간 한도"), 300)
         }
         guard let match = captures(#"^Current\s+week\b(?:\s*\(([^)]+)\))?"#, in: line) else { return nil }
         let scope = match.count > 1 ? match[1].trimmingCharacters(in: .whitespaces) : ""
-        if scope.isEmpty || scope.lowercased() == "all models" { return ("weekly", "주간 한도", 10080) }
+        if scope.isEmpty || scope.lowercased() == "all models" { return ("weekly", String(localized: "주간 한도"), 10080) }
         let slug = scope.lowercased().replacingOccurrences(of: #"[^a-z0-9]+"#, with: "-", options: .regularExpression)
             .trimmingCharacters(in: CharacterSet(charactersIn: "-"))
         guard !slug.isEmpty else { return nil }
-        return ("weekly-\(slug)", "주간 한도 · \(scope)", 10080)
+        return ("weekly-\(slug)", String(localized: "주간 한도 · \(scope)"), 10080)
     }
 
     private static func usedPercent(_ line: String) -> Double? {

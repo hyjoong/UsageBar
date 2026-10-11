@@ -124,7 +124,7 @@ final class UsageBarDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         if CommandLine.arguments.contains("--ui-check"), let store = Self.store, let updates = Self.updates, store.isDemo {
             let window = NSWindow(contentViewController: NSHostingController(rootView: UsagePanel(store: store, updates: updates)))
-            window.title = "UsageBar · 예시 화면 검증"
+            window.title = String(localized: "UsageBar · 예시 화면 검증")
             window.styleMask = [.titled, .closable]
             window.isRestorable = false
             window.isReleasedWhenClosed = false

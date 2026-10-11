@@ -1,5 +1,9 @@
 # UsageBar
 
+*English: UsageBar is a macOS menu bar app that shows the remaining Claude Code and Codex subscription limits, when they reset, and how much a work session consumed. The interface is available in English and Korean and follows your system language. It uses the CLI logins already on your Mac and never asks for passwords or API keys.*
+
+<img src="docs/images/overview-en.jpg" width="360" alt="UsageBar panel in English: 5-hour limit gauge, reset time, and work log row" />
+
 Claude와 Codex의 남은 한도를 확인하고, 작업을 마칠 때 한도 변화를 영수증으로 남기는 macOS 메뉴 막대 앱입니다. 기본은 Claude·다크 모드이며, 화면 상단의 **U 아이콘**을 눌러 사용합니다.
 
 - **한도 게이지**: 남은 비율을 큰 숫자와 세그먼트 바로, 리셋 시각과 함께 확인합니다.
@@ -69,7 +73,7 @@ zsh scripts/build-app.sh
 open build/UsageBar.app
 ```
 
-빌드 결과는 `build/UsageBar.app`입니다. 위의 Finder 설치 방법으로 응용 프로그램 폴더에 복사할 수 있습니다. 소스 저장소를 내려받는 것만으로 앱이 설치되지는 않습니다.
+빌드 결과는 `build/UsageBar.app`입니다. UI 문자열은 `Resources/Localizable.xcstrings`에 있으며(원문 한국어, 영어 번역 포함) 빌드 스크립트가 `xcstringstool`로 번들에 컴파일합니다. `swift run`으로 바로 실행한 개발 바이너리는 번들이 없어 항상 한국어로 표시됩니다. 위의 Finder 설치 방법으로 응용 프로그램 폴더에 복사할 수 있습니다. 소스 저장소를 내려받는 것만으로 앱이 설치되지는 않습니다.
 
 기본은 release 빌드이며 `zsh scripts/build-app.sh debug`로 디버그 앱을 만들 수 있습니다. 빌드 스크립트는 현재 Mac의 기본 아키텍처로 빌드합니다. 현재 확인한 로컬 결과물은 **Apple Silicon(arm64)** 용이며, Intel용 배포본은 아직 검증하지 않았습니다. 앱 내 업데이트에는 [Sparkle 2.10.0](https://github.com/sparkle-project/Sparkle/releases/tag/2.10.0)을 사용하며, 최초 빌드에는 패키지를 내려받을 인터넷 연결이 필요합니다.
 
@@ -298,7 +302,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 | 버전 | 주요 변경 |
 | --- | --- |
-| 0.8 (준비 중) | 패널 개편: 한 줄 헤더, 세그먼트 게이지 통일, 내용에 맞는 높이, 작업 시작 풀다운, 번호 순서 연결 안내. 사용 기록 차트 연결선, 설정·영수증 창 정리. |
+| 0.8 (준비 중) | 패널 개편: 한 줄 헤더, 세그먼트 게이지 통일, 내용에 맞는 높이, 작업 시작 풀다운, 번호 순서 연결 안내. 사용 기록 차트 연결선, 설정·영수증 창 정리. 영어 UI 추가(시스템 언어 따름). |
 | 0.7.0 | Sparkle 앱 내 업데이트, 자동 확인 선택, 패널의 조용한 새 버전 안내, 저장 중 재시작 대기. GitHub Releases 공개 배포 준비 중. |
 | 0.6.4 | 일별 토큰의 누락 날짜 간격 보존, 실제 0토큰을 점과 숫자로 구분. 합계·CSV에는 제공된 기록만 유지. |
 | 0.6.3 | 앱 공통 설정 명령 추가. 사용 기록·작업 영수증 창에서도 `⌘,`로 기존 설정 창 열기. |

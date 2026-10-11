@@ -21,18 +21,18 @@ final class LaunchAtLoginStore: ObservableObject {
     var requiresApproval: Bool { status == .requiresApproval }
 
     var statusMessage: String {
-        if isDemo { return "예시 모드에서는 이 화면에서만 변경되며, Mac의 로그인 항목에는 등록하지 않아요." }
+        if isDemo { return String(localized: "예시 모드에서는 이 화면에서만 변경되며, Mac의 로그인 항목에는 등록하지 않아요.") }
         switch status {
         case .notRegistered:
-            return "꺼져 있어요. 이 옵션을 켜면 다음 로그인부터 자동으로 실행해요."
+            return String(localized: "꺼져 있어요. 이 옵션을 켜면 다음 로그인부터 자동으로 실행해요.")
         case .enabled:
-            return "다음 로그인부터 UsageBar를 자동으로 실행해요."
+            return String(localized: "다음 로그인부터 UsageBar를 자동으로 실행해요.")
         case .requiresApproval:
-            return "자동 실행이 아직 허용되지 않았어요. 시스템 설정의 로그인 항목에서 UsageBar를 허용해 주세요."
+            return String(localized: "자동 실행이 아직 허용되지 않았어요. 시스템 설정의 로그인 항목에서 UsageBar를 허용해 주세요.")
         case .notFound:
-            return "로그인 항목을 찾지 못했어요. 응용 프로그램 폴더의 UsageBar 앱에서 다시 시도해 주세요."
+            return String(localized: "로그인 항목을 찾지 못했어요. 응용 프로그램 폴더의 UsageBar 앱에서 다시 시도해 주세요.")
         @unknown default:
-            return "로그인 항목 상태를 확인하지 못했어요."
+            return String(localized: "로그인 항목 상태를 확인하지 못했어요.")
         }
     }
 
@@ -60,7 +60,7 @@ final class LaunchAtLoginStore: ObservableObject {
                 try service.unregister()
             }
         } catch {
-            errorMessage = "로그인 시 실행 설정을 변경하지 못했어요. \(error.localizedDescription)"
+            errorMessage = String(localized: "로그인 시 실행 설정을 변경하지 못했어요. \(error.localizedDescription)")
         }
         refreshStatus()
     }

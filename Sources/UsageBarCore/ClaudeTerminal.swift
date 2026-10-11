@@ -214,7 +214,7 @@ final class ClaudePTYCapture: @unchecked Sendable {
         var primary: Int32 = -1, secondary: Int32 = -1
         var size = winsize(ws_row: 200, ws_col: 160, ws_xpixel: 0, ws_ypixel: 0)
         guard openpty(&primary, &secondary, nil, nil, &size) == 0 else {
-            throw ProviderError.unavailable("Claude 사용량을 읽을 터미널을 열지 못했어요.")
+            throw ProviderError.unavailable(String(localized: "Claude 사용량을 읽을 터미널을 열지 못했어요."))
         }
         defer { if primary >= 0 { close(primary) }; if secondary >= 0 { close(secondary) } }
         _ = fcntl(primary, F_SETFL, O_NONBLOCK)
@@ -227,7 +227,7 @@ final class ClaudePTYCapture: @unchecked Sendable {
         let terminal = FileHandle(fileDescriptor: secondary, closeOnDealloc: false)
         process.standardInput = terminal; process.standardOutput = terminal; process.standardError = terminal
         do { try process.run() }
-        catch { throw ProviderError.setupRequired("Claude Code를 실행할 수 없어요. 설치 경로를 확인해 주세요.") }
+        catch { throw ProviderError.setupRequired(String(localized: "Claude Code를 실행할 수 없어요. 설치 경로를 확인해 주세요.")) }
         close(secondary); secondary = -1
         lock.lock(); child = process; lock.unlock()
         defer { stopOwnedProcess(process) }
@@ -244,7 +244,7 @@ final class ClaudePTYCapture: @unchecked Sendable {
             if count > 0 {
                 let data = Data(bytes.prefix(count))
                 guard output.count + data.count <= 512 * 1024 else {
-                    throw ProviderError.unavailable("Claude 응답이 예상보다 커서 조회를 중단했어요.")
+                    throw ProviderError.unavailable(String(localized: "Claude 응답이 예상보다 커서 조회를 중단했어요."))
                 }
                 output.append(data); lastChangedAt = Date()
                 queryTail.append(data)
@@ -262,18 +262,18 @@ final class ClaudePTYCapture: @unchecked Sendable {
                     if firstValidAt == nil { firstValidAt = Date() }
                 }
             } else if count < 0, errno != EAGAIN, errno != EWOULDBLOCK, errno != EIO, errno != EINTR {
-                throw ProviderError.unavailable("Claude 사용량 응답을 읽지 못했어요.")
+                throw ProviderError.unavailable(String(localized: "Claude 사용량 응답을 읽지 못했어요."))
             }
             if !windows.isEmpty, let firstValidAt,
                Date().timeIntervalSince(firstValidAt) >= 1.5,
                Date().timeIntervalSince(lastChangedAt) >= 0.25 { return windows }
             if !process.isRunning, count <= 0 {
                 if !windows.isEmpty { return windows }
-                throw ProviderError.unavailable("Claude가 사용량을 보내기 전에 종료됐어요. 터미널에서 /usage를 확인해 주세요.")
+                throw ProviderError.unavailable(String(localized: "Claude가 사용량을 보내기 전에 종료됐어요. 터미널에서 /usage를 확인해 주세요."))
             }
             usleep(60_000)
         }
         try checkCancellation()
-        throw ProviderError.unavailable("Claude 사용량 조회가 지연되고 있어요. 터미널에서 /usage를 확인한 뒤 다시 시도해 주세요.")
+        throw ProviderError.unavailable(String(localized: "Claude 사용량 조회가 지연되고 있어요. 터미널에서 /usage를 확인한 뒤 다시 시도해 주세요."))
     }
 }

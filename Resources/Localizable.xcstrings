@@ -1,0 +1,5486 @@
+{
+  "sourceLanguage": "ko",
+  "strings": {
+    "": {},
+    "%": {},
+    "%@ %lld%% 사용 · 계정 전체 기준": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %lld%% used · account-wide"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %lld%% 사용 · 계정 전체 기준"
+          }
+        }
+      }
+    },
+    "%@ %lld퍼센트": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %lld percent"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %lld퍼센트"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@ 시작": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ · started %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ · %@ 시작"
+          }
+        }
+      }
+    },
+    "%@ · %lld%% 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld%% left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld%% 남음"
+          }
+        }
+      }
+    },
+    "%@ · 자세히": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · Details"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 자세히"
+          }
+        }
+      }
+    },
+    "%@ 메뉴바에 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show %@ in the menu bar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 메뉴바에 표시"
+          }
+        }
+      }
+    },
+    "%@ 버전으로 업데이트할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@ is available."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 버전으로 업데이트할 수 있어요."
+          }
+        }
+      }
+    },
+    "%@ 사용량 조회": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check %@ usage"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 사용량 조회"
+          }
+        }
+      }
+    },
+    "%@ 업데이트 가능": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is available"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 업데이트 가능"
+          }
+        }
+      }
+    },
+    "%@ 연결 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check %@ connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 연결 확인"
+          }
+        }
+      }
+    },
+    "%@ 연결 확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking %@ connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 연결 확인 중"
+          }
+        }
+      }
+    },
+    "%@ 연결하기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 연결하기"
+          }
+        }
+      }
+    },
+    "%@ 작업 영수증 요약 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy %@ receipt summary"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 작업 영수증 요약 복사"
+          }
+        }
+      }
+    },
+    "%@ 작업 영수증 추가 메뉴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More actions for %@ receipt"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 작업 영수증 추가 메뉴"
+          }
+        }
+      }
+    },
+    "%@ 작업 영수증을 삭제합니다. 삭제한 영수증은 복구할 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This deletes the %@ receipt. Deleted receipts can't be recovered."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 작업 영수증을 삭제합니다. 삭제한 영수증은 복구할 수 없어요."
+          }
+        }
+      }
+    },
+    "%@ 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 한도"
+          }
+        }
+      }
+    },
+    "%@ 한도 기준": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Based on %@ limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 한도 기준"
+          }
+        }
+      }
+    },
+    "%@ 한도 확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking %@ limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 한도 확인 중"
+          }
+        }
+      }
+    },
+    "%@ 한도가 얼마 남지 않았어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ limit is running low"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 한도가 얼마 남지 않았어요"
+          }
+        }
+      }
+    },
+    "%@, %@, %lld퍼센트 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@, %lld percent left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@, %lld퍼센트 남음"
+          }
+        }
+      }
+    },
+    "%@, %lld 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld 토큰"
+          }
+        }
+      }
+    },
+    "%@, %lld퍼센트 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld percent left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld퍼센트 남음"
+          }
+        }
+      }
+    },
+    "%@, %lld퍼센트 남음, 이전 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld percent left, earlier record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %lld퍼센트 남음, 이전 기록"
+          }
+        }
+      }
+    },
+    "%@: 표시상 변화 없음 (0%%p)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: no visible change (0%%p)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: 표시상 변화 없음 (0%%p)"
+          }
+        }
+      }
+    },
+    "%@만 사용할게요 · %@ 조회 끄기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I only use %@ · turn off %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@만 사용할게요 · %@ 조회 끄기"
+          }
+        }
+      }
+    },
+    "%@의 종료 한도를 확인하고 영수증을 저장해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checks the %@ limit again and saves a receipt"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@의 종료 한도를 확인하고 영수증을 저장해요"
+          }
+        }
+      }
+    },
+    "%lld": {},
+    "%lld%%": {},
+    "%lld%% 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% 남음"
+          }
+        }
+      }
+    },
+    "%lld개": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld개"
+          }
+        }
+      }
+    },
+    "%lld단계, ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld, "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld단계, "
+          }
+        }
+      }
+    },
+    "%lld분": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld분"
+          }
+        }
+      }
+    },
+    "%lld분 전 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min ago"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld분 전 기록"
+          }
+        }
+      }
+    },
+    "%lld분 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-minute limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld분 한도"
+          }
+        }
+      }
+    },
+    "%lld분 후": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld분 후"
+          }
+        }
+      }
+    },
+    "%lld시간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간"
+          }
+        }
+      }
+    },
+    "%lld시간 %lld분": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h %lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간 %lld분"
+          }
+        }
+      }
+    },
+    "%lld시간 %lld분 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h %lld min limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간 %lld분 한도"
+          }
+        }
+      }
+    },
+    "%lld시간 %lld분 후": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld h %lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간 %lld분 후"
+          }
+        }
+      }
+    },
+    "%lld시간 전 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h ago"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간 전 기록"
+          }
+        }
+      }
+    },
+    "%lld시간 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-hour limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld시간 한도"
+          }
+        }
+      }
+    },
+    "%lld일 %lld시간 후": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld d %lld h"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 %lld시간 후"
+          }
+        }
+      }
+    },
+    "%lld일 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-day limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 한도"
+          }
+        }
+      }
+    },
+    "%lld장": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld장"
+          }
+        }
+      }
+    },
+    "%lld퍼센트 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld percent left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld퍼센트 남음"
+          }
+        }
+      }
+    },
+    "0": {},
+    "1분 미만": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Under 1 min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1분 미만"
+          }
+        }
+      }
+    },
+    "24시간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24 h"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "24시간"
+          }
+        }
+      }
+    },
+    "30일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 days"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30일"
+          }
+        }
+      }
+    },
+    "5시간 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5-hour limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5시간 한도"
+          }
+        }
+      }
+    },
+    "7일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 days"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7일"
+          }
+        }
+      }
+    },
+    "CL": {},
+    "CSV 내보내기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export CSV"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV 내보내기"
+          }
+        }
+      }
+    },
+    "CSV를 저장하지 못했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the CSV"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV를 저장하지 못했어요"
+          }
+        }
+      }
+    },
+    "CX": {},
+    "ChatGPT 로그인으로 사용하는 Codex 구독 한도만 지원해요. API 키 계정의 요금은 제공되지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only Codex subscription limits with a ChatGPT login are supported. API key billing isn't available."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChatGPT 로그인으로 사용하는 Codex 구독 한도만 지원해요. API 키 계정의 요금은 제공되지 않아요."
+          }
+        }
+      }
+    },
+    "Claude Code 설치": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Claude Code"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code 설치"
+          }
+        }
+      }
+    },
+    "Claude Code가 로그인 정보에 접근하지 못했어요. 터미널에서 Claude를 열어 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code couldn't access its login. Open Claude in Terminal to check."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code가 로그인 정보에 접근하지 못했어요. 터미널에서 Claude를 열어 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code가 약관 확인을 기다리고 있어요. 터미널에서 Claude를 열어 약관을 직접 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code is waiting for you to accept its terms. Open Claude in Terminal to review them."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code가 약관 확인을 기다리고 있어요. 터미널에서 Claude를 열어 약관을 직접 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code가 터미널 화면 스타일 선택을 기다리고 있어요. 터미널에서 Claude를 열어 스타일을 선택해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code is waiting for a theme choice. Open Claude in Terminal to pick one."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code가 터미널 화면 스타일 선택을 기다리고 있어요. 터미널에서 Claude를 열어 스타일을 선택해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code is required. Install it, then log in from Terminal."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code를 실행할 수 없어요. 설치 경로를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't run Claude Code. Check its install path."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code를 실행할 수 없어요. 설치 경로를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code에 다시 로그인해야 해요. 터미널에서 /login을 실행해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code needs a new login. Run /login in Terminal."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code에 다시 로그인해야 해요. 터미널에서 /login을 실행해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code에서 구독 한도를 확인할 수 없어요. 구독 계정으로 로그인했는지 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code didn't report subscription limits. Make sure you're logged in with a subscription account."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code에서 구독 한도를 확인할 수 없어요. 구독 계정으로 로그인했는지 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code의 사용량 화면을 확인하고 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the Claude Code usage screen."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code의 사용량 화면을 확인하고 있어요."
+          }
+        }
+      }
+    },
+    "Claude · 저장된 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude · saved record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude · 저장된 기록"
+          }
+        }
+      }
+    },
+    "Claude 다시 연결": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnect Claude"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 다시 연결"
+          }
+        }
+      }
+    },
+    "Claude 사용량 응답을 읽지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read the Claude usage response."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 사용량 응답을 읽지 못했어요."
+          }
+        }
+      }
+    },
+    "Claude 사용량 조회가 지연되고 있어요. 터미널에서 /usage를 확인한 뒤 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude usage check is taking too long. Run /usage in Terminal, then try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 사용량 조회가 지연되고 있어요. 터미널에서 /usage를 확인한 뒤 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 사용량을 읽을 터미널을 열지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't open a terminal to read Claude usage."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 사용량을 읽을 터미널을 열지 못했어요."
+          }
+        }
+      }
+    },
+    "Claude 연결 설정 파일을 사용할 수 없어요. build 폴더의 UsageBar.app을 다시 실행해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude connection script is unavailable. Run UsageBar.app from the build folder again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 설정 파일을 사용할 수 없어요. build 폴더의 UsageBar.app을 다시 실행해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 연결 실행 파일의 경로를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the path of the Claude connection launcher."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 실행 파일의 경로를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 연결 실행 파일이 다른 위치로 연결되어 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude connection launcher points somewhere else."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 실행 파일이 다른 위치로 연결되어 있어요."
+          }
+        }
+      }
+    },
+    "Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude connection folder points somewhere else. Check the folder path."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 폴더가 다른 위치로 연결되어 있어요. 연결 폴더의 경로를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 연결 폴더를 만들지 못했어요. 연결 폴더의 권한을 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't create the Claude connection folder. Check its permissions."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 폴더를 만들지 못했어요. 연결 폴더의 권한을 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 연결 폴더를 사용할 수 없어요. 연결 폴더의 경로를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude connection folder is unavailable. Check the folder path."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 연결 폴더를 사용할 수 없어요. 연결 폴더의 경로를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude 응답이 예상보다 커서 조회를 중단했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude response was larger than expected, so the check was stopped."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude 응답이 예상보다 커서 조회를 중단했어요."
+          }
+        }
+      }
+    },
+    "Claude가 사용량을 보내기 전에 종료됐어요. 터미널에서 /usage를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude exited before sending usage. Run /usage in Terminal to check."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude가 사용량을 보내기 전에 종료됐어요. 터미널에서 /usage를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude가 사용량을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude couldn't load usage. Try again in a moment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude가 사용량을 불러오지 못했어요. 잠시 후 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "Claude의 사용 흐름은 잔여 한도 기록에서 확인할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude usage over time is available in the remaining-limit history."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude의 사용 흐름은 잔여 한도 기록에서 확인할 수 있어요."
+          }
+        }
+      }
+    },
+    "Codex App Server · 저장된 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex App Server · saved record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex App Server · 저장된 기록"
+          }
+        }
+      }
+    },
+    "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read the Codex CLI version. Check the executable path and installation."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Codex CLI 설치": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Codex CLI"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex CLI 설치"
+          }
+        }
+      }
+    },
+    "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex CLI not found. Install Codex or set the executable path."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요."
+          }
+        }
+      }
+    },
+    "Codex CLI의 절대 경로를 선택해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an absolute path for the Codex CLI."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex CLI의 절대 경로를 선택해 주세요."
+          }
+        }
+      }
+    },
+    "Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read Codex usage. Refresh in a moment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요."
+          }
+        }
+      }
+    },
+    "Codex에 ChatGPT 계정으로 로그인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log in to Codex with your ChatGPT account."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex에 ChatGPT 계정으로 로그인해 주세요."
+          }
+        }
+      }
+    },
+    "Max · 예시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Max · Demo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Max · 예시"
+          }
+        }
+      }
+    },
+    "Pro · 예시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro · Demo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pro · 예시"
+          }
+        }
+      }
+    },
+    "UsageBar · 예시 화면 검증": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar · Demo preview"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar · 예시 화면 검증"
+          }
+        }
+      }
+    },
+    "UsageBar 종료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit UsageBar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar 종료"
+          }
+        }
+      }
+    },
+    "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the connection setup from UsageBar.app in the build folder."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요."
+          }
+        }
+      }
+    },
+    "codex login 으로 ChatGPT 계정에 로그인해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run codex login to sign in with your ChatGPT account."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "codex login 으로 ChatGPT 계정에 로그인해요."
+          }
+        }
+      }
+    },
+    "tokens": {},
+    "같은 계정인지 확인할 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't confirm it's the same account."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 계정인지 확인할 수 없어요."
+          }
+        }
+      }
+    },
+    "같은 한도 정보를 찾을 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't find the same limit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 한도 정보를 찾을 수 없어요."
+          }
+        }
+      }
+    },
+    "같은 한도에서는 한 번만 알려요. 켤 때 macOS 알림 권한을 요청해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifies once per limit. Turning this on asks for macOS notification permission."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 한도에서는 한 번만 알려요. 켤 때 macOS 알림 권한을 요청해요."
+          }
+        }
+      }
+    },
+    "개발 버전": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Development build"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "개발 버전"
+          }
+        }
+      }
+    },
+    "계정 사용량": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account usage"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계정 사용량"
+          }
+        }
+      }
+    },
+    "계정 전체 사용량 · 다른 창·기기에서 쓴 양도 포함돼요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account-wide usage · includes other windows and devices"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계정 전체 사용량 · 다른 창·기기에서 쓴 양도 포함돼요"
+          }
+        }
+      }
+    },
+    "고정한 한도 정보가 없어 %@ 기준으로 임시 표시해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pinned limit isn't available, so %@ is shown for now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "고정한 한도 정보가 없어 %@ 기준으로 임시 표시해요."
+          }
+        }
+      }
+    },
+    "공식 사용량 화면": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Official usage page"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "공식 사용량 화면"
+          }
+        }
+      }
+    },
+    "관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account-wide change over the observed interval. It includes other windows and devices, not just this task."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요."
+          }
+        }
+      }
+    },
+    "관측값 %lld개": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld observations"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "관측값 %lld개"
+          }
+        }
+      }
+    },
+    "구간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segment"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구간"
+          }
+        }
+      }
+    },
+    "기간": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Period"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기간"
+          }
+        }
+      }
+    },
+    "기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compares how much of the period has elapsed with how much of the limit is used. Usage patterns vary."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요."
+          }
+        }
+      }
+    },
+    "기능 개발": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feature"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기능 개발"
+          }
+        }
+      }
+    },
+    "기록 경과 시간 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elapsed %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 경과 시간 %@"
+          }
+        }
+      }
+    },
+    "기록 종류": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record type"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 종류"
+          }
+        }
+      }
+    },
+    "기록 취소": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 취소"
+          }
+        }
+      }
+    },
+    "기록 확인이 필요해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs attention"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 확인이 필요해요"
+          }
+        }
+      }
+    },
+    "기록을 유지했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session kept"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록을 유지했어요"
+          }
+        }
+      }
+    },
+    "기록을 읽지 못했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록을 읽지 못했어요"
+          }
+        }
+      }
+    },
+    "기록을 지우지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't clear the history."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록을 지우지 못했어요."
+          }
+        }
+      }
+    },
+    "기록한 시간 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorded %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록한 시간 %@"
+          }
+        }
+      }
+    },
+    "기록할 서비스": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service to record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록할 서비스"
+          }
+        }
+      }
+    },
+    "기본 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primary limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기본 한도"
+          }
+        }
+      }
+    },
+    "기준과 비슷한 속도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On track"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기준과 비슷한 속도"
+          }
+        }
+      }
+    },
+    "기타 작업": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기타 작업"
+          }
+        }
+      }
+    },
+    "꺼져 있어요. 이 옵션을 켜면 다음 로그인부터 자동으로 실행해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off. Turn this on to launch UsageBar at your next login."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "꺼져 있어요. 이 옵션을 켜면 다음 로그인부터 자동으로 실행해요."
+          }
+        }
+      }
+    },
+    "날짜": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜"
+          }
+        }
+      }
+    },
+    "남은 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 한도"
+          }
+        }
+      }
+    },
+    "남은 한도가 20% 아래로 내려가면 알림": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify when a limit drops below 20%"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 한도가 20% 아래로 내려가면 알림"
+          }
+        }
+      }
+    },
+    "남은 한도가 20% 이하예요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "20% or less remaining"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남은 한도가 20% 이하예요"
+          }
+        }
+      }
+    },
+    "남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "left"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남음"
+          }
+        }
+      }
+    },
+    "다른 서비스의 조회 결과예요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This result is from a different service."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 서비스의 조회 결과예요."
+          }
+        }
+      }
+    },
+    "다른 저장 위치를 선택해 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose another location and try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 저장 위치를 선택해 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "다시 시작": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry start"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 시작"
+          }
+        }
+      }
+    },
+    "다시 연결 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnect needed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 연결 필요"
+          }
+        }
+      }
+    },
+    "다시 읽기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 읽기"
+          }
+        }
+      }
+    },
+    "다시 종료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry finish"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 종료"
+          }
+        }
+      }
+    },
+    "다시 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check again"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 확인"
+          }
+        }
+      }
+    },
+    "다음 로그인부터 UsageBar를 자동으로 실행해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar will launch at your next login."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 로그인부터 UsageBar를 자동으로 실행해요."
+          }
+        }
+      }
+    },
+    "닫기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "닫기"
+          }
+        }
+      }
+    },
+    "돌아와서 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come back and check"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "돌아와서 확인"
+          }
+        }
+      }
+    },
+    "로그인 시 UsageBar 실행": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch UsageBar at login"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 시 UsageBar 실행"
+          }
+        }
+      }
+    },
+    "로그인 시 실행 설정을 변경하지 못했어요. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't change the login item. %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 시 실행 설정을 변경하지 못했어요. %@"
+          }
+        }
+      }
+    },
+    "로그인 항목 상태를 확인하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read the login item status."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 항목 상태를 확인하지 못했어요."
+          }
+        }
+      }
+    },
+    "로그인 항목 설정 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Login Items settings"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 항목 설정 열기"
+          }
+        }
+      }
+    },
+    "로그인 항목을 찾지 못했어요. 응용 프로그램 폴더의 UsageBar 앱에서 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Login item not found. Try again from UsageBar in the Applications folder."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 항목을 찾지 못했어요. 응용 프로그램 폴더의 UsageBar 앱에서 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "로그인된 Codex 계정의 한도를 확인하고 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking limits for the logged-in Codex account."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인된 Codex 계정의 한도를 확인하고 있어요."
+          }
+        }
+      }
+    },
+    "리셋 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 %@"
+          }
+        }
+      }
+    },
+    "리셋 %@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets %@ · %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 %@ · %@"
+          }
+        }
+      }
+    },
+    "리셋 시각 경과, 확인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset time passed, check again"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 시각 경과, 확인 필요"
+          }
+        }
+      }
+    },
+    "리셋 시각 지남 · 확인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset time passed · check again"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 시각 지남 · 확인 필요"
+          }
+        }
+      }
+    },
+    "리셋 시각이 변경됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reset time changed."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 시각이 변경됐어요."
+          }
+        }
+      }
+    },
+    "리셋 시각이 없어 같은 기간인지 확인할 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reset time, so the period can't be matched."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 시각이 없어 같은 기간인지 확인할 수 없어요."
+          }
+        }
+      }
+    },
+    "리셋 확인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset due"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 확인 필요"
+          }
+        }
+      }
+    },
+    "리셋까지 남은 시간도 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also show time until reset"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋까지 남은 시간도 표시"
+          }
+        }
+      }
+    },
+    "리팩터링": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refactor"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리팩터링"
+          }
+        }
+      }
+    },
+    "마지막 기록에서 20% 이하였어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "20% or less at last check"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 기록에서 20% 이하였어요"
+          }
+        }
+      }
+    },
+    "마지막 성공 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last success %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 성공 %@"
+          }
+        }
+      }
+    },
+    "마지막 조회 시점 · 기간을 고르게 사용하는 기준": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As of the last check · assumes even use across the period"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 조회 시점 · 기간을 고르게 사용하는 기준"
+          }
+        }
+      }
+    },
+    "마지막 확인 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last checked %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 확인 %@"
+          }
+        }
+      }
+    },
+    "마지막 확인: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last checked: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 확인: %@"
+          }
+        }
+      }
+    },
+    "만료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expired"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "만료"
+          }
+        }
+      }
+    },
+    "만료 시각 경과": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expiry passed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "만료 시각 경과"
+          }
+        }
+      }
+    },
+    "만료 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No expiry"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "만료 없음"
+          }
+        }
+      }
+    },
+    "메뉴 막대": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu Bar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대"
+          }
+        }
+      }
+    },
+    "메뉴바에 표시 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown in the menu bar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴바에 표시 중"
+          }
+        }
+      }
+    },
+    "모든 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 한도"
+          }
+        }
+      }
+    },
+    "문제 해결": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Debug"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "문제 해결"
+          }
+        }
+      }
+    },
+    "밝게": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "밝게"
+          }
+        }
+      }
+    },
+    "방금 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just checked"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방금 확인"
+          }
+        }
+      }
+    },
+    "버전": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "버전"
+          }
+        }
+      }
+    },
+    "변화 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no change"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "변화 없음"
+          }
+        }
+      }
+    },
+    "복사 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복사 완료"
+          }
+        }
+      }
+    },
+    "복사됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복사됨"
+          }
+        }
+      }
+    },
+    "비교 불가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "n/a"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "비교 불가"
+          }
+        }
+      }
+    },
+    "비교할 수 있는 한도 정보가 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit to compare against."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "비교할 수 있는 한도 정보가 없어요."
+          }
+        }
+      }
+    },
+    "빈 날짜: 기록 없음 · 점과 0: 제공된 0 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blank day: no record · dot with 0: provider reported 0 tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빈 날짜: 기록 없음 · 점과 0: 제공된 0 토큰"
+          }
+        }
+      }
+    },
+    "빠르게 사용 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Using fast"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빠르게 사용 중"
+          }
+        }
+      }
+    },
+    "사용 가능": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 가능"
+          }
+        }
+      }
+    },
+    "사용 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 기록"
+          }
+        }
+      }
+    },
+    "사용 기록 · UsageBar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History · UsageBar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 기록 · UsageBar"
+          }
+        }
+      }
+    },
+    "사용 기록 내보내기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export History"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 기록 내보내기"
+          }
+        }
+      }
+    },
+    "사용 속도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pace"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 속도"
+          }
+        }
+      }
+    },
+    "사용 완료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 완료"
+          }
+        }
+      }
+    },
+    "사용 중인 서비스 모두": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All enabled services"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 중인 서비스 모두"
+          }
+        }
+      }
+    },
+    "사용량": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용량"
+          }
+        }
+      }
+    },
+    "사용량 기록은 이 Mac에만 저장되고, 대화 내용은 수집하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage history stays on this Mac. No conversations are collected."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용량 기록은 이 Mac에만 저장되고, 대화 내용은 수집하지 않아요."
+          }
+        }
+      }
+    },
+    "사용량 새로고침": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh usage"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용량 새로고침"
+          }
+        }
+      }
+    },
+    "사용량 알림을 보내지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't send the usage notification."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용량 알림을 보내지 못했어요."
+          }
+        }
+      }
+    },
+    "사용량을 새로 확인한 후 작업을 시작해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh usage before starting a session."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용량을 새로 확인한 후 작업을 시작해 주세요."
+          }
+        }
+      }
+    },
+    "사용률이 감소해 단순 비교할 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage went down, so it can't be compared directly."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용률이 감소해 단순 비교할 수 없어요."
+          }
+        }
+      }
+    },
+    "삭제": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "삭제"
+          }
+        }
+      }
+    },
+    "상태 확인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status unknown"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상태 확인 필요"
+          }
+        }
+      }
+    },
+    "새 버전 자동 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates automatically"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 버전 자동 확인"
+          }
+        }
+      }
+    },
+    "새 버전을 확인한 뒤 설치할 수 있어요. 설정과 저장된 기록은 유지돼요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for a new version, then install it. Settings and history are kept."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 버전을 확인한 뒤 설치할 수 있어요. 설정과 저장된 기록은 유지돼요."
+          }
+        }
+      }
+    },
+    "새 사용량을 확인하지 못했어요. 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't fetch new usage. Try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 사용량을 확인하지 못했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "서비스": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "서비스"
+          }
+        }
+      }
+    },
+    "서비스 장애 현황": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Service status"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "서비스 장애 현황"
+          }
+        }
+      }
+    },
+    "서비스 장애 현황 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check service status"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "서비스 장애 현황 확인"
+          }
+        }
+      }
+    },
+    "선택 안 됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not selected"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택 안 됨"
+          }
+        }
+      }
+    },
+    "선택됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택됨"
+          }
+        }
+      }
+    },
+    "선택한 기간에 제공된 기록이 없어요. 계정과 Codex 버전에 따라 지원 여부가 달라요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records were provided for this period. Support depends on your account and Codex version."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 기간에 제공된 기록이 없어요. 계정과 Codex 버전에 따라 지원 여부가 달라요."
+          }
+        }
+      }
+    },
+    "선택한 기간의 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens in this period"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 기간의 토큰"
+          }
+        }
+      }
+    },
+    "선택한 범위에 기록이 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records in this range"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 범위에 기록이 없어요"
+          }
+        }
+      }
+    },
+    "선택한 서비스": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected service"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 서비스"
+          }
+        }
+      }
+    },
+    "선택한 서비스의 사용량을 확인하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check usage for the selected service."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 서비스의 사용량을 확인하지 못했어요."
+          }
+        }
+      }
+    },
+    "선택한 위치에 파일을 저장할 수 없어요. %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save to that location. %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 위치에 파일을 저장할 수 없어요. %@"
+          }
+        }
+      }
+    },
+    "설정": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정"
+          }
+        }
+      }
+    },
+    "설정 · UsageBar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings · UsageBar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 · UsageBar"
+          }
+        }
+      }
+    },
+    "설정 → 연결에서 언제든 다시 켤 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can turn it back on anytime in Settings → Connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 → 연결에서 언제든 다시 켤 수 있어요"
+          }
+        }
+      }
+    },
+    "설정…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정…"
+          }
+        }
+      }
+    },
+    "설정에서 %@ 조회를 켜고 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on %@ in Settings and try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 %@ 조회를 켜고 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "설정에서 조회할 서비스를 켜주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable a service in Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 조회할 서비스를 켜주세요."
+          }
+        }
+      }
+    },
+    "설치 안내": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install guide"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설치 안내"
+          }
+        }
+      }
+    },
+    "설치된 Codex CLI와 ChatGPT 구독 로그인을 사용해요. API 키 계정의 요금은 지원하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses the installed Codex CLI and your ChatGPT subscription login. API key billing isn't supported."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설치된 Codex CLI와 ChatGPT 구독 로그인을 사용해요. API 키 계정의 요금은 지원하지 않아요."
+          }
+        }
+      }
+    },
+    "시간 확인 불가": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown duration"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 확인 불가"
+          }
+        }
+      }
+    },
+    "시스템 설정 따르기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow System"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정 따르기"
+          }
+        }
+      }
+    },
+    "시작 전 사용량을 확인하지 못했어요. ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check usage before starting. "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작 전 사용량을 확인하지 못했어요. "
+          }
+        }
+      }
+    },
+    "시작 한도 확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking starting limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작 한도 확인 중"
+          }
+        }
+      }
+    },
+    "시작하지 못했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't start"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작하지 못했어요"
+          }
+        }
+      }
+    },
+    "아직 확인한 기록이 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing checked yet"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 확인한 기록이 없어요"
+          }
+        }
+      }
+    },
+    "알림": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림"
+          }
+        }
+      }
+    },
+    "알림 권한을 확인하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check notification permission."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 권한을 확인하지 못했어요."
+          }
+        }
+      }
+    },
+    "알림 권한이 꺼져 있어요. 시스템 설정에서 변경할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off. You can change this in System Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 권한이 꺼져 있어요. 시스템 설정에서 변경할 수 있어요."
+          }
+        }
+      }
+    },
+    "앱 정보": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "앱 정보"
+          }
+        }
+      }
+    },
+    "약 %lld분 후 다시 확인할 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can check again in about %lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "약 %lld분 후 다시 확인할 수 있어요"
+          }
+        }
+      }
+    },
+    "어둡게": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "어둡게"
+          }
+        }
+      }
+    },
+    "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update settings are invalid. Contact the distributor."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요."
+          }
+        }
+      }
+    },
+    "업데이트 확인…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 확인…"
+          }
+        }
+      }
+    },
+    "업데이트 확인을 시작하지 못했어요. 앱을 다시 실행해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't start the update check. Relaunch the app."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 확인을 시작하지 못했어요. 앱을 다시 실행해 주세요."
+          }
+        }
+      }
+    },
+    "여유 있는 속도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plenty of room"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여유 있는 속도"
+          }
+        }
+      }
+    },
+    "연결": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결"
+          }
+        }
+      }
+    },
+    "연결 설정 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open setup"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 설정 열기"
+          }
+        }
+      }
+    },
+    "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens Terminal to finish setup and log in."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요."
+          }
+        }
+      }
+    },
+    "연결 확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 확인"
+          }
+        }
+      }
+    },
+    "연결 확인 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection needed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 확인 필요"
+          }
+        }
+      }
+    },
+    "연결 후 확인된 한도가 기록돼요. 기간이나 한도를 바꿔 확인해 보세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits are recorded once connected. Try another period or limit."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 후 확인된 한도가 기록돼요. 기간이나 한도를 바꿔 확인해 보세요."
+          }
+        }
+      }
+    },
+    "연결됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결됨"
+          }
+        }
+      }
+    },
+    "영수증": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영수증"
+          }
+        }
+      }
+    },
+    "영수증 삭제…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Receipt…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영수증 삭제…"
+          }
+        }
+      }
+    },
+    "영수증은 전체 기록에 보관하고 이 표시를 닫아요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeps the receipt in history and closes this card"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영수증은 전체 기록에 보관하고 이 표시를 닫아요"
+          }
+        }
+      }
+    },
+    "영수증을 삭제할까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this receipt?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영수증을 삭제할까요?"
+          }
+        }
+      }
+    },
+    "예시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시"
+          }
+        }
+      }
+    },
+    "예시 데이터": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo data"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 데이터"
+          }
+        }
+      }
+    },
+    "예시 데이터 · 외부 연결 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo data · no external connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 데이터 · 외부 연결 없음"
+          }
+        }
+      }
+    },
+    "예시 모드에서는 이 화면에서만 변경되며, Mac의 로그인 항목에는 등록하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In demo mode this only changes here; nothing is added to your Mac's login items."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 모드에서는 이 화면에서만 변경되며, Mac의 로그인 항목에는 등록하지 않아요."
+          }
+        }
+      }
+    },
+    "예시 앱에서는 업데이트를 확인하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The demo app doesn't check for updates."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 앱에서는 업데이트를 확인하지 않아요."
+          }
+        }
+      }
+    },
+    "예시 연결 오류: 종료 시 사용량을 확인하지 못했습니다. 기록은 유지되며 다시 시도하거나 한도 비교 없이 종료할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo connection error: couldn't check usage at finish. The session is kept; retry or finish without comparing limits."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 연결 오류: 종료 시 사용량을 확인하지 못했습니다. 기록은 유지되며 다시 시도하거나 한도 비교 없이 종료할 수 있어요."
+          }
+        }
+      }
+    },
+    "예시 초기화권 %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo reset credit %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예시 초기화권 %lld"
+          }
+        }
+      }
+    },
+    "오늘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘"
+          }
+        }
+      }
+    },
+    "오래된 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outdated"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오래된 기록"
+          }
+        }
+      }
+    },
+    "완료 표시 닫기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close completion card"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료 표시 닫기"
+          }
+        }
+      }
+    },
+    "요약 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요약 복사"
+          }
+        }
+      }
+    },
+    "요청 제한 · 대기 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rate limited · waiting"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요청 제한 · 대기 중"
+          }
+        }
+      }
+    },
+    "요청이 잠시 제한됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requests are temporarily rate limited."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요청이 잠시 제한됐어요."
+          }
+        }
+      }
+    },
+    "이 Mac에 설치된 Claude Code의 로그인 상태를 사용해요. 비밀번호나 API 키는 입력하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses the Claude Code login already on this Mac. No passwords or API keys are entered."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 Mac에 설치된 Claude Code의 로그인 상태를 사용해요. 비밀번호나 API 키는 입력하지 않아요."
+          }
+        }
+      }
+    },
+    "이 개발용 앱은 업데이트 배포 경로를 준비 중이에요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This development build has no update feed yet."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 개발용 앱은 업데이트 배포 경로를 준비 중이에요."
+          }
+        }
+      }
+    },
+    "이 구간의 계정 전체 사용률 변화입니다. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량이나 결제 금액을 뜻하지 않습니다.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account-wide usage change over this interval. It includes other windows and devices and is not this task's usage or cost."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 구간의 계정 전체 사용률 변화입니다. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량이나 결제 금액을 뜻하지 않습니다."
+          }
+        }
+      }
+    },
+    "이 한도를 메뉴바에 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show this limit in the menu bar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 한도를 메뉴바에 표시"
+          }
+        }
+      }
+    },
+    "이전 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earlier record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 기록"
+          }
+        }
+      }
+    },
+    "일반": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반"
+          }
+        }
+      }
+    },
+    "일별 기록 %lld개 · %@ ~ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld daily records · %@ to %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일별 기록 %lld개 · %@ ~ %@"
+          }
+        }
+      }
+    },
+    "일별 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일별 토큰"
+          }
+        }
+      }
+    },
+    "일별 토큰 (미지원)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily tokens (n/a)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일별 토큰 (미지원)"
+          }
+        }
+      }
+    },
+    "자동 실행이 아직 허용되지 않았어요. 시스템 설정의 로그인 항목에서 UsageBar를 허용해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch at login isn't approved yet. Allow UsageBar under Login Items in System Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자동 실행이 아직 허용되지 않았어요. 시스템 설정의 로그인 항목에서 UsageBar를 허용해 주세요."
+          }
+        }
+      }
+    },
+    "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic checks paused · you can check manually"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요"
+          }
+        }
+      }
+    },
+    "작업 구간에 한도 리셋 시각이 포함돼요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A limit reset falls inside this session."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 구간에 한도 리셋 시각이 포함돼요."
+          }
+        }
+      }
+    },
+    "작업 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록"
+          }
+        }
+      }
+    },
+    "작업 기록 경로가 안전하지 않아 저장하지 않았어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The work log path is unsafe, so nothing was saved."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 경로가 안전하지 않아 저장하지 않았어요."
+          }
+        }
+      }
+    },
+    "작업 기록 다시 읽는 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reloading work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 다시 읽는 중"
+          }
+        }
+      }
+    },
+    "작업 기록 불러오는 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 불러오는 중"
+          }
+        }
+      }
+    },
+    "작업 기록을 읽을 수 없어 기존 파일을 보존했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The work log couldn't be read; the existing file was kept."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록을 읽을 수 없어 기존 파일을 보존했어요."
+          }
+        }
+      }
+    },
+    "작업 기록을 읽지 못했어요. 기존 파일은 보존했어요. 다시 읽기를 눌러 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read the work log. The existing file was kept. Press Reload."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록을 읽지 못했어요. 기존 파일은 보존했어요. 다시 읽기를 눌러 주세요."
+          }
+        }
+      }
+    },
+    "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the work log. The active session was kept."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요."
+          }
+        }
+      }
+    },
+    "작업 시작": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start session"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 시작"
+          }
+        }
+      }
+    },
+    "작업 시작, 작업 유형 선택": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start session, choose a type"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 시작, 작업 유형 선택"
+          }
+        }
+      }
+    },
+    "작업 영수증 · UsageBar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts · UsageBar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 영수증 · UsageBar"
+          }
+        }
+      }
+    },
+    "작업 영수증 요약 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy receipt summary"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 영수증 요약 복사"
+          }
+        }
+      }
+    },
+    "작업 영수증 전체 기록 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open all receipts"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 영수증 전체 기록 열기"
+          }
+        }
+      }
+    },
+    "작업 영수증을 저장하지 못했어요. 진행 중인 기록은 유지했어요. 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the receipt. The active session was kept. Try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 영수증을 저장하지 못했어요. 진행 중인 기록은 유지했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "작업 영수증을 지우지 못했어요. 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete the receipt. Try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 영수증을 지우지 못했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "작업 유형": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session type"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 유형"
+          }
+        }
+      }
+    },
+    "작업 유형을 고르면 현재 한도를 확인하고 바로 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a type to check the current limit and start right away. A receipt records the change when you finish."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 유형을 고르면 현재 한도를 확인하고 바로 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요."
+          }
+        }
+      }
+    },
+    "작업 종료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 종료"
+          }
+        }
+      }
+    },
+    "작업 종료 시각을 확인할 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't determine the finish time."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 종료 시각을 확인할 수 없어요."
+          }
+        }
+      }
+    },
+    "작업 종료 후의 최신 조회가 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No fresh check after the session ended."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 종료 후의 최신 조회가 없어요."
+          }
+        }
+      }
+    },
+    "작업 중 계정이 변경됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The account changed during the session."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 중 계정이 변경됐어요."
+          }
+        }
+      }
+    },
+    "작업 중 플랜 정보가 변경됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The plan changed during the session."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 중 플랜 정보가 변경됐어요."
+          }
+        }
+      }
+    },
+    "작업 하나를 마치면 여기에 남아요. 대화 내용이나 프로젝트 파일은 수집하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finished sessions appear here. No conversations or project files are collected."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 하나를 마치면 여기에 남아요. 대화 내용이나 프로젝트 파일은 수집하지 않아요."
+          }
+        }
+      }
+    },
+    "잔여 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잔여 한도"
+          }
+        }
+      }
+    },
+    "잔여 한도 추이": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining limit over time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잔여 한도 추이"
+          }
+        }
+      }
+    },
+    "잔여율 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show remaining percent"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잔여율 표시"
+          }
+        }
+      }
+    },
+    "잠시 후 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again in a moment."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잠시 후 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "저장된 기록을 읽지 못했어요. 새로 확인한 값부터 표시할게요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read saved history. Showing new checks from now on."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장된 기록을 읽지 못했어요. 새로 확인한 값부터 표시할게요."
+          }
+        }
+      }
+    },
+    "저장된 리셋": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved reset"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장된 리셋"
+          }
+        }
+      }
+    },
+    "전체 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All receipts"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 기록"
+          }
+        }
+      }
+    },
+    "제공된 한도 정보가 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit information was provided"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제공된 한도 정보가 없어요"
+          }
+        }
+      }
+    },
+    "제공자 정보를 확인하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't verify the provider."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제공자 정보를 확인하지 못했어요."
+          }
+        }
+      }
+    },
+    "제공자가 반환한 일별 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily tokens reported by the provider"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제공자가 반환한 일별 토큰"
+          }
+        }
+      }
+    },
+    "조회 꺼짐": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회 꺼짐"
+          }
+        }
+      }
+    },
+    "조회 대기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회 대기"
+          }
+        }
+      }
+    },
+    "조회 실패": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check failed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회 실패"
+          }
+        }
+      }
+    },
+    "조회 실패 · 이전 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check failed · earlier record"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회 실패 · 이전 기록"
+          }
+        }
+      }
+    },
+    "조회가 중단됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The check was cancelled."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회가 중단됐어요."
+          }
+        }
+      }
+    },
+    "종료 시 사용량을 조회하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check usage at finish."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 시 사용량을 조회하지 못했어요."
+          }
+        }
+      }
+    },
+    "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check usage at finish. Retry, or finish without comparing limits. "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. "
+          }
+        }
+      }
+    },
+    "종료 한도 확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking finishing limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 한도 확인 중"
+          }
+        }
+      }
+    },
+    "종료 한도는 확인하지 않고 작업 시간만 저장해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves only the duration without checking limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 한도는 확인하지 않고 작업 시간만 저장해요"
+          }
+        }
+      }
+    },
+    "주간 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주간 한도"
+          }
+        }
+      }
+    },
+    "주간 한도 · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly limit · %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주간 한도 · %@"
+          }
+        }
+      }
+    },
+    "주간 한도 · 예시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly limit · demo"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주간 한도 · 예시"
+          }
+        }
+      }
+    },
+    "지금 사용량을 가져올 수 없어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage is unavailable right now."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 사용량을 가져올 수 없어요."
+          }
+        }
+      }
+    },
+    "진행 중인 기록을 취소하지 못했어요. 다시 시도해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't discard the active session. Try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진행 중인 기록을 취소하지 못했어요. 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "진행 중인 작업 추가 메뉴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More actions for the active session"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진행 중인 작업 추가 메뉴"
+          }
+        }
+      }
+    },
+    "처음 한 번 Claude 연결 폴더를 확인해야 해요. 연결 설정을 연 뒤 안내를 완료해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Claude connection folder needs a one-time check. Open the connection setup and follow the prompts."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처음 한 번 Claude 연결 폴더를 확인해야 해요. 연결 설정을 연 뒤 안내를 완료해 주세요."
+          }
+        }
+      }
+    },
+    "처음 한 번 터미널에서 연결을 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm the connection in Terminal once."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처음 한 번 터미널에서 연결을 확인해 주세요."
+          }
+        }
+      }
+    },
+    "첫 초기화권 만료 · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First reset credit expires · %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "첫 초기화권 만료 · %@"
+          }
+        }
+      }
+    },
+    "초기화권": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset credits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초기화권"
+          }
+        }
+      }
+    },
+    "초기화권 %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset credit %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초기화권 %lld"
+          }
+        }
+      }
+    },
+    "초기화권 상세가 제공되지 않았어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reset credit details were provided"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "초기화권 상세가 제공되지 않았어요"
+          }
+        }
+      }
+    },
+    "최근 일별 토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latest daily tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 일별 토큰"
+          }
+        }
+      }
+    },
+    "추가 메뉴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가 메뉴"
+          }
+        }
+      }
+    },
+    "추가 한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secondary limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가 한도"
+          }
+        }
+      }
+    },
+    "취소": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
+          }
+        }
+      }
+    },
+    "켜 둔 서비스만 5분마다 조회해요. 각 CLI의 로그인 상태를 사용하며, 끈 서비스의 기록은 보관돼요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only enabled services are checked, every 5 minutes, using each CLI's login. History for disabled services is kept."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "켜 둔 서비스만 5분마다 조회해요. 각 CLI의 로그인 상태를 사용하며, 끈 서비스의 기록은 보관돼요."
+          }
+        }
+      }
+    },
+    "코드 리뷰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code review"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "코드 리뷰"
+          }
+        }
+      }
+    },
+    "터미널에서 로그인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log in from Terminal"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터미널에서 로그인"
+          }
+        }
+      }
+    },
+    "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't open Terminal. Open the connection setup file again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요."
+          }
+        }
+      }
+    },
+    "토큰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "토큰"
+          }
+        }
+      }
+    },
+    "토큰 기록이 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No token records"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "토큰 기록이 없어요"
+          }
+        }
+      }
+    },
+    "표시 예: 62% · 2h 10m": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Example: 62% · 2h 10m"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시 예: 62% · 2h 10m"
+          }
+        }
+      }
+    },
+    "표시상 변화 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no visible change"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시상 변화 없음"
+          }
+        }
+      }
+    },
+    "표시할 서비스": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show services"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시할 서비스"
+          }
+        }
+      }
+    },
+    "표시할 초기화권 상세가 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reset credit details to show"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시할 초기화권 상세가 없어요"
+          }
+        }
+      }
+    },
+    "한도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도"
+          }
+        }
+      }
+    },
+    "한도 %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 %lld"
+          }
+        }
+      }
+    },
+    "한도 값이 유효하지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The limit value is invalid."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 값이 유효하지 않아요."
+          }
+        }
+      }
+    },
+    "한도 기준으로 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "limits will be recorded"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 기준으로 기록"
+          }
+        }
+      }
+    },
+    "한도 비교 없이 시간만 기록했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the duration was recorded"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 비교 없이 시간만 기록했어요"
+          }
+        }
+      }
+    },
+    "한도 비교 없이 종료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish without comparing"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 비교 없이 종료"
+          }
+        }
+      }
+    },
+    "한도 수치 없이 작업 시간만 영수증에 저장해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves only the duration to the receipt"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 수치 없이 작업 시간만 영수증에 저장해요"
+          }
+        }
+      }
+    },
+    "한도를 다시 확인하고 이번 작업 영수증을 저장해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checks limits again and saves this session's receipt"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도를 다시 확인하고 이번 작업 영수증을 저장해요"
+          }
+        }
+      }
+    },
+    "한도를 불러오지 못했어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load limits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도를 불러오지 못했어요"
+          }
+        }
+      }
+    },
+    "한도의 기간이 변경됐어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The limit's period changed."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도의 기간이 변경됐어요."
+          }
+        }
+      }
+    },
+    "현재 사용량은 확인했지만 기록을 저장하지 못했어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage was checked, but history couldn't be saved."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 사용량은 확인했지만 기록을 저장하지 못했어요."
+          }
+        }
+      }
+    },
+    "현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves records matching the current service, period, type, and limit filter."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요."
+          }
+        }
+      }
+    },
+    "현재 한도를 확인하고 작업 기록을 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checks the current limit and starts a session. A receipt records the change when you finish."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 한도를 확인하고 작업 기록을 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요."
+          }
+        }
+      }
+    },
+    "화면 검증용 예시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo for screenshots"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 검증용 예시"
+          }
+        }
+      }
+    },
+    "화면 모드": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 모드"
+          }
+        }
+      }
+    },
+    "확인": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
+        }
+      }
+    },
+    "확인 시각": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked at"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인 시각"
+          }
+        }
+      }
+    },
+    "확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인 중"
+          }
+        }
+      }
+    },
+    "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only observed checks are shown · usage between checks isn't estimated"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

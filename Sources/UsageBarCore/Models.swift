@@ -71,7 +71,7 @@ public enum ProviderError: Error, LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case .setupRequired(let message), .authenticationRequired(let message), .unavailable(let message), .unsupported(let message): return message
-        case .rateLimited: return "요청이 잠시 제한됐어요."
+        case .rateLimited: return String(localized: "요청이 잠시 제한됐어요.")
         }
     }
 }

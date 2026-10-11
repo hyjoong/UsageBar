@@ -8,10 +8,10 @@ struct PanelHeader: View {
     private var planLabel: String {
         guard let snapshot = store.selectedState.snapshot else {
             let needsConnectionSetup = store.selectedState.requiresConnection || store.selectedState.errorMessage == nil
-            return needsConnectionSetup ? "연결 확인" : "조회 대기"
+            return needsConnectionSetup ? String(localized: "연결 확인") : String(localized: "조회 대기")
         }
         let plan = snapshot.plan?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return plan.isEmpty ? "계정 사용량" : plan
+        return plan.isEmpty ? String(localized: "계정 사용량") : plan
     }
 
     var body: some View {

@@ -32,13 +32,13 @@ struct PanelFooter: View {
         HStack(spacing: UsageSpacing.tight) {
             status
             Spacer(minLength: UsageSpacing.item)
-            iconButton("arrow.clockwise", help: "사용량 새로고침") {
+            iconButton("arrow.clockwise", help: String(localized: "사용량 새로고침")) {
                 Task { await store.refresh(provider, force: true) }
             }
             .disabled(!store.canRefresh(provider))
             .keyboardShortcut("r", modifiers: .command)
-            iconButton("chart.xyaxis.line", help: "사용 기록") { openWindow("history") }
-            iconButton("slider.horizontal.3", help: "설정") { openWindow("settings") }
+            iconButton("chart.xyaxis.line", help: String(localized: "사용 기록")) { openWindow("history") }
+            iconButton("slider.horizontal.3", help: String(localized: "설정")) { openWindow("settings") }
                 .keyboardShortcut(",", modifiers: .command)
             Menu {
                 Button("공식 사용량 화면") { NSWorkspace.shared.open(provider.dashboardURL) }

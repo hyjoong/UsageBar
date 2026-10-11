@@ -39,7 +39,7 @@ final class AppUpdateController: NSObject, ObservableObject, SPUUpdaterDelegate,
             .sink { [weak self] in self?.lastCheckedAt = $0 }.store(in: &observations)
         do { try updater.start() }
         catch {
-            message = "업데이트 확인을 시작하지 못했어요. 앱을 다시 실행해 주세요."
+            message = String(localized: "업데이트 확인을 시작하지 못했어요. 앱을 다시 실행해 주세요.")
             observations.removeAll()
             self.controller = nil
             canCheckForUpdates = false

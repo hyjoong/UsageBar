@@ -13,7 +13,7 @@ struct UpdateConfiguration {
     }
 
     static func displayVersion(info: [String: Any]) -> String {
-        let version = info["CFBundleShortVersionString"] as? String ?? "개발 버전"
+        let version = info["CFBundleShortVersionString"] as? String ?? String(localized: "개발 버전")
         guard let build = info["CFBundleVersion"] as? String else { return version }
         return "\(version) (\(build))"
     }
@@ -22,13 +22,13 @@ struct UpdateConfiguration {
         let fixture = allowsLocalFixture && Self.isIsolatedFixture(info: info, bundleIdentifier: bundleIdentifier)
         guard !isDemo || fixture else {
             isReady = false
-            statusMessage = "예시 앱에서는 업데이트를 확인하지 않아요."
+            statusMessage = String(localized: "예시 앱에서는 업데이트를 확인하지 않아요.")
             return
         }
         guard let feed = info["SUFeedURL"] as? String, !feed.isEmpty,
               let key = info["SUPublicEDKey"] as? String, !key.isEmpty else {
             isReady = false
-            statusMessage = "이 개발용 앱은 업데이트 배포 경로를 준비 중이에요."
+            statusMessage = String(localized: "이 개발용 앱은 업데이트 배포 경로를 준비 중이에요.")
             return
         }
         let components = URLComponents(string: feed)
@@ -41,10 +41,10 @@ struct UpdateConfiguration {
               feed.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
               (fixture ? (loopback && (secure || localTest)) : secure), Data(base64Encoded: key)?.count == 32 else {
             isReady = false
-            statusMessage = "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요."
+            statusMessage = String(localized: "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요.")
             return
         }
         isReady = true
-        statusMessage = "새 버전을 확인한 뒤 설치할 수 있어요. 설정과 저장된 기록은 유지돼요."
+        statusMessage = String(localized: "새 버전을 확인한 뒤 설치할 수 있어요. 설정과 저장된 기록은 유지돼요.")
     }
 }

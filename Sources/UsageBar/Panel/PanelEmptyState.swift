@@ -35,7 +35,7 @@ struct PanelEmptyState: View {
             Image(systemName: "exclamationmark.circle")
                 .font(.system(size: 28)).foregroundStyle(UsageTheme.warning)
             Text("한도를 불러오지 못했어요").font(UsageType.title)
-            Text(store.selectedState.errorMessage ?? "잠시 후 다시 시도해 주세요.")
+            Text(store.selectedState.errorMessage ?? String(localized: "잠시 후 다시 시도해 주세요."))
                 .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
             Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
@@ -128,7 +128,7 @@ struct ConnectionSetupCard: View {
             .disabled(!store.canRefresh(provider))
     }
 
-    private func step<Trailing: View>(_ number: Int, _ title: String, detail: String? = nil,
+    private func step<Trailing: View>(_ number: Int, _ title: LocalizedStringKey, detail: LocalizedStringKey? = nil,
                                       @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(alignment: .top, spacing: UsageSpacing.item) {
             Text("\(number)")
@@ -148,6 +148,6 @@ struct ConnectionSetupCard: View {
         }
         .font(UsageType.secondary)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(number)단계, \(title)")
+        .accessibilityLabel(Text("\(number)단계, ") + Text(title))
     }
 }

@@ -79,11 +79,11 @@ public actor HistoryStore {
             provider: snapshot.provider, plan: Self.safePlan(snapshot.plan), windows: safeWindows,
             resetCreditCount: snapshot.resetCreditCount,
             resetCredits: snapshot.resetCredits?.enumerated().map { index, credit in
-                ResetCredit(id: "credit-\(index)", title: "초기화권 \(index + 1)", expiresAt: credit.expiresAt,
+                ResetCredit(id: "credit-\(index)", title: String(localized: "초기화권 \(index + 1)"), expiresAt: credit.expiresAt,
                             status: Self.safeStatus(credit.status))
             },
             dailyUsage: snapshot.dailyUsage?.filter { $0.tokens >= 0 }, fetchedAt: snapshot.fetchedAt,
-            source: snapshot.provider == .codex ? "Codex App Server · 저장된 기록" : "Claude · 저장된 기록"
+            source: snapshot.provider == .codex ? String(localized: "Codex App Server · 저장된 기록") : String(localized: "Claude · 저장된 기록")
         )
         for window in safeWindows {
             let point = HistoryPoint(provider: snapshot.provider, date: snapshot.fetchedAt,

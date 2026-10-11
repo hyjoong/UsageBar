@@ -56,14 +56,14 @@ struct WorkJournalPanel: View {
             HStack(spacing: UsageSpacing.item) {
                 Label("작업 기록", systemImage: "receipt").foregroundStyle(UsageTheme.secondaryInk)
                 Spacer(minLength: UsageSpacing.tight)
-                busyIndicator("시작 한도 확인 중")
+                busyIndicator(String(localized: "시작 한도 확인 중"))
                 Button("전체 기록", action: openHistory)
                     .buttonStyle(.plain).foregroundStyle(UsageTheme.secondaryInk)
                     .help("작업 영수증 전체 기록 열기")
                 startMenu
             }
             .frame(minHeight: UsageSpacing.control)
-            if journal.message != nil { errorDetails("시작하지 못했어요") }
+            if journal.message != nil { errorDetails(String(localized: "시작하지 못했어요")) }
         }
     }
 
@@ -105,10 +105,10 @@ struct WorkJournalPanel: View {
                     .font(UsageType.durationCompact).monospacedDigit()
                     .accessibilityLabel("기록 경과 시간 \(label)")
             }
-            Text("\(active.kind.title) · \(active.provider.title)")
+            Text(verbatim: "\(active.kind.title) · \(active.provider.title)")
                 .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
             Spacer(minLength: UsageSpacing.tight)
-            busyIndicator("종료 한도 확인 중")
+            busyIndicator(String(localized: "종료 한도 확인 중"))
             Menu {
                 Button("전체 기록", action: openHistory)
                 Divider()
@@ -128,7 +128,7 @@ struct WorkJournalPanel: View {
         }
         if journal.message != nil {
             HStack(spacing: UsageSpacing.compact) {
-                errorDetails("기록을 유지했어요")
+                errorDetails(String(localized: "기록을 유지했어요"))
                 Spacer(minLength: UsageSpacing.tight)
                 Button("한도 비교 없이 종료") { Task { await journal.finishWithoutSnapshot() } }
                     .buttonStyle(.link).disabled(journal.isBusy)
@@ -144,7 +144,7 @@ struct WorkJournalPanel: View {
             Image(systemName: "checkmark.circle.fill").foregroundStyle(UsageTheme.accent).accessibilityHidden(true)
             Text(UsageFormat.durationLabel(receipt.duration))
                 .font(UsageType.durationCompact).monospacedDigit()
-            Text("\(receipt.kind.title) · \(receipt.provider.title)")
+            Text(verbatim: "\(receipt.kind.title) · \(receipt.provider.title)")
                 .foregroundStyle(UsageTheme.secondaryInk).lineLimit(1)
             Spacer(minLength: UsageSpacing.tight)
             Button {
@@ -171,7 +171,7 @@ struct WorkJournalPanel: View {
             .foregroundStyle(UsageTheme.secondaryInk)
             .fixedSize(horizontal: false, vertical: true)
             .help("관측 구간의 계정 전체 사용률 변화예요. 다른 창·기기의 사용도 포함되며, 이 작업만의 사용량은 아니에요.")
-        if journal.message != nil { errorDetails("기록 확인이 필요해요") }
+        if journal.message != nil { errorDetails(String(localized: "기록 확인이 필요해요")) }
     }
 
     // MARK: Shared
@@ -179,7 +179,7 @@ struct WorkJournalPanel: View {
     private var loading: some View {
         HStack(spacing: UsageSpacing.item) {
             if journal.message != nil {
-                errorDetails("기록을 읽지 못했어요")
+                errorDetails(String(localized: "기록을 읽지 못했어요"))
                 Spacer(minLength: UsageSpacing.tight)
                 Button("다시 읽기") { Task { await journal.load() } }
                     .controlSize(.small).disabled(journal.isBusy)
@@ -194,7 +194,7 @@ struct WorkJournalPanel: View {
 
     private func errorDetails(_ title: String) -> some View {
         Button { showingError.toggle() } label: {
-            Label(title + " · 자세히", systemImage: "exclamationmark.circle")
+            Label("\(title) · 자세히", systemImage: "exclamationmark.circle")
                 .font(UsageType.micro).foregroundStyle(UsageTheme.warning)
         }
         .buttonStyle(.plain)

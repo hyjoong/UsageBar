@@ -171,7 +171,7 @@ struct WorkJournalView: View {
                 Text(UsageFormat.durationLabel(receipt.duration))
                     .font(UsageType.durationCompact).monospacedDigit()
                     .accessibilityLabel("기록한 시간 \(UsageFormat.durationLabel(receipt.duration))")
-                Text("\(receipt.kind.title) · \(receipt.provider.title)")
+                Text(verbatim: "\(receipt.kind.title) · \(receipt.provider.title)")
                     .foregroundStyle(UsageTheme.secondaryInk)
                 Spacer(minLength: UsageSpacing.item)
                 Text(receipt.startedAt.formatted(date: .abbreviated, time: .shortened))

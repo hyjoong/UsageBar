@@ -22,7 +22,7 @@ struct QuotaRow: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(window.label), \(remaining)퍼센트 남음\(current ? "" : ", 이전 기록")")
+        .accessibilityLabel(current ? "\(window.label), \(remaining)퍼센트 남음" : "\(window.label), \(remaining)퍼센트 남음, 이전 기록")
     }
 
     @ViewBuilder private var hero: some View {
@@ -63,11 +63,13 @@ struct QuotaRow: View {
     private var resetLine: some View {
         Group {
             if let date = window.resetsAt {
-                let overdue = date <= store.clockNow
-                Text(overdue
-                     ? UsageFormat.relativeDate(date, now: store.clockNow, expiry: false)
-                     : "리셋 \(UsageFormat.relativeDate(date, now: store.clockNow, expiry: false)) · \(UsageFormat.resetClock(date, now: store.clockNow))")
-                    .foregroundStyle(overdue ? UsageTheme.warning : UsageTheme.secondaryInk)
+                let relative = UsageFormat.relativeDate(date, now: store.clockNow, expiry: false)
+                if date <= store.clockNow {
+                    Text(verbatim: relative).foregroundStyle(UsageTheme.warning)
+                } else {
+                    Text("리셋 \(relative) · \(UsageFormat.resetClock(date, now: store.clockNow))")
+                        .foregroundStyle(UsageTheme.secondaryInk)
+                }
             } else {
                 Text(window.resetDescription ?? "리셋 시각이 제공되지 않았어요")
                     .foregroundStyle(UsageTheme.secondaryInk)
@@ -150,9 +152,9 @@ struct PaceSection: View {
 
     private var title: String {
         switch pace.position {
-        case .behind: "여유 있는 속도"
-        case .onTrack: "기준과 비슷한 속도"
-        case .ahead: "빠르게 사용 중"
+        case .behind: String(localized: "여유 있는 속도")
+        case .onTrack: String(localized: "기준과 비슷한 속도")
+        case .ahead: String(localized: "빠르게 사용 중")
         }
     }
 

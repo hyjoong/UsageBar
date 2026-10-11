@@ -36,7 +36,7 @@ final class WorkJournalController: ObservableObject {
             isLoaded = true
             message = nil
         } catch {
-            message = "작업 기록을 읽지 못했어요. 기존 파일은 보존했어요. 다시 읽기를 눌러 주세요."
+            message = String(localized: "작업 기록을 읽지 못했어요. 기존 파일은 보존했어요. 다시 읽기를 눌러 주세요.")
         }
     }
 
@@ -48,12 +48,12 @@ final class WorkJournalController: ObservableObject {
         do {
             let snapshot = try await fetch(provider)
             try Task.checkCancellation()
-            guard snapshot.provider == provider else { throw ProviderError.unavailable("선택한 서비스의 사용량을 확인하지 못했어요.") }
+            guard snapshot.provider == provider else { throw ProviderError.unavailable(String(localized: "선택한 서비스의 사용량을 확인하지 못했어요.")) }
             let active = try WorkSession.start(kind: kind, snapshot: snapshot, now: Date())
             try await save(WorkJournalState(active: active, receipts: state.receipts))
             recentCompletion = nil
         } catch {
-            message = "시작 전 사용량을 확인하지 못했어요. " + Self.reason(error)
+            message = String(localized: "시작 전 사용량을 확인하지 못했어요. ") + Self.reason(error)
         }
     }
 
@@ -71,8 +71,8 @@ final class WorkJournalController: ObservableObject {
             recentCompletion = receipt
         } catch {
             message = fetched
-                ? "작업 영수증을 저장하지 못했어요. 진행 중인 기록은 유지했어요. 다시 시도해 주세요."
-                : "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. " + Self.reason(error)
+                ? String(localized: "작업 영수증을 저장하지 못했어요. 진행 중인 기록은 유지했어요. 다시 시도해 주세요.")
+                : String(localized: "종료 시 사용량을 확인하지 못했어요. 다시 시도하거나 한도 비교 없이 종료할 수 있어요. ") + Self.reason(error)
         }
     }
 
@@ -84,7 +84,7 @@ final class WorkJournalController: ObservableObject {
             let receipt = active.finish(snapshot: nil, now: Date())
             try await save(WorkJournalState(active: nil, receipts: [receipt] + state.receipts))
             recentCompletion = receipt
-        } catch { message = "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요." }
+        } catch { message = String(localized: "작업 기록을 저장하지 못했어요. 진행 중인 기록은 유지했어요.") }
     }
 
     func discard() async {
@@ -95,7 +95,7 @@ final class WorkJournalController: ObservableObject {
             try await save(WorkJournalState(active: nil, receipts: state.receipts))
             recentCompletion = nil
         }
-        catch { message = "진행 중인 기록을 취소하지 못했어요. 다시 시도해 주세요." }
+        catch { message = String(localized: "진행 중인 기록을 취소하지 못했어요. 다시 시도해 주세요.") }
     }
 
     func deleteReceipt(_ id: UUID) async {
@@ -106,7 +106,7 @@ final class WorkJournalController: ObservableObject {
             try await save(WorkJournalState(active: state.active, receipts: state.receipts.filter { $0.id != id }))
             if recentCompletion?.id == id { recentCompletion = nil }
         }
-        catch { message = "작업 영수증을 지우지 못했어요. 다시 시도해 주세요." }
+        catch { message = String(localized: "작업 영수증을 지우지 못했어요. 다시 시도해 주세요.") }
     }
 
     func dismissRecentCompletion() {
@@ -122,17 +122,17 @@ final class WorkJournalController: ObservableObject {
     }
 
     private static func reason(_ error: Error) -> String {
-        if error is CancellationError { return "조회가 중단됐어요." }
-        return (error as? LocalizedError)?.errorDescription ?? "잠시 후 다시 시도해 주세요."
+        if error is CancellationError { return String(localized: "조회가 중단됐어요.") }
+        return (error as? LocalizedError)?.errorDescription ?? String(localized: "잠시 후 다시 시도해 주세요.")
     }
 
     #if DEBUG
     private static func demoActiveSession() -> WorkSession? {
         let start = Date().addingTimeInterval(-47 * 60)
-        let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: "예시",
-            windows: [UsageWindow(id: "session", label: "5시간 한도", usedPercent: 22,
+        let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "예시"),
+            windows: [UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 22,
                                   resetsAt: start.addingTimeInterval(3 * 3_600), durationMinutes: 300)],
-            fetchedAt: start, source: "예시")
+            fetchedAt: start, source: String(localized: "예시"))
         return try? WorkSession.start(kind: .debug, snapshot: snapshot, now: start)
     }
     #endif
@@ -142,14 +142,14 @@ final class WorkJournalController: ObservableObject {
         let start = now.addingTimeInterval(-47 * 60)
         let end = now.addingTimeInterval(-5 * 60)
         let reset = now.addingTimeInterval(3 * 3_600)
-        let before = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: "예시",
-            windows: [UsageWindow(id: "session", label: "5시간 한도", usedPercent: 22, resetsAt: reset, durationMinutes: 300),
-                      UsageWindow(id: "weekly", label: "주간 한도", usedPercent: 10, resetsAt: reset.addingTimeInterval(4 * 86_400), durationMinutes: 10_080)],
-            fetchedAt: start, source: "예시")
-        let after = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: "예시",
-            windows: [UsageWindow(id: "session", label: "5시간 한도", usedPercent: 28, resetsAt: reset, durationMinutes: 300),
-                      UsageWindow(id: "weekly", label: "주간 한도", usedPercent: 11, resetsAt: reset.addingTimeInterval(4 * 86_400), durationMinutes: 10_080)],
-            fetchedAt: end, source: "예시")
+        let before = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "예시"),
+            windows: [UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 22, resetsAt: reset, durationMinutes: 300),
+                      UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 10, resetsAt: reset.addingTimeInterval(4 * 86_400), durationMinutes: 10_080)],
+            fetchedAt: start, source: String(localized: "예시"))
+        let after = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "예시"),
+            windows: [UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 28, resetsAt: reset, durationMinutes: 300),
+                      UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 11, resetsAt: reset.addingTimeInterval(4 * 86_400), durationMinutes: 10_080)],
+            fetchedAt: end, source: String(localized: "예시"))
         guard let session = try? WorkSession.start(kind: .refactor, snapshot: before, now: start) else { return WorkJournalState() }
         return WorkJournalState(receipts: [session.finish(snapshot: after, now: end)])
     }

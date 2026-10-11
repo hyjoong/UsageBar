@@ -15,7 +15,7 @@ struct CreditExpiryRow: View {
                 Image(systemName: "ticket").accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: UsageSpacing.tight) {
                     Text("첫 초기화권 만료 · \(UsageFormat.relativeDate(date, now: now, expiry: true))")
-                    Text(date.formatted(UsageFormat.koreanDateTime))
+                    Text(date.formatted(UsageFormat.resetDateTime))
                 }
             }
             .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
@@ -50,11 +50,11 @@ struct CreditsSection: View {
             ForEach(credits) { credit in
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(credit.title.isEmpty ? "초기화권" : credit.title)
+                        Text(credit.title.isEmpty ? String(localized: "초기화권") : credit.title)
                         Text(UsageFormat.creditStatus(credit.status)).foregroundStyle(UsageTheme.secondaryInk)
                     }
                     Spacer()
-                    Text(credit.expiresAt.map { $0.formatted(.dateTime.month().day().hour().minute()) } ?? "만료 없음")
+                    Text(credit.expiresAt.map { $0.formatted(.dateTime.month().day().hour().minute()) } ?? String(localized: "만료 없음"))
                         .foregroundStyle(UsageTheme.secondaryInk)
                 }.font(.caption)
             }

@@ -7,7 +7,7 @@ import UserNotifications
 enum MenuBarDisplayMode: String, CaseIterable, Identifiable {
     case selected, all
     var id: String { rawValue }
-    var title: String { self == .selected ? "선택한 서비스" : "사용 중인 서비스 모두" }
+    var title: String { self == .selected ? String(localized: "선택한 서비스") : String(localized: "사용 중인 서비스 모두") }
 }
 
 enum UsageAppearanceMode: String, CaseIterable, Identifiable {
@@ -15,9 +15,9 @@ enum UsageAppearanceMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .dark: "어둡게"
-        case .light: "밝게"
-        case .system: "시스템 설정 따르기"
+        case .dark: String(localized: "어둡게")
+        case .light: String(localized: "밝게")
+        case .system: String(localized: "시스템 설정 따르기")
         }
     }
     var appearance: NSAppearance? {
@@ -170,7 +170,7 @@ final class AppStore: ObservableObject {
     func retryMessage(for provider: ProviderID) -> String? {
         guard enabledProviders.contains(provider), let retry = retryStates[provider], retry.notBefore > clockNow else { return nil }
         let minutes = max(1, Int(ceil(retry.notBefore.timeIntervalSince(clockNow) / 60)))
-        return retry.rateLimited ? "약 \(minutes)분 후 다시 확인할 수 있어요" : "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요"
+        return retry.rateLimited ? String(localized: "약 \(minutes)분 후 다시 확인할 수 있어요") : String(localized: "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요")
     }
 
     func canRefresh(_ provider: ProviderID) -> Bool {
@@ -198,17 +198,17 @@ final class AppStore: ObservableObject {
     }
 
     func connectionStatus(for provider: ProviderID) -> String {
-        guard enabledProviders.contains(provider) else { return "조회 꺼짐" }
+        guard enabledProviders.contains(provider) else { return String(localized: "조회 꺼짐") }
         let state = states[provider] ?? ProviderState()
-        if state.isRefreshing { return "확인 중" }
-        if state.requiresConnection { return "다시 연결 필요" }
-        if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return "요청 제한 · 대기 중" }
-        if state.errorMessage != nil { return state.snapshot == nil ? "조회 실패" : "조회 실패 · 이전 기록" }
+        if state.isRefreshing { return String(localized: "확인 중") }
+        if state.requiresConnection { return String(localized: "다시 연결 필요") }
+        if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return String(localized: "요청 제한 · 대기 중") }
+        if state.errorMessage != nil { return state.snapshot == nil ? String(localized: "조회 실패") : String(localized: "조회 실패 · 이전 기록") }
         switch freshness(for: provider) {
-        case .unavailable: return "연결 확인 필요"
-        case .stale: return "오래된 기록"
-        case .resetDue: return "리셋 확인 필요"
-        case .current: return "연결됨"
+        case .unavailable: return String(localized: "연결 확인 필요")
+        case .stale: return String(localized: "오래된 기록")
+        case .resetDue: return String(localized: "리셋 확인 필요")
+        case .current: return String(localized: "연결됨")
         }
     }
 
@@ -219,16 +219,16 @@ final class AppStore: ObservableObject {
     func selectionNotice(for provider: ProviderID) -> String? {
         guard let savedID = trackedWindowIDs[provider],
               let displayed = trackedWindow(for: provider), displayed.id != savedID else { return nil }
-        return "고정한 한도 정보가 없어 \(displayed.label) 기준으로 임시 표시해요."
+        return String(localized: "고정한 한도 정보가 없어 \(displayed.label) 기준으로 임시 표시해요.")
     }
 
     func menuDescription(for provider: ProviderID) -> String {
         let window = trackedWindow(for: provider)
-        var details = [provider.title, window?.label ?? "사용량"]
+        var details = [provider.title, window?.label ?? String(localized: "사용량")]
         if let window {
-            details.append("\(Int(window.remainingPercent.rounded()))퍼센트 남음")
+            details.append(String(localized: "\(Int(window.remainingPercent.rounded()))퍼센트 남음"))
             if let reset = window.resetsAt {
-                details.append(reset <= clockNow ? "리셋 시각 경과, 확인 필요" : "리셋 \(reset.formatted(date: .abbreviated, time: .shortened))")
+                details.append(reset <= clockNow ? String(localized: "리셋 시각 경과, 확인 필요") : String(localized: "리셋 \(reset.formatted(date: .abbreviated, time: .shortened))"))
             }
         }
         details.append(connectionStatus(for: provider))
@@ -276,7 +276,7 @@ final class AppStore: ObservableObject {
                         self.states[id]?.snapshot = snapshot
                     }
                 } catch {
-                    self.storageNotice = "저장된 기록을 읽지 못했어요. 새로 확인한 값부터 표시할게요."
+                    self.storageNotice = String(localized: "저장된 기록을 읽지 못했어요. 새로 확인한 값부터 표시할게요.")
                 }
             }
             guard !Task.isCancelled, self.started else { return }
@@ -305,14 +305,14 @@ final class AppStore: ObservableObject {
         if isDemo, let snapshot = states[id]?.snapshot {
             #if DEBUG
             if CommandLine.arguments.contains("--ui-work-failure"), workJournal.state.active != nil {
-                throw ProviderError.unavailable("예시 연결 오류: 종료 시 사용량을 확인하지 못했습니다. 기록은 유지되며 다시 시도하거나 한도 비교 없이 종료할 수 있어요.")
+                throw ProviderError.unavailable(String(localized: "예시 연결 오류: 종료 시 사용량을 확인하지 못했습니다. 기록은 유지되며 다시 시도하거나 한도 비교 없이 종료할 수 있어요."))
             }
             #endif
             return ProviderSnapshot(provider: snapshot.provider, accountKey: "demo-only", plan: snapshot.plan,
-                windows: snapshot.windows, fetchedAt: Date(), source: "예시 데이터")
+                windows: snapshot.windows, fetchedAt: Date(), source: String(localized: "예시 데이터"))
         }
         guard enabledProviders.contains(id), !sleeping else {
-            throw ProviderError.unavailable("설정에서 \(id.title) 조회를 켜고 다시 시도해 주세요.")
+            throw ProviderError.unavailable(String(localized: "설정에서 \(id.title) 조회를 켜고 다시 시도해 주세요."))
         }
         let expectedGeneration = generation
         let previousSuccess = successfulRefreshTokens[id]
@@ -333,7 +333,7 @@ final class AppStore: ObservableObject {
     }
 
     private func workSnapshotError(for id: ProviderID) -> ProviderError {
-        .unavailable(retryMessage(for: id) ?? states[id]?.errorMessage ?? "새 사용량을 확인하지 못했어요. 다시 시도해 주세요.")
+        .unavailable(retryMessage(for: id) ?? states[id]?.errorMessage ?? String(localized: "새 사용량을 확인하지 못했어요. 다시 시도해 주세요."))
     }
 
     private func requestRefresh(_ id: ProviderID, force: Bool = false) async -> Bool {
@@ -376,7 +376,7 @@ final class AppStore: ObservableObject {
         do {
             let snapshot = try await provider.fetch()
             guard !Task.isCancelled, generation == expected else { return }
-            guard snapshot.provider == id else { throw ProviderError.unavailable("제공자 정보를 확인하지 못했어요.") }
+            guard snapshot.provider == id else { throw ProviderError.unavailable(String(localized: "제공자 정보를 확인하지 못했어요.")) }
             let previousKey = states[id]?.snapshot?.accountKey
             if previousKey != snapshot.accountKey {
                 resetNotificationTracking(for: id)
@@ -397,7 +397,7 @@ final class AppStore: ObservableObject {
                     if history.accountChanged { resetNotificationTracking(for: id) }
                     storageNotice = nil
                 } catch {
-                    storageNotice = "현재 사용량은 확인했지만 기록을 저장하지 못했어요."
+                    storageNotice = String(localized: "현재 사용량은 확인했지만 기록을 저장하지 못했어요.")
                 }
             }
             guard !Task.isCancelled, generation == expected else { return }
@@ -421,7 +421,7 @@ final class AppStore: ObservableObject {
             }
             clockNow = Date()
             retryStates[id] = RetryState(attempts: attempt, notBefore: clockNow.addingTimeInterval(delay), rateLimited: limited)
-            states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? "지금 사용량을 가져올 수 없어요."
+            states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? String(localized: "지금 사용량을 가져올 수 없어요.")
             states[id]?.requiresConnection = connection
         }
     }
@@ -441,12 +441,12 @@ final class AppStore: ObservableObject {
             guard notificationSettingToken == settingToken else { return }
             notificationsEnabled = granted
             defaults.set(granted, forKey: "notificationsEnabled")
-            if !granted { notificationMessage = "알림 권한이 꺼져 있어요. 시스템 설정에서 변경할 수 있어요." }
+            if !granted { notificationMessage = String(localized: "알림 권한이 꺼져 있어요. 시스템 설정에서 변경할 수 있어요.") }
         } catch {
             guard notificationSettingToken == settingToken else { return }
             notificationsEnabled = false
             defaults.set(false, forKey: "notificationsEnabled")
-            notificationMessage = "알림 권한을 확인하지 못했어요."
+            notificationMessage = String(localized: "알림 권한을 확인하지 못했어요.")
         }
     }
 
@@ -456,7 +456,7 @@ final class AppStore: ObservableObject {
             try await historyStore?.clear()
             historyPoints = []
             storageNotice = nil
-        } catch { storageNotice = "기록을 지우지 못했어요." }
+        } catch { storageNotice = String(localized: "기록을 지우지 못했어요.") }
     }
 
     private func beginPolling() {
@@ -537,13 +537,13 @@ final class AppStore: ObservableObject {
             var nextState = decision.state
             if decision.shouldNotify && notificationsEnabled && !isDemo {
                 let content = UNMutableNotificationContent()
-                content.title = "\(snapshot.provider.title) 한도가 얼마 남지 않았어요"
-                content.body = "\(window.label) · \(Int(remaining.rounded()))% 남음"
+                content.title = String(localized: "\(snapshot.provider.title) 한도가 얼마 남지 않았어요")
+                content.body = String(localized: "\(window.label) · \(Int(remaining.rounded()))% 남음")
                 content.sound = .default
                 let period = nextState.periodResetAt.map { String(Int($0.timeIntervalSince1970)) } ?? "unknown"
                 let request = UNNotificationRequest(identifier: "usage.\(key).\(period)", content: content, trigger: nil)
                 do { try await UNUserNotificationCenter.current().add(request); nextState.hasNotified = true }
-                catch { notificationMessage = "사용량 알림을 보내지 못했어요." }
+                catch { notificationMessage = String(localized: "사용량 알림을 보내지 못했어요.") }
             }
             notificationTracking[key] = nextState
         }
@@ -556,26 +556,26 @@ final class AppStore: ObservableObject {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         for id in ProviderID.allCases {
-            let snapshot = ProviderSnapshot(provider: id, plan: id == .claude ? "Max · 예시" : "Pro · 예시",
+            let snapshot = ProviderSnapshot(provider: id, plan: id == .claude ? String(localized: "Max · 예시") : String(localized: "Pro · 예시"),
                 windows: [
-                    UsageWindow(id: "weekly", label: "주간 한도", usedPercent: 24,
+                    UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 24,
                                 resetsAt: now.addingTimeInterval(5 * 86_400), durationMinutes: 10_080),
-                    UsageWindow(id: "session", label: "5시간 한도", usedPercent: 32,
+                    UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 32,
                                 resetsAt: now.addingTimeInterval(3 * 3_600), durationMinutes: 300)
                 ], resetCreditCount: id == .codex ? 3 : nil,
                 resetCredits: id == .codex ? (1...3).map {
-                    ResetCredit(id: "demo-\($0)", title: "예시 초기화권 \($0)",
+                    ResetCredit(id: "demo-\($0)", title: String(localized: "예시 초기화권 \($0)"),
                                 expiresAt: now.addingTimeInterval(Double($0 * 7) * 86_400), status: "available")
                 } : nil,
                 dailyUsage: id == .codex ? (0..<7).map {
                     DailyUsage(day: formatter.string(from: now.addingTimeInterval(-Double(6 - $0) * 86_400)),
                                tokens: Int64([2_100_000, 3_600_000, 1_200_000, 5_300_000, 6_000_000, 4_800_000, 8_400_000][$0]))
-                } : nil, fetchedAt: now, source: "예시 데이터 · 외부 연결 없음")
+                } : nil, fetchedAt: now, source: String(localized: "예시 데이터 · 외부 연결 없음"))
             states[id] = ProviderState(snapshot: snapshot)
             for index in 0..<16 {
                 historyPoints.append(HistoryPoint(provider: id, date: now.addingTimeInterval(-Double(15 - index) * 3_600),
                                                   remaining: 96 - Double(index) * (20.0 / 15),
-                                                  windowName: "주간 한도 · 예시", windowID: "weekly",
+                                                  windowName: String(localized: "주간 한도 · 예시"), windowID: "weekly",
                                                   resetsAt: snapshot.windows.first?.resetsAt))
             }
         }
@@ -587,7 +587,7 @@ final class AppStore: ObservableObject {
             }
             states[.codex] = ProviderState(snapshot: ProviderSnapshot(provider: .codex, plan: old.plan,
                 windows: old.windows, resetCreditCount: old.resetCreditCount, resetCredits: old.resetCredits,
-                dailyUsage: records, fetchedAt: old.fetchedAt, source: "화면 검증용 예시"))
+                dailyUsage: records, fetchedAt: old.fetchedAt, source: String(localized: "화면 검증용 예시")))
             selectedProvider = .codex
         }
         if CommandLine.arguments.contains("--ui-codex") { selectedProvider = .codex }
@@ -600,7 +600,7 @@ final class AppStore: ObservableObject {
         }
         if CommandLine.arguments.contains("--ui-connection-required") {
             for id in ProviderID.allCases {
-                states[id] = ProviderState(errorMessage: "처음 한 번 터미널에서 연결을 확인해 주세요.", requiresConnection: true)
+                states[id] = ProviderState(errorMessage: String(localized: "처음 한 번 터미널에서 연결을 확인해 주세요."), requiresConnection: true)
             }
             historyPoints = []
         }
@@ -616,7 +616,7 @@ final class AppStore: ObservableObject {
                 states[id] = ProviderState(snapshot: ProviderSnapshot(provider: id, plan: old.plan,
                     windows: windows, resetCreditCount: old.resetCreditCount, resetCredits: old.resetCredits,
                     dailyUsage: old.dailyUsage, fetchedAt: stale ? now.addingTimeInterval(-900) : now,
-                    source: "화면 검증용 예시"))
+                    source: String(localized: "화면 검증용 예시")))
             }
         }
         #endif
