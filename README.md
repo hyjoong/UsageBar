@@ -337,6 +337,7 @@ swift scripts/make-icon.swift build/AppIcon.iconset Resources/AppIcon.icns
 
 - 운영 appcast: `https://github.com/hyjoong/UsageBar/releases/latest/download/appcast.xml`
 - 운영 Ed25519 키: Keychain 계정 `hyjoong.UsageBar.production`. 앱의 `SUPublicEDKey`에는 공개 키만 포함합니다.
+- **0.8.0 (14)**: 2026년 10월 11일 Developer ID 서명, Apple 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper `Notarized Developer ID`를 확인하고 `build/releases/0.8.0-14/`에 ZIP·서명된 appcast·SHA256SUMS를 생성했습니다. appcast의 다운로드 주소는 `v0.8.0` 태그를 가리키며, 릴리스 초안 게시는 별도 단계입니다.
 - **0.7.0 (13)**: 운영 URL·공개 키를 적용한 앱의 Developer ID 서명, Apple 공증 `Accepted`, 티켓 첨부·검증, Gatekeeper를 확인하고 ZIP과 서명된 appcast를 생성했습니다. 같은 저장소에 비공개 릴리스 초안을 저장했으며, 다시 내려받은 파일이 로컬 검증본과 일치하는지도 확인했습니다.
 - 동일한 조회 코드를 사용하는 별도 검사 도구를 Developer ID·Hardened Runtime으로 서명한 뒤 Claude·Codex의 새 사용량 응답을 확인했습니다. 검사 로그에는 성공 여부만 남겼습니다. 이 검사는 실제 앱의 전체 화면 흐름이나 다른 Mac 검증을 대체하지 않습니다.
 
