@@ -67,18 +67,18 @@ Apple Silicon·macOS 14.5에서 `/usr/local`의 Intel Homebrew 7.0.9로 설치�
 
 - 수동 설치본을 별도 보관한 뒤 `brew install --cask hyjoong/tap/usagebar`가 배포 파일을 받아 `/Applications`에 설치하는 것을 확인했습니다. `brew list --cask --versions usagebar` 결과는 `usagebar 0.8.8,25`이며, 설치본의 코드 서명·Gatekeeper(`Notarized Developer ID`)·실행 프로세스를 확인했습니다.
 - tap의 `tests/usagebar_arch_test.rb`는 실제 Homebrew cask 로더와 아키텍처 검사기로 ARM 네이티브 허용·Rosetta 허용·실제 Intel 거부를 검증합니다. 수정 전에는 Rosetta 케이스가 실패하고 수정 후에는 세 케이스가 모두 통과했습니다. 다른 아키텍처의 실물 Mac 검증은 아닙니다.
-- `brew style`은 이 Mac의 개발 도구에서 검사 의존성의 네이티브 확장을 컴파일하지 못해 실행하지 못했습니다. 실패한 확장은 별도 보관해 Homebrew를 복구했습니다. 예약 실행에서 아키텍처 회귀 테스트 3개를 다시 통과했고, 스타일 검사는 추가한 GitHub Actions에서 확인합니다.
+- `brew style`은 이 Mac의 개발 도구에서 검사 의존성의 네이티브 확장을 컴파일하지 못해 실행하지 못했습니다. 실패한 확장은 별도 보관해 Homebrew를 복구했습니다. 예약 실행에서 로컬 및 공개 저장소를 새로 받은 작업본의 아키텍처 회귀 테스트 3개를 다시 통과했고, [tap CI](https://github.com/hyjoong/homebrew-tap/actions/runs/38241137041)에서도 세 검사와 cask 스타일 검사(`no offenses`)가 통과했습니다.
 - 사용자 승인에 따라 20:10 한국시간 이후 [tap 커밋 `a7f2a38`](https://github.com/hyjoong/homebrew-tap/commit/a7f2a38)을 공개 `master` 브랜치에 push했습니다. 다른 Mac에서는 `brew update`로 새 설치 조건을 받을 수 있습니다. 앱 버전과 배포 파일은 기존 `0.8.8 (25)`를 유지합니다.
 
 ### 2026-10-12 CLI 연결·인증 안내 수정 — 미출시
 
-집에서 이어서 검증할 소스 변경이며 20:10 한국시간 이후 예약한 커밋·push 대상입니다. Claude 실행 파일은 사용자 설치 경로(`~/.local/bin`, `~/.npm-global/bin`)를 시스템 설치보다 먼저 확인하고, 필수 옵션을 지원하지 않는 구형 CLI에는 업데이트를 안내합니다. `auth status --json`이 정상 종료 코드 0 또는 1과 함께 `loggedIn: false`를 명시하면 로그인 필요로 분류합니다. 불명확한 응답은 기존 사용량 조회 경로를 유지합니다.
+20:10 한국시간 이후 [소스 커밋 `e76558e`](https://github.com/hyjoong/UsageBar/commit/e76558e)를 `main`에 push했습니다. Claude 실행 파일은 사용자 설치 경로(`~/.local/bin`, `~/.npm-global/bin`)를 시스템 설치보다 먼저 확인하고, 필수 옵션을 지원하지 않는 구형 CLI에는 업데이트를 안내합니다. `auth status --json`이 정상 종료 코드 0 또는 1과 함께 `loggedIn: false`를 명시하면 로그인 필요로 분류합니다. 불명확한 응답은 기존 사용량 조회 경로를 유지합니다.
 
 Claude·Codex의 인증 오류를 초기 설정·지원하지 않는 계정·일반 조회 오류와 구분합니다. 첫 조회와 이전 기록이 있는 화면 모두 로그인 확인 안내와 다시 확인 버튼을 표시합니다. Claude는 연결 설정을 여는 버튼을, Codex는 `codex login` 안내를 제공합니다. 성공하거나 다른 종류의 오류로 바뀌면 인증 안내도 해제합니다. 사용자가 보여준 Codex의 일반 조회 실패 원인 자체는 아직 확인하지 않았습니다.
 
-- **검증 완료:** 실제 코어 소스를 직접 컴파일한 회귀 하네스 37개 검사, 변경된 Swift 소스 구문 검사, 한국어·영어 문자열 검사, `git diff --check`. 전체 XCTest 37개를 실행했다는 의미는 아닙니다.
-- **검증 제한:** 이 Mac은 Swift 5.8.1이고 `swift test`가 Command Line Tools의 `PlatformPath` 오류로 시작하지 못했습니다. 새 앱 전체 빌드와 인증 화면 렌더링은 미검증입니다.
-- **집에서 이어서:** 예약 push의 커밋과 두 저장소 CI 결과를 확인하고 최신 소스를 받습니다. Swift 5.10 이상이 포함된 Xcode에서 `swift build`, `swift test`, `zsh scripts/build-app.sh debug`를 실행합니다. 영어 번들에는 Xcode의 `xcstringstool`이 필요합니다. 새 앱에서 Claude·Codex 각각 이전 기록 유무, 인증 복구, 일반 오류, 구형 CLI 안내와 한국어·영어 레이아웃을 확인합니다.
+- **검증 완료:** 실제 코어 소스를 직접 컴파일한 회귀 하네스 37개 검사, 변경된 Swift 소스 구문 검사, 한국어·영어 문자열 검사, `git diff --check`. 이어서 [macOS CI](https://github.com/hyjoong/UsageBar/actions/runs/38241199013)에서 `swift build`와 전체 XCTest **163개, 실패 0개**를 확인했습니다. 설치된 기존 앱도 샌드박스 밖에서 코드 서명과 Gatekeeper 승인을 재확인했습니다.
+- **검증 제한:** 이 Mac은 Swift 5.8.1이고 로컬 `swift test`는 Command Line Tools의 `PlatformPath` 오류로 시작하지 못합니다. 전체 소스 빌드·테스트는 CI에서 통과했지만 새 `.app` 번들 빌드와 인증 화면 렌더링은 미검증입니다.
+- **집에서 이어서:** 앱 저장소의 `main`, tap의 `master`를 받습니다. Swift 5.10 이상이 포함된 Xcode에서 `swift build`, `swift test`, `zsh scripts/build-app.sh debug`를 실행합니다. 영어 번들에는 Xcode의 `xcstringstool`이 필요합니다. 새 앱에서 Claude·Codex 각각 이전 기록 유무, 인증 복구, 일반 오류, 구형 CLI 안내와 한국어·영어 레이아웃을 확인합니다. 초 단위 카운트다운은 이번 소스 변경에 포함되지 않은 후속 작업입니다.
 - **배포 상태:** 소스 커밋·push는 앱 릴리스가 아닙니다. 현재 main의 CI는 빌드와 테스트만 실행하며, 설치된 `0.8.8 (25)`에는 위 소스 수정이 들어 있지 않습니다. 새 버전 배포·공증·업데이트 피드·tap 버전과 체크섬 갱신은 후속 작업입니다.
 
 ### 검증 후 공개하기
