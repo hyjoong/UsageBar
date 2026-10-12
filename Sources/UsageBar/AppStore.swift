@@ -57,10 +57,15 @@ enum UsageAppearanceMode: String, CaseIterable, Identifiable {
 }
 
 struct ProviderState {
+    enum ConnectionIssue {
+        case setup, authentication, unsupported
+    }
+
     var snapshot: ProviderSnapshot?
     var isRefreshing = false
     var errorMessage: String?
-    var requiresConnection = false
+    var connectionIssue: ConnectionIssue?
+    var requiresConnection: Bool { connectionIssue != nil }
     var lastAttempt: Date?
 }
 
@@ -324,6 +329,7 @@ final class AppStore: ObservableObject {
         guard enabledProviders.contains(provider) else { return String(localized: "조회 꺼짐") }
         let state = states[provider] ?? ProviderState()
         if state.isRefreshing { return String(localized: "확인 중") }
+        if state.connectionIssue == .authentication { return String(localized: "로그인 확인 필요") }
         if state.requiresConnection { return String(localized: "다시 연결 필요") }
         if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return String(localized: "요청 제한 · 대기 중") }
         if state.errorMessage != nil { return state.snapshot == nil ? String(localized: "조회 실패") : String(localized: "조회 실패 · 이전 기록") }
@@ -516,7 +522,7 @@ final class AppStore: ObservableObject {
             successfulRefreshTokens[id] = token
             clockNow = Date()
             states[id]?.errorMessage = nil
-            states[id]?.requiresConnection = false
+            states[id]?.connectionIssue = nil
             retryStates[id] = nil
             if let historyStore {
                 do {
@@ -537,12 +543,14 @@ final class AppStore: ObservableObject {
         } catch {
             guard !Task.isCancelled, generation == expected else { return }
             let attempt = (retryStates[id]?.attempts ?? 0) + 1
-            var connection = false
+            var connectionIssue: ProviderState.ConnectionIssue?
             var limited = false
             var delay = min(300, 30 * pow(2, Double(min(attempt - 1, 4))))
             if let providerError = error as? ProviderError {
                 switch providerError {
-                case .setupRequired, .authenticationRequired, .unsupported: connection = true
+                case .setupRequired: connectionIssue = .setup
+                case .authenticationRequired: connectionIssue = .authentication
+                case .unsupported: connectionIssue = .unsupported
                 case .rateLimited(let retryAfter):
                     limited = true
                     delay = max(1, retryAfter ?? min(3_600, 300 * pow(2, Double(min(attempt - 1, 4)))))
@@ -552,7 +560,7 @@ final class AppStore: ObservableObject {
             clockNow = Date()
             retryStates[id] = RetryState(attempts: attempt, notBefore: clockNow.addingTimeInterval(delay), rateLimited: limited)
             states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? String(localized: "지금 사용량을 가져올 수 없어요.")
-            states[id]?.requiresConnection = connection
+            states[id]?.connectionIssue = connectionIssue
         }
     }
 
@@ -756,7 +764,7 @@ final class AppStore: ObservableObject {
         }
         if CommandLine.arguments.contains("--ui-connection-required") {
             for id in ProviderID.allCases {
-                states[id] = ProviderState(errorMessage: String(localized: "처음 한 번 터미널에서 연결을 확인해 주세요."), requiresConnection: true)
+                states[id] = ProviderState(errorMessage: String(localized: "처음 한 번 터미널에서 연결을 확인해 주세요."), connectionIssue: .setup)
             }
             historyPoints = []
         }

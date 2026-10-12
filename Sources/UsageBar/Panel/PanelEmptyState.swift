@@ -13,6 +13,8 @@ struct PanelEmptyState: View {
     var body: some View {
         if store.selectedState.isRefreshing {
             loading
+        } else if store.selectedState.connectionIssue == .authentication {
+            AuthenticationRecoveryCard(store: store)
         } else if needsConnectionSetup {
             ConnectionSetupCard(store: store)
         } else {
@@ -49,6 +51,47 @@ struct PanelEmptyState: View {
         }
         .frame(maxWidth: .infinity, minHeight: 200).multilineTextAlignment(.center)
         .padding(.vertical, UsageSpacing.item)
+    }
+}
+
+/// The same recovery actions appear for a first fetch and an expired connection with cached usage.
+struct AuthenticationRecoveryCard: View {
+    @ObservedObject var store: AppStore
+    @State private var setupMessage: String?
+    private var provider: ProviderID { store.selectedProvider }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: UsageSpacing.group) {
+            Label("\(provider.title) 로그인 확인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
+                .font(UsageType.headline).foregroundStyle(UsageTheme.warning)
+            if let message = store.selectedState.errorMessage {
+                Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if provider == .claude {
+                Text("터미널에서 안내를 확인해 주세요. 로그인이 필요하면 /login을 입력해 주세요.")
+                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("codex login 으로 ChatGPT 계정에 로그인해요.")
+                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            HStack(spacing: UsageSpacing.item) {
+                if provider == .claude {
+                    Button("연결 설정 열기") { setupMessage = ClaudeSetupLauncher.open() }
+                        .buttonStyle(.borderedProminent)
+                }
+                Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
+                    .buttonStyle(.bordered)
+                    .disabled(!store.canRefresh(provider))
+            }
+            if let setupMessage {
+                Text(setupMessage).font(UsageType.caption).foregroundStyle(UsageTheme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

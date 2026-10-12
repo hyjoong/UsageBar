@@ -6,13 +6,14 @@ import UsageBarCore
 private actor StubProvider: UsageProvider {
     nonisolated let id: ProviderID
     private(set) var calls = 0
-    let failure: ProviderError?
+    var failure: ProviderError?
     init(_ id: ProviderID, failure: ProviderError? = nil) { self.id = id; self.failure = failure }
     func fetch() async throws -> ProviderSnapshot {
         calls += 1
         if let failure { throw failure }
         return ProviderSnapshot(provider: id, windows: [], source: "test")
     }
+    func setFailure(_ failure: ProviderError?) { self.failure = failure }
 }
 
 /// Intentionally ignores cancellation until the test releases its suspended response.
@@ -91,6 +92,7 @@ final class AppStoreTests: XCTestCase {
         XCTAssertNil(store.states[.claude]?.snapshot, "A cancelled response must not restore old capacity")
         XCTAssertNil(store.states[.claude]?.errorMessage, "A cancelled failure must not poison the new connection")
         XCTAssertFalse(store.states[.claude]?.requiresConnection ?? true)
+        XCTAssertNil(store.states[.claude]?.connectionIssue)
         XCTAssertTrue(store.states[.claude]?.isRefreshing ?? false, "Old cleanup must not clear the new request's progress")
         XCTAssertNil(store.retryMessage(for: .claude))
 
@@ -139,8 +141,54 @@ final class AppStoreTests: XCTestCase {
             XCTAssertNil(store.states[id]?.snapshot)
             XCTAssertTrue(store.states[id]?.requiresConnection ?? false,
                           "An API account needs login recovery, not only a retry countdown")
+            XCTAssertEqual(store.states[id]?.connectionIssue, .unsupported)
             XCTAssertTrue(store.canRefresh(id), "Manual retry must remain available after correcting login")
         }
+    }
+
+    func testAuthenticationFailureOffersLoginRecoveryForBothProviders() async {
+        for id in ProviderID.allCases {
+            let provider = StubProvider(id, failure: .authenticationRequired("Please sign in"))
+            let store = AppStore(providerOverrides: [id: provider], preferences: preferences())
+            await store.refresh(id, force: true)
+            XCTAssertNil(store.states[id]?.snapshot)
+            XCTAssertEqual(store.states[id]?.connectionIssue, .authentication)
+            XCTAssertTrue(store.states[id]?.requiresConnection ?? false)
+            XCTAssertEqual(store.connectionStatus(for: id), "로그인 확인 필요")
+            XCTAssertTrue(store.canRefresh(id), "Login recovery must allow an immediate manual retry")
+
+            await provider.setFailure(.unavailable("offline"))
+            await store.refresh(id, force: true)
+            XCTAssertNil(store.states[id]?.connectionIssue, "A later unknown failure must not claim login is required")
+            XCTAssertEqual(store.connectionStatus(for: id), "조회 실패")
+
+            await provider.setFailure(.setupRequired("Update CLI"))
+            await store.refresh(id, force: true)
+            XCTAssertEqual(store.states[id]?.connectionIssue, .setup)
+            XCTAssertEqual(store.connectionStatus(for: id), "다시 연결 필요")
+        }
+    }
+
+    func testExpiredAuthenticationKeepsPreviousSnapshotAndClearsAfterRecovery() async {
+        let provider = StubProvider(.claude)
+        let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())
+        await store.refresh(.claude, force: true)
+        let previous = store.states[.claude]?.snapshot
+        XCTAssertNotNil(previous)
+
+        await provider.setFailure(.authenticationRequired("Session expired"))
+        await store.refresh(.claude, force: true)
+        XCTAssertEqual(store.states[.claude]?.snapshot, previous, "Keep existing usage visible as a previous record")
+        XCTAssertEqual(store.states[.claude]?.connectionIssue, .authentication)
+        XCTAssertEqual(store.connectionStatus(for: .claude), "로그인 확인 필요")
+        XCTAssertNotEqual(store.freshness(for: .claude), .current)
+
+        await provider.setFailure(nil)
+        await store.refresh(.claude, force: true)
+        XCTAssertNil(store.states[.claude]?.connectionIssue)
+        XCTAssertNil(store.states[.claude]?.errorMessage)
+        XCTAssertFalse(store.states[.claude]?.requiresConnection ?? true)
+        XCTAssertEqual(store.connectionStatus(for: .claude), "연결됨")
     }
 
     func testRateLimitCannotBeBypassedByForceOrToggle() async {

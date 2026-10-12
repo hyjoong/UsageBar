@@ -60,6 +60,8 @@
 brew install --cask hyjoong/tap/usagebar
 ```
 
+Apple Silicon에서는 ARM용 Homebrew와 Rosetta 2로 실행하는 Intel용 Homebrew 모두 사용할 수 있습니다. 예전 tap에서 Apple Silicon Mac을 Intel로 판단해 설치를 거부하면 `brew update` 후 다시 설치하세요. 실제 Intel Mac은 배포본의 지원 대상이 아닙니다.
+
 **직접 설치**
 
 1. [최신 릴리스](https://github.com/hyjoong/UsageBar/releases/latest)에서 `UsageBar-버전-빌드.zip`을 받습니다. GitHub가 자동으로 붙이는 *Source code*는 앱이 아닙니다.

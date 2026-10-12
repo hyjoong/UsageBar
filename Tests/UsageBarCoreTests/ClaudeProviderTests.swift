@@ -94,6 +94,15 @@ final class ClaudeProviderTests: XCTestCase {
         }
     }
 
+    func testLoginPromptsGuideToConnectionSetup() {
+        for output in ["Please run /login", "Login expired", "Not logged in"] {
+            guard case .failure(.authenticationRequired(let message)) = ClaudeUsageParser.inspect(output) else {
+                XCTFail("Expected authentication guidance for \(output)"); continue
+            }
+            XCTAssertEqual(message, "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요.")
+        }
+    }
+
     func testStartupPromptsHaveDistinctActionableCategories() {
         let fixtures: [(String, ClaudeStartupPrompt)] = [
             ("Do you trust the files in this folder?", .folderTrust),
@@ -120,6 +129,24 @@ final class ClaudeProviderTests: XCTestCase {
             return XCTFail("Expected rate limit")
         }
         XCTAssertEqual(retry, 300)
+    }
+
+    func testUnsupportedRequiredFlagsGiveSafeUpdateGuidance() {
+        for flag in ["--safe-mode", "--ax-screen-reader"] {
+            let output = "error: unknown option '\(flag)'\nprivate@example.com secret-value"
+            guard case .failure(.setupRequired(let message)) = ClaudeUsageParser.inspect(output) else {
+                XCTFail("Expected update guidance for unsupported \(flag)"); continue
+            }
+            XCTAssertEqual(message, "Claude Code를 업데이트해야 해요. 최신 버전을 설치한 뒤 다시 확인해 주세요.")
+            XCTAssertFalse(message.contains("private@example.com"))
+            XCTAssertFalse(message.contains("secret-value"))
+        }
+    }
+
+    func testOtherErrorsAndFlagMentionsDoNotImplyAnOutdatedCLI() {
+        assertPending("error: unknown option '--other-option'\nAvailable options: --safe-mode --ax-screen-reader")
+        assertPending("error: unknown option '--safe-mode-extra'")
+        assertPending("Run Claude with --safe-mode and --ax-screen-reader")
     }
 
     func testRelativeAndISOResetDates() {
@@ -172,11 +199,11 @@ final class ClaudeProviderTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let executable = directory.appendingPathComponent("claude")
         try writeExecutable("#!/bin/sh\nexit 0\n", to: executable)
-        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": directory.path], home: directory, knownPaths: []), executable.resolvingSymlinksInPath().path)
+        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": directory.path], home: directory, systemPaths: []), executable.resolvingSymlinksInPath().path)
         XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: directory.appendingPathComponent("absent").path, environment: ["PATH": directory.path], home: directory))
     }
 
-    func testKnownExecutablePrecedesPATHAndResolvesSymlink() throws {
+    func testSystemExecutablePrecedesPATHAndResolvesSymlink() throws {
         let base = try fixtureDirectory(root: connectionFixtureRoot)
         defer { try? FileManager.default.removeItem(at: base) }
         let preferred = base.appendingPathComponent("known ' CLI")
@@ -186,11 +213,45 @@ final class ClaudeProviderTests: XCTestCase {
         try writeExecutable("#!/bin/sh\nexit 0\n", to: fallback)
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: preferred)
         XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": base.path],
-            home: base, knownPaths: [link.path]), preferred.path)
-        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: base.path, environment: [:], knownPaths: []))
-        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: "relative/claude", environment: [:], knownPaths: []))
+            home: base, systemPaths: [link.path]), preferred.path)
+        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: base.path, environment: [:], systemPaths: []))
+        XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: "relative/claude", environment: [:], systemPaths: []))
         XCTAssertNil(ClaudeProvider.resolveExecutable(preferred: nil, environment: ["PATH": ".:relative:"],
-            home: base, knownPaths: []))
+            home: base, systemPaths: []))
+    }
+
+    func testUserNPMExecutablePrecedesOlderSystemCLIWithRestrictedGUIPath() throws {
+        let base = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let npm = base.appendingPathComponent(".npm-global/bin/claude")
+        let system = base.appendingPathComponent("usr/local/bin/claude")
+        for executable in [npm, system] {
+            try FileManager.default.createDirectory(at: executable.deletingLastPathComponent(), withIntermediateDirectories: true)
+        }
+        try writeExecutable("#!/bin/sh\nprintf 'Current session\\n12%% used\\n'\n", to: npm)
+        try writeExecutable("#!/bin/sh\nprintf \"error: unknown option '--safe-mode'\\n\" >&2\nexit 1\n", to: system)
+        let environment = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin"]
+        let selected = try XCTUnwrap(ClaudeProvider.resolveExecutable(preferred: nil, environment: environment,
+            home: base, systemPaths: [system.path]))
+        XCTAssertEqual(selected, npm.resolvingSymlinksInPath().path)
+        let result = try ClaudePTYCapture().run(executable: selected, directory: base, environment: environment)
+        XCTAssertEqual(result.map(\.usedPercent), [12])
+    }
+
+    func testNativeInstallAndExplicitOverrideKeepPriorityOverNPMGlobalCLI() throws {
+        let base = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let native = base.appendingPathComponent(".local/bin/claude")
+        let npm = base.appendingPathComponent(".npm-global/bin/claude")
+        let override = base.appendingPathComponent("override-claude")
+        for executable in [native, npm, override] {
+            try FileManager.default.createDirectory(at: executable.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try writeExecutable("#!/bin/sh\nexit 0\n", to: executable)
+        }
+        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: nil, environment: [:], home: base, systemPaths: []),
+            native.resolvingSymlinksInPath().path)
+        XCTAssertEqual(ClaudeProvider.resolveExecutable(preferred: override.path, environment: [:], home: base, systemPaths: []),
+            override.resolvingSymlinksInPath().path)
     }
 
     func testConnectionLauncherQuotesPathsAndExecutesOnlyFixtureCLI() throws {
@@ -211,7 +272,7 @@ final class ClaudeProviderTests: XCTestCase {
         try FileManager.default.copyItem(at: source, to: script)
         let directory = base.appendingPathComponent("Library/Application Support/UsageBar/ClaudeConnection")
         let launcher = try ClaudeProvider.prepareConnectionScript(scriptURL: script, directory: directory,
-            environment: [:], home: base, knownPaths: [executable.path])
+            environment: [:], home: base, systemPaths: [executable.path])
         let attributes = try FileManager.default.attributesOfItem(atPath: launcher.path)
         XCTAssertEqual((attributes[.posixPermissions] as? NSNumber)?.intValue, 0o700)
         let output = Pipe()
@@ -239,7 +300,7 @@ final class ClaudeProviderTests: XCTestCase {
         let launcher = directory.appendingPathComponent("ConnectClaude.command")
         try FileManager.default.createSymbolicLink(at: launcher, withDestinationURL: executable)
         XCTAssertThrowsError(try ClaudeProvider.prepareConnectionScript(scriptURL: executable, directory: directory,
-            environment: [:], home: base, knownPaths: [executable.path]))
+            environment: [:], home: base, systemPaths: [executable.path]))
         XCTAssertEqual(try String(contentsOf: executable), "#!/bin/sh\nexit 0\n")
     }
 
@@ -249,7 +310,7 @@ final class ClaudeProviderTests: XCTestCase {
         let script = base.appendingPathComponent("setup.command")
         try writeExecutable("#!/bin/sh\nexit 0\n", to: script)
         XCTAssertThrowsError(try ClaudeProvider.prepareConnectionScript(scriptURL: script,
-            directory: base.appendingPathComponent("connection"), environment: [:], home: base, knownPaths: [])) { error in
+            directory: base.appendingPathComponent("connection"), environment: [:], home: base, systemPaths: [])) { error in
             guard case ProviderError.setupRequired(let message) = error else {
                 return XCTFail("Expected installation guidance")
             }
@@ -307,6 +368,76 @@ final class ClaudeProviderTests: XCTestCase {
         XCTAssertEqual(result?.accountKey?.count, 64)
     }
 
+    func testSignedOutAuthStatusGivesPrivateLoginGuidanceForExitZeroAndOne() throws {
+        let directory = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let executable = directory.appendingPathComponent("fake-claude")
+        for exitStatus in [0, 1] {
+            try writeExecutable("""
+            #!/bin/sh
+            [ "$1" = "auth" ] && [ "$2" = "status" ] && [ "$3" = "--json" ] || exit 12
+            printf '%s' '{"loggedIn":false,"authMethod":"none","email":"private@example.com","detail":"secret-value"}'
+            printf 'private-stderr' >&2
+            exit \(exitStatus)
+            """, to: executable)
+            XCTAssertThrowsError(try ClaudePTYCapture().authMetadata(executable: executable.path,
+                directory: directory, environment: [:])) { error in
+                guard case ProviderError.authenticationRequired(let message) = error else {
+                    return XCTFail("Expected login guidance for exit \(exitStatus)")
+                }
+                XCTAssertEqual(message, "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요.")
+                XCTAssertFalse(message.contains("private@example.com"))
+                XCTAssertFalse(message.contains("secret-value"))
+                XCTAssertFalse(message.contains("private-stderr"))
+            }
+        }
+    }
+
+    func testUnknownOrFailedAuthStatusKeepsUsageFallback() throws {
+        let fixtures: [(name: String, output: String, exitStatus: Int)] = [
+            ("unsupported command", "unknown command: auth", 1),
+            ("invalid JSON", #"{"loggedIn":false"#, 0),
+            ("unknown status", "{}", 0),
+            ("null status", #"{"loggedIn":null}"#, 1),
+            ("invalid status type", #"{"loggedIn":"false"}"#, 1),
+            ("non-login failure", #"{"error":"unavailable"}"#, 1),
+            ("unexpected exit code", #"{"loggedIn":false,"authMethod":"none"}"#, 2),
+            ("failed signed-in response", #"{"loggedIn":true,"authMethod":"claude.ai"}"#, 1)
+        ]
+        let directory = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let executable = directory.appendingPathComponent("fake-claude")
+        for fixture in fixtures {
+            try writeExecutable("""
+            #!/bin/sh
+            if [ "$1" = "auth" ]; then
+              printf '%s' '\(fixture.output)'
+              exit \(fixture.exitStatus)
+            fi
+            [ "$1" = "--safe-mode" ] && [ "$2" = "--ax-screen-reader" ] || exit 12
+            printf 'Current session\\n23%% used\\n'
+            """, to: executable)
+            let capture = ClaudePTYCapture()
+            XCTAssertNil(try capture.authMetadata(executable: executable.path, directory: directory,
+                environment: [:]), fixture.name)
+            let windows = try capture.run(executable: executable.path, directory: directory, environment: [:])
+            XCTAssertEqual(windows.map(\.usedPercent), [23], fixture.name)
+        }
+    }
+
+    func testSignalTerminatedAuthStatusDoesNotImplySignedOut() throws {
+        let directory = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let executable = directory.appendingPathComponent("fake-claude")
+        try writeExecutable("""
+        #!/bin/sh
+        printf '%s' '{"loggedIn":false,"authMethod":"none"}'
+        kill -HUP $$
+        """, to: executable)
+        XCTAssertNil(try ClaudePTYCapture().authMetadata(executable: executable.path,
+            directory: directory, environment: [:]))
+    }
+
     func testPTYCapturesOnlyBuiltInUsageWithSafeArguments() throws {
         let directory = try fixtureDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -331,6 +462,21 @@ final class ClaudeProviderTests: XCTestCase {
         try writeExecutable("#!/bin/sh\nprintf 'Do you trust the files in this folder?\\n'\nwhile IFS= read -r line; do :; done\n", to: executable)
         XCTAssertThrowsError(try ClaudePTYCapture().run(executable: executable.path, directory: directory, environment: [:], timeout: 1)) { error in
             guard case ProviderError.setupRequired = error else { return XCTFail("Expected trust setup state") }
+        }
+    }
+
+    func testPTYReportsOutdatedRequiredFlagsAsSetupErrors() throws {
+        let directory = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let executable = directory.appendingPathComponent("old-claude")
+        for flag in ["--safe-mode", "--ax-screen-reader"] {
+            try writeExecutable("#!/bin/sh\nprintf \"error: unknown option '\(flag)'\\nprivate@example.com secret-value\\n\" >&2\nexit 1\n", to: executable)
+            XCTAssertThrowsError(try ClaudePTYCapture().run(executable: executable.path, directory: directory, environment: [:])) { error in
+                guard case ProviderError.setupRequired(let message) = error else {
+                    return XCTFail("Expected update guidance for unsupported \(flag)")
+                }
+                XCTAssertEqual(message, "Claude Code를 업데이트해야 해요. 최신 버전을 설치한 뒤 다시 확인해 주세요.")
+            }
         }
     }
 

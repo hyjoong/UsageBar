@@ -60,6 +60,8 @@
 brew install --cask hyjoong/tap/usagebar
 ```
 
+On Apple Silicon, both native Homebrew and Intel Homebrew running through Rosetta 2 are supported. If an older tap reports an Intel architecture error on an Apple Silicon Mac, run `brew update` and retry. Intel Macs are not supported by the release build.
+
 **Manual**
 
 1. Download `UsageBar-<version>-<build>.zip` from the [latest release](https://github.com/hyjoong/UsageBar/releases/latest). The automatic *Source code* archives are not the app.

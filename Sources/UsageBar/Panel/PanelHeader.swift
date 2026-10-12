@@ -7,6 +7,9 @@ struct PanelHeader: View {
     private var provider: ProviderID { store.selectedProvider }
     private var planLabel: String {
         guard let snapshot = store.selectedState.snapshot else {
+            if store.selectedState.connectionIssue == .authentication {
+                return String(localized: "로그인 확인 필요")
+            }
             let needsConnectionSetup = store.selectedState.requiresConnection || store.selectedState.errorMessage == nil
             return needsConnectionSetup ? String(localized: "연결 확인") : String(localized: "조회 대기")
         }

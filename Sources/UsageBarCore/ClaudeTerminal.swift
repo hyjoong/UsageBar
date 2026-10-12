@@ -164,6 +164,7 @@ final class ClaudePTYCapture: @unchecked Sendable {
     }
 
     /// The official read-only auth command exposes account metadata, never a token.
+    /// An explicit signed-out response requires login even when the CLI exits with 1.
     /// Unsupported versions or unavailable metadata leave the account unknown.
     func authMetadata(executable: String, directory: URL, environment: [String: String]) throws -> ClaudeAuthMetadata? {
         try checkCancellation()
@@ -192,7 +193,12 @@ final class ClaudePTYCapture: @unchecked Sendable {
                 guard data.count + count <= 64 * 1024 else { return nil }
                 data.append(contentsOf: buffer.prefix(count))
             } else if !process.isRunning {
-                return process.terminationStatus == 0 ? ClaudeAuthMetadata.parse(data) : nil
+                guard process.terminationReason == .exit else { return nil }
+                let exitStatus = process.terminationStatus
+                if (exitStatus == 0 || exitStatus == 1), ClaudeAuthMetadata.isLoggedOut(data) {
+                    throw ProviderError.authenticationRequired(String(localized: "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요."))
+                }
+                return exitStatus == 0 ? ClaudeAuthMetadata.parse(data) : nil
             }
             usleep(20_000)
         }

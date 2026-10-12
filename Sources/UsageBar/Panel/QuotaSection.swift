@@ -86,12 +86,22 @@ struct ConnectionNotice: View {
     private var provider: ProviderID { store.selectedProvider }
 
     var body: some View {
+        if store.selectedState.connectionIssue == .authentication {
+            AuthenticationRecoveryCard(store: store)
+        } else {
+            failureNotice
+        }
+    }
+
+    @ViewBuilder private var failureNotice: some View {
         if let message = store.selectedState.errorMessage {
             Label(message, systemImage: "exclamationmark.circle")
                 .font(UsageType.secondary).foregroundStyle(UsageTheme.warning)
                 .fixedSize(horizontal: false, vertical: true)
-            Button("서비스 장애 현황 확인") { NSWorkspace.shared.open(provider.statusURL) }
-                .buttonStyle(.link).font(.caption)
+            if !store.selectedState.requiresConnection {
+                Button("서비스 장애 현황 확인") { NSWorkspace.shared.open(provider.statusURL) }
+                    .buttonStyle(.link).font(.caption)
+            }
         }
         if let retry = store.retryMessage(for: provider) {
             Label(retry, systemImage: "clock")

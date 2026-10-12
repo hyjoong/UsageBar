@@ -34,10 +34,10 @@ public actor ClaudeProvider: UsageProvider {
 
     static func prepareConnectionScript(scriptURL: URL, directory: URL,
                                         environment: [String: String], home: URL,
-                                        knownPaths: [String]? = nil) throws -> URL {
+                                        systemPaths: [String]? = nil) throws -> URL {
         let manager = FileManager.default
         guard let executable = resolveExecutable(preferred: nil, environment: environment, home: home,
-                                                 knownPaths: knownPaths) else {
+                                                 systemPaths: systemPaths) else {
             throw ProviderError.setupRequired(String(localized: "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요."))
         }
         guard scriptURL.isFileURL, !scriptURL.path.utf8.contains(0),
@@ -151,7 +151,7 @@ public actor ClaudeProvider: UsageProvider {
 
     static func resolveExecutable(preferred: String?, environment: [String: String],
                                   home: URL = FileManager.default.homeDirectoryForCurrentUser,
-                                  knownPaths: [String]? = nil) -> String? {
+                                  systemPaths: [String]? = nil) -> String? {
         let manager = FileManager.default
         func executable(_ path: String) -> String? {
             guard path.hasPrefix("/"), !path.utf8.contains(0) else { return nil }
@@ -166,7 +166,9 @@ public actor ClaudeProvider: UsageProvider {
             let expanded = (preferred as NSString).expandingTildeInPath
             return executable(expanded)
         }
-        let known = knownPaths ?? [home.appendingPathComponent(".local/bin/claude").path, "/opt/homebrew/bin/claude", "/usr/local/bin/claude"]
+        let known = [home.appendingPathComponent(".local/bin/claude").path,
+                     home.appendingPathComponent(".npm-global/bin/claude").path]
+            + (systemPaths ?? ["/opt/homebrew/bin/claude", "/usr/local/bin/claude"])
         let fromPath = (environment["PATH"] ?? "").split(separator: ":").filter { $0.hasPrefix("/") }.map { "\($0)/claude" }
         return (known + fromPath).lazy.compactMap(executable).first
     }
@@ -175,6 +177,13 @@ public actor ClaudeProvider: UsageProvider {
 struct ClaudeAuthMetadata: Sendable {
     let accountKey: String?
     let plan: String?
+
+    static func isLoggedOut(_ data: Data) -> Bool {
+        struct Status: Decodable { let loggedIn: Bool? }
+        guard data.count <= 64 * 1024,
+              let status = try? JSONDecoder().decode(Status.self, from: data) else { return false }
+        return status.loggedIn == false
+    }
 
     static func parse(_ data: Data) -> Self? {
         struct Status: Decodable {
@@ -235,10 +244,13 @@ enum ClaudeStartupPrompt: String, Sendable {
 enum ClaudeUsageParser {
     static func inspect(_ text: String, now: Date = Date(), timeZone: TimeZone = .current) -> ClaudeProbeInspection {
         let lower = text.lowercased()
+        if lower.range(of: #"(?m)^\s*error:\s*unknown option\s+['"]--(?:safe-mode|ax-screen-reader)['"](?:\s|$)"#, options: .regularExpression) != nil {
+            return .failure(.setupRequired(String(localized: "Claude Code를 업데이트해야 해요. 최신 버전을 설치한 뒤 다시 확인해 주세요.")))
+        }
         if let prompt = ClaudeStartupPrompt.detect(in: text) { return .failure(.setupRequired(prompt.message)) }
         if ["please run /login", "login expired", "not logged in", "please log in", "authentication required",
             "oauth token has expired", "invalid oauth token", "select login method", "how would you like to log in"].contains(where: lower.contains) {
-            return .failure(.authenticationRequired(String(localized: "Claude Code에 다시 로그인해야 해요. 터미널에서 /login을 실행해 주세요.")))
+            return .failure(.authenticationRequired(String(localized: "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요.")))
         }
         if lower.contains("keychain"), ["denied", "locked", "permission", "password"].contains(where: lower.contains) {
             return .failure(.authenticationRequired(String(localized: "Claude Code가 로그인 정보에 접근하지 못했어요. 터미널에서 Claude를 열어 확인해 주세요.")))

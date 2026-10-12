@@ -10,7 +10,7 @@ if (( $# > 0 )); then
   usagebar_claude="$2"
 else
   # Keep this order aligned with ClaudeProvider.resolveExecutable.
-  for usagebar_candidate in "$HOME/.local/bin/claude" /opt/homebrew/bin/claude /usr/local/bin/claude; do
+  for usagebar_candidate in "$HOME/.local/bin/claude" "$HOME/.npm-global/bin/claude" /opt/homebrew/bin/claude /usr/local/bin/claude; do
     if [[ -f "$usagebar_candidate" && -x "$usagebar_candidate" ]]; then
       usagebar_claude="$usagebar_candidate"
       break
