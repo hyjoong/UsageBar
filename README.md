@@ -91,7 +91,7 @@ On first launch the panel walks you through the connection in three numbered ste
 | See remaining limits | Click the U icon. The big number is the 5-hour limit; other limits follow below. |
 | Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
 | Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
-| Keep the panel visible | ⋯ menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
+| Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
 | Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
@@ -106,7 +106,7 @@ When the menu bar is full, macOS hides items that fall under the notch, and a ne
 Log in with the CLI in Terminal, then press **Check again**. UsageBar never handles the login itself.
 
 **It shows "earlier record" or an error.**
-That is the last successful check. Verify your internet connection and the CLI login, then refresh. The ⋯ menu links to each service's status page.
+That is the last successful check. Verify your internet connection and the CLI login, then refresh. The gear menu links to each service's status page.
 
 **Refresh is greyed out.**
 The service is rate limiting requests. UsageBar shows when it can check again.

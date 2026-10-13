@@ -38,19 +38,23 @@ struct PanelFooter: View {
             .disabled(!store.canRefresh(provider))
             .keyboardShortcut("r", modifiers: .command)
             iconButton("chart.xyaxis.line", help: String(localized: "사용 기록")) { openWindow("history") }
-            iconButton("slider.horizontal.3", help: String(localized: "설정")) { openWindow("settings") }
-                .keyboardShortcut(",", modifiers: .command)
+            // One gear for everything else, as menu bar apps usually do: settings, window, links, quit.
             Menu {
+                Button("설정…") { openWindow("settings") }.keyboardShortcut(",", modifiers: .command)
                 Button("창으로 열기") { openWindow("panel") }
                 Divider()
                 Button("공식 사용량 화면") { NSWorkspace.shared.open(provider.dashboardURL) }
                 Button("서비스 장애 현황") { NSWorkspace.shared.open(provider.statusURL) }
                 Divider()
                 Button("UsageBar 종료", role: .destructive) { NSApp.terminate(nil) }.keyboardShortcut("q")
-            } label: { Image(systemName: "ellipsis") }
+            } label: {
+                Image(systemName: "gearshape").font(UsageType.label)
+                    .frame(width: UsageSpacing.control, height: UsageSpacing.control)
+            }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).tint(UsageTheme.secondaryInk)
                 .frame(width: UsageSpacing.control, height: UsageSpacing.control)
-                .accessibilityLabel("추가 메뉴")
+                .help("설정, 창으로 열기, 종료")
+                .accessibilityLabel("설정 메뉴")
         }
         .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
         .padding(.leading, UsageSpacing.panelInset).padding(.trailing, UsageSpacing.panelInset - 6)

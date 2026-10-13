@@ -3368,22 +3368,6 @@
         }
       }
     },
-    "설정": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "설정"
-          }
-        }
-      }
-    },
     "설정 · UsageBar": {
       "localizations": {
         "en": {
@@ -3412,6 +3396,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "설정 → 연결에서 언제든 다시 켤 수 있어요"
+          }
+        }
+      }
+    },
+    "설정 메뉴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings menu"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 메뉴"
+          }
+        }
+      }
+    },
+    "설정, 창으로 열기, 종료": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings, window, quit"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정, 창으로 열기, 종료"
           }
         }
       }
@@ -5460,22 +5476,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "최근 일별 토큰"
-          }
-        }
-      }
-    },
-    "추가 메뉴": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "추가 메뉴"
           }
         }
       }
