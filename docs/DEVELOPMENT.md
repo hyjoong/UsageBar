@@ -55,6 +55,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-reset-due` | 리셋 시각이 지났지만 새 값은 확인하지 못한 상태 |
 | `--demo --ui-check --ui-rate-limited` | 저장된 값 없이 요청 제한이 발생한 상태 |
 | `--demo --ui-check --ui-connection-required` | 로그인·초기 연결 설정이 필요한 상태 |
+| `--demo --ui-check --ui-auth-required` | 로그인 만료 복구 카드: Claude는 이전 기록 위에, Codex는 첫 조회에서 |
 | 위 옵션에 `--ui-light` 또는 `--ui-dark` 추가 | 예시 앱의 밝은 모드 또는 어두운 모드 |
 | 빌드한 `.app`에 `-AppleLanguages '(en)'` 추가 | 영어 UI (번들의 `en.lproj` 필요) |
 

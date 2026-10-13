@@ -768,6 +768,12 @@ final class AppStore: ObservableObject {
             }
             historyPoints = []
         }
+        if CommandLine.arguments.contains("--ui-auth-required") {
+            // Expired login with cached usage for Claude, first fetch for Codex.
+            states[.claude]?.errorMessage = String(localized: "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요.")
+            states[.claude]?.connectionIssue = .authentication
+            states[.codex] = ProviderState(errorMessage: String(localized: "Codex에 ChatGPT 계정으로 로그인해 주세요."), connectionIssue: .authentication)
+        }
         if CommandLine.arguments.contains("--ui-stale") || CommandLine.arguments.contains("--ui-reset-due") {
             let stale = CommandLine.arguments.contains("--ui-stale")
             for id in ProviderID.allCases {
