@@ -8,6 +8,7 @@
 
 - 운영 appcast: `https://github.com/hyjoong/UsageBar/releases/latest/download/appcast.xml`
 - 운영 Ed25519 키: Keychain 계정 `hyjoong.UsageBar.production`. 앱의 `SUPublicEDKey`에는 공개 키만 포함합니다.
+- **0.8.9 (27)**: 패널 하단의 톱니바퀴 메뉴와 2026-10-12의 Claude CLI 연결·로그인 복구 수정을 담아 2026년 10월 13일 서명·공증(`Accepted`)·검증하고 `v0.8.9` 릴리스의 파일을 교체했습니다. 먼저 게시한 빌드 26은 다른 세션이 같은 날 push한 `e76558e`보다 앞선 트리에서 만들어져 `git pull --rebase` 뒤 push된 커밋과 내용이 달랐고, 태그 `v0.8.9`도 리베이스 전 커밋(`c516383`)을 가리켰습니다. 전체 트리로 빌드 27을 다시 만들어 ZIP·appcast를 교체(`gh release delete-asset`, `upload --clobber`)하고 태그를 릴리스 커밋 `21eaabf`로 옮겼습니다(`git tag -f`, `push -f origin v0.8.9`). 공개 주소의 ZIP 체크섬(`9661f68e…`)과 `releases/latest` appcast의 빌드 27이 일치하고, cask를 `0.8.9,27`로 갱신해 `brew fetch`·`audit`·`style`을 통과했으며, 같은 ZIP을 이 Mac에 설치해 Gatekeeper(`Notarized Developer ID`)를 확인했습니다. 테스트 163개 통과. 로그인 복구 카드는 새 데모 플래그 `--ui-auth-required`로 Claude(이전 기록 위)·Codex(첫 조회)를 한국어·영어로 렌더링해 확인했습니다. 빌드 26 설치본은 자동 업데이트로 27을 받습니다.
 - **0.8.8 (25)**: 리셋을 지난 세션의 추정값(리셋 전 마지막 조회값 + 새 기간 사용률)을 담아 2026년 10월 11일 서명·공증(`Accepted`)·검증하고 `v0.8.8`을 최신 릴리스로 게시했습니다. 공개 주소의 ZIP·appcast 체크섬이 일치하고 cask를 `0.8.8,25`로 갱신했으며, 같은 ZIP을 이 Mac에 설치했습니다. 추정 규칙은 단위 테스트 2개로 검증했습니다(총 152개).
 - **0.8.7 (24)**: 영수증 카드 재설계(한도 변화 헤드라인, 게이지의 소모 조각, 비교 불가 시 토큰 헤드라인)를 담아 2026년 10월 11일 서명·공증(`Accepted`)·검증하고 `v0.8.7`을 최신 릴리스로 게시했습니다. 공개 주소의 ZIP·appcast 체크섬이 일치하고 cask를 `0.8.7,24`로 갱신했으며, 같은 ZIP을 이 Mac에 설치했습니다.
 - **0.8.6 (23)**: 영수증의 모델·토큰·프로젝트 상세(이 Mac의 Claude Code·Codex 세션 기록 집계)를 담아 2026년 10월 11일 서명·공증(`Accepted`)·검증하고 `v0.8.6`을 최신 릴리스로 게시했습니다. 공개 주소의 ZIP·appcast 체크섬이 일치하고 cask를 `0.8.6,23`으로 갱신했으며, 같은 ZIP을 이 Mac에 설치했습니다. 집계 규칙은 단위 테스트 5개로, 실제 로그에서는 이 Mac의 최근 7분 세션(호출 16회, 출력 23K)으로 미리 확인했습니다.
@@ -70,7 +71,9 @@ Apple Silicon·macOS 14.5에서 `/usr/local`의 Intel Homebrew 7.0.9로 설치�
 - `brew style`은 이 Mac의 개발 도구에서 검사 의존성의 네이티브 확장을 컴파일하지 못해 실행하지 못했습니다. 실패한 확장은 별도 보관해 Homebrew를 복구했습니다. 예약 실행에서 로컬 및 공개 저장소를 새로 받은 작업본의 아키텍처 회귀 테스트 3개를 다시 통과했고, [tap CI](https://github.com/hyjoong/homebrew-tap/actions/runs/38241137041)에서도 세 검사와 cask 스타일 검사(`no offenses`)가 통과했습니다.
 - 사용자 승인에 따라 20:10 한국시간 이후 [tap 커밋 `a7f2a38`](https://github.com/hyjoong/homebrew-tap/commit/a7f2a38)을 공개 `master` 브랜치에 push했습니다. 다른 Mac에서는 `brew update`로 새 설치 조건을 받을 수 있습니다. 앱 버전과 배포 파일은 기존 `0.8.8 (25)`를 유지합니다.
 
-### 2026-10-12 CLI 연결·인증 안내 수정 — 미출시
+### 2026-10-12 CLI 연결·인증 안내 수정 — 0.8.9 (27)에 포함
+
+2026-10-13의 0.8.9 빌드 27에 포함해 출시했습니다(위 버전 목록 참고). 아래는 작성 당시의 기록입니다.
 
 20:10 한국시간 이후 [소스 커밋 `e76558e`](https://github.com/hyjoong/UsageBar/commit/e76558e)를 `main`에 push했습니다. Claude 실행 파일은 사용자 설치 경로(`~/.local/bin`, `~/.npm-global/bin`)를 시스템 설치보다 먼저 확인하고, 필수 옵션을 지원하지 않는 구형 CLI에는 업데이트를 안내합니다. `auth status --json`이 정상 종료 코드 0 또는 1과 함께 `loggedIn: false`를 명시하면 로그인 필요로 분류합니다. 불명확한 응답은 기존 사용량 조회 경로를 유지합니다.
 
