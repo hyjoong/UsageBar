@@ -55,13 +55,13 @@ struct UsagePanel: View {
     }
 
     @ViewBuilder private func content(_ snapshot: ProviderSnapshot) -> some View {
+        ConnectionNotice(store: store)
         if let first = store.primaryWindow(for: provider) {
             QuotaRow(store: store, window: first, prominent: true)
             if store.freshness(for: provider) == .current,
                let pace = UsagePace.evaluate(window: first, observedAt: snapshot.fetchedAt, now: store.clockNow) {
                 PaceSection(pace: pace, isExpanded: $showPace)
             }
-            ConnectionNotice(store: store)
             let others = store.sortedWindows(for: provider).filter { $0.id != first.id }
             if !others.isEmpty {
                 Divider()
@@ -70,7 +70,6 @@ struct UsagePanel: View {
         } else {
             Label("제공된 한도 정보가 없어요", systemImage: "info.circle")
                 .foregroundStyle(UsageTheme.secondaryInk).font(.callout)
-            ConnectionNotice(store: store)
         }
         let extras = snapshot.resetCreditCount != nil || !(snapshot.dailyUsage ?? []).isEmpty
         if extras { Divider() }

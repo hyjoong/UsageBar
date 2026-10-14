@@ -1462,6 +1462,22 @@
         }
       }
     },
+    "Codex 다시 연결": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnect Codex"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex 다시 연결"
+          }
+        }
+      }
+    },
     "Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요.": {
       "localizations": {
         "en": {
@@ -1474,6 +1490,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Codex 사용량을 읽지 못했어요. 잠시 후 새로고침해 주세요."
+          }
+        }
+      }
+    },
+    "Codex 연결 확인 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking Codex connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex 연결 확인 중"
+          }
+        }
+      }
+    },
+    "Codex 연결을 확인해 주세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your Codex connection"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codex 연결을 확인해 주세요"
           }
         }
       }
@@ -2248,6 +2296,22 @@
         }
       }
     },
+    "당시 %lld%% 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% left then"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "당시 %lld%% 남음"
+          }
+        }
+      }
+    },
     "돌아와서 확인": {
       "localizations": {
         "en": {
@@ -2660,6 +2724,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "마지막 확인 %@"
+          }
+        }
+      }
+    },
+    "마지막 확인 시 %lld%% 남음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% left at last check"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마지막 확인 시 %lld%% 남음"
           }
         }
       }
@@ -3496,6 +3576,22 @@
         }
       }
     },
+    "설치·업데이트 안내": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install or update"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설치·업데이트 안내"
+          }
+        }
+      }
+    },
     "설치된 Codex CLI와 ChatGPT 구독 로그인을 사용해요. API 키 계정의 요금은 지원하지 않아요.": {
       "localizations": {
         "en": {
@@ -3508,6 +3604,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "설치된 Codex CLI와 ChatGPT 구독 로그인을 사용해요. API 키 계정의 요금은 지원하지 않아요."
+          }
+        }
+      }
+    },
+    "설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find an installed Codex and reconnect. If it still fails, install or update the Codex app or CLI."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요."
           }
         }
       }

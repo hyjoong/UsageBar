@@ -7,13 +7,17 @@ private actor StubProvider: UsageProvider {
     nonisolated let id: ProviderID
     private(set) var calls = 0
     var failure: ProviderError?
-    init(_ id: ProviderID, failure: ProviderError? = nil) { self.id = id; self.failure = failure }
+    private var snapshot: ProviderSnapshot?
+    init(_ id: ProviderID, failure: ProviderError? = nil, snapshot: ProviderSnapshot? = nil) {
+        self.id = id; self.failure = failure; self.snapshot = snapshot
+    }
     func fetch() async throws -> ProviderSnapshot {
         calls += 1
         if let failure { throw failure }
-        return ProviderSnapshot(provider: id, windows: [], source: "test")
+        return snapshot ?? ProviderSnapshot(provider: id, windows: [], source: "test")
     }
     func setFailure(_ failure: ProviderError?) { self.failure = failure }
+    func setSnapshot(_ snapshot: ProviderSnapshot) { self.snapshot = snapshot }
 }
 
 /// Intentionally ignores cancellation until the test releases its suspended response.
@@ -189,6 +193,55 @@ final class AppStoreTests: XCTestCase {
         XCTAssertNil(store.states[.claude]?.errorMessage)
         XCTAssertFalse(store.states[.claude]?.requiresConnection ?? true)
         XCTAssertEqual(store.connectionStatus(for: .claude), "연결됨")
+    }
+
+    func testCodexSetupFailureRetainsOldFullCapacityUntilSuccessfulManualRefresh() async {
+        let previous = ProviderSnapshot(provider: .codex, accountKey: "fixture-account", plan: "Pro", windows: [
+            UsageWindow(id: "session", label: "5시간 한도", usedPercent: 0,
+                        resetsAt: Date().addingTimeInterval(-18 * 3_600), durationMinutes: 300)
+        ], fetchedAt: Date().addingTimeInterval(-23 * 3_600), source: "cached-fixture")
+        let provider = StubProvider(.codex, snapshot: previous)
+        let store = AppStore(providerOverrides: [.codex: provider], preferences: preferences())
+        await store.refresh(.codex, force: true)
+        XCTAssertEqual(store.states[.codex]?.snapshot, previous)
+        XCTAssertEqual(store.freshness(for: .codex), .stale)
+
+        await provider.setFailure(.setupRequired("Unable to verify CLI version"))
+        await store.refresh(.codex, force: true)
+        XCTAssertEqual(store.states[.codex]?.snapshot, previous, "A setup failure must preserve the last observed value and timestamp")
+        XCTAssertEqual(store.primaryWindow(for: .codex)?.remainingPercent, 100)
+        XCTAssertEqual(store.freshness(for: .codex), .stale, "Cached full capacity must never be presented as a current reading")
+        XCTAssertEqual(store.states[.codex]?.connectionIssue, .setup)
+        XCTAssertNotNil(store.states[.codex]?.errorMessage)
+        XCTAssertTrue(store.canRefresh(.codex), "Fixing the CLI must permit immediate manual retry")
+
+        let fresh = ProviderSnapshot(provider: .codex, accountKey: "fixture-account", plan: "Pro", windows: [
+            UsageWindow(id: "session", label: "5시간 한도", usedPercent: 37,
+                        resetsAt: Date().addingTimeInterval(2 * 3_600), durationMinutes: 300)
+        ], source: "recovered-fixture")
+        await provider.setSnapshot(fresh)
+        await provider.setFailure(nil)
+        await store.refresh(.codex, force: true)
+        XCTAssertEqual(store.states[.codex]?.snapshot, fresh, "A forced retry must replace cached capacity despite automatic backoff")
+        XCTAssertEqual(store.primaryWindow(for: .codex)?.remainingPercent, 63)
+        XCTAssertEqual(store.freshness(for: .codex), .current)
+        XCTAssertNil(store.states[.codex]?.connectionIssue)
+        XCTAssertNil(store.states[.codex]?.errorMessage)
+        XCTAssertFalse(store.states[.codex]?.requiresConnection ?? true)
+        XCTAssertNil(store.retryMessage(for: .codex))
+    }
+
+    func testCodexSetupFailureWithoutSnapshotKeepsManualRecoveryAvailable() async {
+        let provider = StubProvider(.codex, failure: .setupRequired("Unable to verify CLI version"))
+        let store = AppStore(providerOverrides: [.codex: provider], preferences: preferences())
+        await store.refresh(.codex, force: true)
+
+        XCTAssertNil(store.states[.codex]?.snapshot)
+        XCTAssertEqual(store.freshness(for: .codex), .unavailable)
+        XCTAssertEqual(store.states[.codex]?.connectionIssue, .setup)
+        XCTAssertNotNil(store.states[.codex]?.errorMessage)
+        XCTAssertTrue(store.states[.codex]?.requiresConnection ?? false)
+        XCTAssertTrue(store.canRefresh(.codex), "A first-fetch setup error must offer recovery rather than requiring cached usage")
     }
 
     func testRateLimitCannotBeBypassedByForceOrToggle() async {

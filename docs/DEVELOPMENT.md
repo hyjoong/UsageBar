@@ -56,10 +56,19 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-rate-limited` | 저장된 값 없이 요청 제한이 발생한 상태 |
 | `--demo --ui-check --ui-connection-required` | 로그인·초기 연결 설정이 필요한 상태 |
 | `--demo --ui-check --ui-auth-required` | 로그인 만료 복구 카드: Claude는 이전 기록 위에, Codex는 첫 조회에서 |
+| `--demo --ui-check --ui-codex-setup-error` | Codex 실행 실패: 다시 연결 버튼과 23시간 전 100% 기록을 현재 한도와 구분 |
 | 위 옵션에 `--ui-light` 또는 `--ui-dark` 추가 | 예시 앱의 밝은 모드 또는 어두운 모드 |
 | 빌드한 `.app`에 `-AppleLanguages '(en)'` 추가 | 영어 UI (번들의 `en.lproj` 필요) |
 
 배포·공증 절차와 버전별 검증 기록은 [docs/RELEASING.md](docs/RELEASING.md), 디자인 방향과 참고한 제품은 [docs/DESIGN.md](docs/DESIGN.md), 변경 이력은 [CHANGELOG.md](CHANGELOG.md)에 있습니다.
+
+## Codex 실행 실패와 이전 기록
+
+Finder에서 실행한 앱은 터미널과 `PATH`가 다를 수 있습니다. npm으로 설치한 `codex` 파일이 있어도 `/usr/bin/env node`가 Node를 찾지 못하면 버전 확인 단계부터 실패합니다. 자동 탐색에서는 후보마다 `--version` 실행을 검증하고, 실패한 후보는 건너뛰어 Codex·ChatGPT 앱에 포함된 실행 파일까지 확인합니다. 같은 파일을 가리키는 심볼릭 링크는 한 번만 검사하며 전체 조회 시간 제한과 취소를 유지합니다. 코드에서 명시한 실행 파일 경로는 다른 후보로 대체하지 않습니다.
+
+실행 실패 화면의 **Codex 다시 연결**은 설치된 실행 파일을 다시 탐색하고 사용량을 조회합니다. 로그인 오류에는 기존 로그인 안내를, 실행 오류에는 설치·업데이트 안내를 표시합니다. 조회에 실패했을 때 기존 한도를 100%로 초기화하지 않으며, 저장된 값은 **마지막 확인 시 …% 남음**과 조회 시점으로 구분합니다.
+
+한국어·영어 화면 확인에는 `--demo --ui-check --ui-codex-setup-error`(23시간 전 100% 기록)와 `--demo --ui-check --ui-codex --ui-connection-required`(첫 조회 실패)를 사용합니다. 실제 복구 검증에서는 새 debug 빌드를 Finder로 열고 **Codex 다시 연결** 후 최신 값으로 바뀌는지 확인합니다. 소스 수정만으로 설치된 앱에 반영되지는 않습니다.
 
 ## 앱 내 업데이트 동작
 

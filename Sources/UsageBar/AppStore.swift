@@ -774,6 +774,15 @@ final class AppStore: ObservableObject {
             states[.claude]?.connectionIssue = .authentication
             states[.codex] = ProviderState(errorMessage: String(localized: "Codex에 ChatGPT 계정으로 로그인해 주세요."), connectionIssue: .authentication)
         }
+        if CommandLine.arguments.contains("--ui-codex-setup-error") {
+            selectedProvider = .codex
+            states[.codex] = ProviderState(snapshot: ProviderSnapshot(provider: .codex, plan: "pro",
+                windows: [UsageWindow(id: "codex.secondary", label: String(localized: "주간 한도"),
+                    usedPercent: 0, resetsAt: now.addingTimeInterval(6 * 86_400), durationMinutes: 10_080)],
+                fetchedAt: now.addingTimeInterval(-23 * 3_600), source: String(localized: "화면 검증용 예시")),
+                errorMessage: String(localized: "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요."),
+                connectionIssue: .setup)
+        }
         if CommandLine.arguments.contains("--ui-stale") || CommandLine.arguments.contains("--ui-reset-due") {
             let stale = CommandLine.arguments.contains("--ui-stale")
             for id in ProviderID.allCases {

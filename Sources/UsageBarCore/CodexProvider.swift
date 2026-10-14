@@ -26,12 +26,7 @@ public actor CodexProvider: UsageProvider {
     private nonisolated static func fetchSync(path: String?, cancellation: CodexCancellation) throws -> ProviderSnapshot {
         try cancellation.check()
         let deadline = ProcessInfo.processInfo.systemUptime + 20
-        let executable = try resolveExecutable(path: path)
-        do {
-            _ = try CodexRPC.version(executable: executable, cancellation: cancellation,
-                                     deadline: min(deadline, ProcessInfo.processInfo.systemUptime + 3))
-        } catch is CancellationError { throw CancellationError() }
-        catch { throw ProviderError.setupRequired(String(localized: "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요.")) }
+        let executable = try resolveExecutable(path: path, cancellation: cancellation, deadline: deadline)
 
         let connection = try CodexRPC(executable: executable, arguments: ["app-server", "--listen", "stdio://"],
                                       cancellation: cancellation, deadline: deadline)
@@ -49,31 +44,63 @@ public actor CodexProvider: UsageProvider {
         return try CodexSnapshotParser.snapshot(account: account, limits: limits, usage: usage, fetchedAt: fetchedAt)
     }
 
-    private nonisolated static func resolveExecutable(path: String?) throws -> URL {
+    nonisolated static func resolveExecutable(path: String?, candidates: [String]? = nil,
+                                              cancellation: CodexCancellation, deadline: TimeInterval) throws -> URL {
+        try cancellation.check()
         let manager = FileManager.default
-        var candidates: [String]
+        let versionError = ProviderError.setupRequired(String(localized: "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요."))
+        var searchCandidates: [String]
         if let path, !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let expanded = NSString(string: path).expandingTildeInPath
             guard expanded.hasPrefix("/") else { throw ProviderError.setupRequired(String(localized: "Codex CLI의 절대 경로를 선택해 주세요.")) }
-            candidates = [expanded]
+            searchCandidates = [expanded]
+        } else if let candidates {
+            searchCandidates = candidates
         } else {
             let searchPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
-            candidates = searchPath.split(separator: ":").filter { $0.hasPrefix("/") }.map { String($0) + "/codex" }
-            candidates += [
+            searchCandidates = searchPath.split(separator: ":").filter { $0.hasPrefix("/") }.map { String($0) + "/codex" }
+            searchCandidates += [
                 "/opt/homebrew/bin/codex", "/usr/local/bin/codex",
                 "/Applications/Codex.app/Contents/Resources/codex",
                 "/Applications/Codex.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
                 "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
             ]
         }
-        for candidate in candidates {
-            var directory: ObjCBool = false
-            if manager.fileExists(atPath: candidate, isDirectory: &directory), !directory.boolValue,
-               manager.isExecutableFile(atPath: candidate) {
-                return URL(fileURLWithPath: candidate).resolvingSymlinksInPath()
+        var seen = Set<String>()
+        var executables: [URL] = []
+        for candidate in searchCandidates {
+            try cancellation.check()
+            guard ProcessInfo.processInfo.systemUptime < deadline else { throw versionError }
+            guard candidate.hasPrefix("/"), !candidate.utf8.contains(0) else { continue }
+            let executable = URL(fileURLWithPath: candidate).resolvingSymlinksInPath().standardizedFileURL
+            guard seen.insert(executable.path).inserted,
+                  manager.isExecutableFile(atPath: executable.path),
+                  (try? executable.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else { continue }
+            executables.append(executable)
+        }
+        guard !executables.isEmpty else {
+            throw ProviderError.setupRequired(String(localized: "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요."))
+        }
+        for (index, executable) in executables.enumerated() {
+            try cancellation.check()
+            let now = ProcessInfo.processInfo.systemUptime
+            guard now < deadline else { break }
+            // Share the remaining budget so stalled PATH installs leave time for bundled candidates.
+            let probeBudget = min(3, (deadline - now) / Double(executables.count - index))
+            do {
+                _ = try CodexRPC.version(executable: executable, cancellation: cancellation,
+                                         deadline: min(deadline, now + probeBudget))
+                try cancellation.check()
+                guard ProcessInfo.processInfo.systemUptime < deadline else { break }
+                return executable
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                continue
             }
         }
-        throw ProviderError.setupRequired(String(localized: "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요."))
+        try cancellation.check()
+        throw versionError
     }
 }
 

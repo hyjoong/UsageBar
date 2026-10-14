@@ -31,13 +31,23 @@ struct QuotaRow: View {
                 Text(window.label).font(UsageType.headline)
                 staleBadge
             }
-            HStack(alignment: .firstTextBaseline, spacing: 3) {
-                Text(remaining, format: .number)
-                    .font(UsageType.display).tracking(-2).monospacedDigit()
-                Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
-                Text("남음").font(UsageType.body).foregroundStyle(UsageTheme.secondaryInk).padding(.leading, UsageSpacing.tight)
+            if current {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(remaining, format: .number)
+                        .font(UsageType.display).tracking(-2).monospacedDigit()
+                    Text("%").font(UsageType.displayUnit).foregroundStyle(UsageTheme.secondaryInk)
+                    Text("남음").font(UsageType.body).foregroundStyle(UsageTheme.secondaryInk).padding(.leading, UsageSpacing.tight)
+                }
+                .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
+            } else {
+                Text("마지막 확인 시 \(remaining)% 남음")
+                    .font(UsageType.headline).monospacedDigit()
+                    .foregroundStyle(UsageTheme.secondaryInk)
+                if let last = store.selectedState.snapshot?.fetchedAt {
+                    Text(UsageFormat.freshness(last, now: store.clockNow))
+                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                }
             }
-            .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
         }
         QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 10)
     }
@@ -47,7 +57,8 @@ struct QuotaRow: View {
             Text(window.label).font(UsageType.body)
             staleBadge
             Spacer()
-            Text("\(remaining)% 남음").font(UsageType.headline).monospacedDigit()
+            Text(current ? "\(remaining)% 남음" : "당시 \(remaining)% 남음")
+                .font(UsageType.headline).monospacedDigit()
         }
         QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 6)
     }
@@ -79,7 +90,7 @@ struct QuotaRow: View {
     }
 }
 
-/// Selection fallback, fetch errors, retry timing, and the Claude reconnect shortcut.
+/// Fetch errors, retry timing, and connection recovery for both providers.
 struct ConnectionNotice: View {
     @ObservedObject var store: AppStore
     @State private var setupMessage: String?
@@ -88,6 +99,8 @@ struct ConnectionNotice: View {
     var body: some View {
         if store.selectedState.connectionIssue == .authentication {
             AuthenticationRecoveryCard(store: store)
+        } else if provider == .codex, store.selectedState.connectionIssue == .setup {
+            CodexSetupRecoveryCard(store: store)
         } else {
             failureNotice
         }

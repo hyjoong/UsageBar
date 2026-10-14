@@ -162,6 +162,150 @@ final class CodexProviderTests: XCTestCase {
         catch { XCTFail("Expected cancellation before discovery") }
     }
 
+    func testDiscoverySkipsCLIWhoseNodeRuntimeIsMissingFromGUIPath() throws {
+        let broken = try executable("#!/bin/sh\nexec /usr/bin/env PATH=/usr/bin:/bin:/usr/sbin:/sbin node --version\n")
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            try? FileManager.default.removeItem(at: broken.deletingLastPathComponent())
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        let selected = try CodexProvider.resolveExecutable(path: nil, candidates: [broken.path, working.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)
+        XCTAssertEqual(selected, working.resolvingSymlinksInPath().standardizedFileURL)
+    }
+
+    func testDiscoveryProbesRepeatedSymlinkTargetsOnlyOnce() throws {
+        let broken = try executable("#!/bin/sh\nexit 127\n")
+        let directory = broken.deletingLastPathComponent()
+        let attempts = directory.appendingPathComponent("attempts")
+        try "#!/bin/sh\nprintf 'probe\\n' >> '\(attempts.path)'\nexit 127\n".write(to: broken, atomically: false, encoding: .utf8)
+        let alias = directory.appendingPathComponent("codex-link")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: broken)
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            try? FileManager.default.removeItem(at: directory)
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        let selected = try CodexProvider.resolveExecutable(path: nil, candidates: [broken.path, alias.path, broken.path, working.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)
+        XCTAssertEqual(selected, working.resolvingSymlinksInPath().standardizedFileURL)
+        XCTAssertEqual(try String(contentsOf: attempts), "probe\n")
+    }
+
+    func testExplicitExecutableFailureDoesNotSelectAnAutomaticFallback() throws {
+        let broken = try executable("#!/bin/sh\nexit 127\n")
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            try? FileManager.default.removeItem(at: broken.deletingLastPathComponent())
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: broken.path, candidates: [working.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)) { error in
+            guard case ProviderError.setupRequired(let message) = error else { return XCTFail("Expected explicit path guidance") }
+            XCTAssertEqual(message, "Codex CLI 버전을 확인하지 못했어요. 실행 파일 경로와 설치 상태를 확인해 주세요.")
+        }
+    }
+
+    func testDiscoverySkipsMalformedVersionsAndReportsWhenNoneAreRunnable() throws {
+        let invalid = try executable("#!/bin/sh\nprintf 'other-tool 1.0.0\\n'\n")
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            try? FileManager.default.removeItem(at: invalid.deletingLastPathComponent())
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        let selected = try CodexProvider.resolveExecutable(path: nil, candidates: [invalid.path, working.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)
+        XCTAssertEqual(selected, working.resolvingSymlinksInPath().standardizedFileURL)
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [invalid.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)) { error in
+            guard case ProviderError.setupRequired = error else { return XCTFail("Expected invalid-version guidance") }
+        }
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 5)) { error in
+            guard case ProviderError.setupRequired(let message) = error else { return XCTFail("Expected missing executable guidance") }
+            XCTAssertEqual(message, "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요.")
+        }
+    }
+
+    func testTimedOutVersionProbeIsReapedBeforeWorkingFallback() throws {
+        let stalled = try executable("#!/bin/sh\nexec /bin/sleep 30\n")
+        let directory = stalled.deletingLastPathComponent()
+        let pidFile = directory.appendingPathComponent("probe.pid")
+        try "#!/bin/sh\nprintf '%s' \"$$\" > '\(pidFile.path)'\nexec /bin/sleep 30\n".write(to: stalled, atomically: false, encoding: .utf8)
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            try? FileManager.default.removeItem(at: directory)
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        let started = ProcessInfo.processInfo.systemUptime
+        let selected = try CodexProvider.resolveExecutable(path: nil, candidates: [stalled.path, working.path],
+            cancellation: CodexCancellation(), deadline: started + 5)
+        XCTAssertEqual(selected, working.resolvingSymlinksInPath().standardizedFileURL)
+        XCTAssertLessThan(ProcessInfo.processInfo.systemUptime - started, 4.5)
+        let pid = try XCTUnwrap(Int32(String(contentsOf: pidFile)))
+        XCTAssertEqual(kill(pid, 0), -1)
+        XCTAssertEqual(errno, ESRCH)
+    }
+
+    func testDiscoveryCancellationAndExpiredDeadlineDoNotLaunchCandidates() throws {
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer { try? FileManager.default.removeItem(at: working.deletingLastPathComponent()) }
+        let marker = working.deletingLastPathComponent().appendingPathComponent("launched")
+        try "#!/bin/sh\nprintf 'launched' > '\(marker.path)'\nprintf 'codex-cli 0.160.1\\n'\n".write(to: working, atomically: false, encoding: .utf8)
+        let cancellation = CodexCancellation()
+        cancellation.cancel()
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [working.path],
+            cancellation: cancellation, deadline: ProcessInfo.processInfo.systemUptime + 5)) { error in
+            XCTAssertTrue(error is CancellationError)
+        }
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [working.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime - 1))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: marker.path))
+    }
+
+    func testDiscoverySharesDeadlineAcrossStalledCandidates() throws {
+        let first = try executable("#!/bin/sh\nexec /bin/sleep 30\n")
+        let second = try executable("#!/bin/sh\nexec /bin/sleep 30\n")
+        defer {
+            try? FileManager.default.removeItem(at: first.deletingLastPathComponent())
+            try? FileManager.default.removeItem(at: second.deletingLastPathComponent())
+        }
+        let started = ProcessInfo.processInfo.systemUptime
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [first.path, second.path],
+            cancellation: CodexCancellation(), deadline: started + 0.15))
+        XCTAssertLessThan(ProcessInfo.processInfo.systemUptime - started, 1)
+    }
+
+    func testCancellationDuringVersionProbeStopsDiscoveryAndReapsChild() throws {
+        let stalled = try executable("#!/bin/sh\nexec /bin/sleep 30\n")
+        let directory = stalled.deletingLastPathComponent()
+        let pidFile = directory.appendingPathComponent("probe.pid")
+        try "#!/bin/sh\nprintf '%s' \"$$\" > '\(pidFile.path)'\nexec /bin/sleep 30\n".write(to: stalled, atomically: false, encoding: .utf8)
+        let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        let fallbackMarker = working.deletingLastPathComponent().appendingPathComponent("launched")
+        try "#!/bin/sh\nprintf 'launched' > '\(fallbackMarker.path)'\nprintf 'codex-cli 0.160.1\\n'\n".write(to: working, atomically: false, encoding: .utf8)
+        defer {
+            try? FileManager.default.removeItem(at: directory)
+            try? FileManager.default.removeItem(at: working.deletingLastPathComponent())
+        }
+        let cancellation = CodexCancellation()
+        DispatchQueue.global().async {
+            let deadline = ProcessInfo.processInfo.systemUptime + 2
+            while !FileManager.default.fileExists(atPath: pidFile.path), ProcessInfo.processInfo.systemUptime < deadline {
+                Thread.sleep(forTimeInterval: 0.01)
+            }
+            cancellation.cancel()
+        }
+        XCTAssertThrowsError(try CodexProvider.resolveExecutable(path: nil, candidates: [stalled.path, working.path],
+            cancellation: cancellation, deadline: ProcessInfo.processInfo.systemUptime + 5)) { error in
+            XCTAssertTrue(error is CancellationError)
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: fallbackMarker.path))
+        let pid = try XCTUnwrap(Int32(String(contentsOf: pidFile)))
+        XCTAssertEqual(kill(pid, 0), -1)
+        XCTAssertEqual(errno, ESRCH)
+    }
+
     private func executable(_ source: String) throws -> URL {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("usagebar-codex-fixture-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

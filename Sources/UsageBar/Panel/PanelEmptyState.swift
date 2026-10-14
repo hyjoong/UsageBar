@@ -15,6 +15,8 @@ struct PanelEmptyState: View {
             loading
         } else if store.selectedState.connectionIssue == .authentication {
             AuthenticationRecoveryCard(store: store)
+        } else if provider == .codex, store.selectedState.connectionIssue == .setup {
+            CodexSetupRecoveryCard(store: store)
         } else if needsConnectionSetup {
             ConnectionSetupCard(store: store)
         } else {
@@ -51,6 +53,42 @@ struct PanelEmptyState: View {
         }
         .frame(maxWidth: .infinity, minHeight: 200).multilineTextAlignment(.center)
         .padding(.vertical, UsageSpacing.item)
+    }
+}
+
+/// CLI launch failures need executable discovery, not an instruction to sign in again.
+struct CodexSetupRecoveryCard: View {
+    @ObservedObject var store: AppStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: UsageSpacing.compact) {
+            Label("Codex 연결을 확인해 주세요", systemImage: "exclamationmark.circle")
+                .font(UsageType.headline).foregroundStyle(UsageTheme.warning)
+            if let message = store.states[.codex]?.errorMessage {
+                Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text("설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
+                .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: UsageSpacing.item) {
+                Button("Codex 다시 연결") { Task { await store.refresh(.codex, force: true) } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!store.canRefresh(.codex))
+                Button("설치·업데이트 안내") {
+                    NSWorkspace.shared.open(URL(string: "https://github.com/openai/codex")!)
+                }
+                .buttonStyle(.link)
+            }
+            if store.states[.codex]?.isRefreshing == true {
+                Label("Codex 연결 확인 중", systemImage: "arrow.clockwise")
+                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+            } else if let retry = store.retryMessage(for: .codex) {
+                Text(retry).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
