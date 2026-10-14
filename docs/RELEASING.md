@@ -84,15 +84,16 @@ Claude·Codex의 인증 오류를 초기 설정·지원하지 않는 계정·일
 - **집에서 이어서:** 앱 저장소의 `main`, tap의 `master`를 받습니다. Swift 5.10 이상이 포함된 Xcode에서 `swift build`, `swift test`, `zsh scripts/build-app.sh debug`를 실행합니다. 영어 번들에는 Xcode의 `xcstringstool`이 필요합니다. 새 앱에서 Claude·Codex 각각 이전 기록 유무, 인증 복구, 일반 오류, 구형 CLI 안내와 한국어·영어 레이아웃을 확인합니다. 초 단위 카운트다운은 이번 소스 변경에 포함되지 않은 후속 작업입니다.
 - **배포 상태:** 소스 커밋·push는 앱 릴리스가 아닙니다. 현재 main의 CI는 빌드와 테스트만 실행하며, 설치된 `0.8.8 (25)`에는 위 소스 수정이 들어 있지 않습니다. 새 버전 배포·공증·업데이트 피드·tap 버전과 체크섬 갱신은 후속 작업입니다.
 
-### 2026-10-14 Codex 실행 탐색·이전 기록 복구 — 로컬 소스, 미배포
+### 2026-10-14 Codex 실행 탐색·이전 기록 복구 — 소스 push 완료, 앱 미배포
 
 집에서 올린 `main`의 `cdb49b3`(0.8.9 빌드 27)을 받은 뒤 Codex 연결 실패를 재현했습니다. `/usr/local/bin/codex`는 Node 스크립트여서 터미널에서는 버전을 출력하지만, Finder 앱과 같은 제한된 `PATH`에서는 `env: node: No such file or directory`로 종료했습니다. 같은 Mac의 ChatGPT 내장 Codex 실행 파일은 이 환경에서도 정상 실행됐습니다.
 
 - 자동 탐색 시 `--version`에 실패한 후보를 건너뛰고 다음 설치본을 검사합니다. 같은 실행 파일의 중복 링크, 정해진 경로, 취소와 전체 제한 시간을 검증했습니다. 전체 조회 흐름의 동일한 재현 하네스가 수정 전에는 실패하고 수정 후에는 통과했습니다.
 - Codex 실행 오류에 **Codex 다시 연결** 및 설치·업데이트 안내를 추가했습니다. 이전 기록 유무에 같은 복구 카드를 표시하고, 오래된 잔여율은 큰 현재값 대신 **마지막 확인 시 …% 남음**과 기록 시점으로 표시합니다. 로그인 오류 분류와 요청 제한은 유지합니다.
-- **검증 완료:** 실제 코어 소스 직접 컴파일 하네스 22개 검사, 제한된 `PATH`에서 내장 Codex 자동 선택 및 실제 사용량 조회, 변경 Swift 구문·한국어/영어 문자열·`git diff --check`. XCTest 회귀 메서드는 코어 8개와 앱 상태 전환 2개를 추가했습니다.
-- **검증 제한:** 이 Mac은 Swift 5.8.1이며 `swift test`는 기존 CLT `PlatformPath` 오류로 시작하지 못합니다. 이번 전체 build/XCTest와 새 UI 렌더링은 아직 검증하지 않았습니다. Swift 5.10 이상 환경에서 전체 검사와 `--ui-codex-setup-error`, `--ui-codex --ui-connection-required`의 한국어·영어 화면을 확인해야 합니다.
-- **배포 상태:** 커밋·push·버전 변경·배포는 하지 않았습니다. 설치된 0.8.9 (27)에는 이번 수정이 없으므로 적용하려면 검증 후 새 앱을 빌드해야 합니다.
+- **검증 완료:** 실제 코어 소스 직접 컴파일 하네스 22개 검사, 제한된 `PATH`에서 내장 Codex 자동 선택 및 실제 사용량 조회, 변경 Swift 구문·한국어/영어 문자열·`git diff --check`. 예약 실행에서도 현재 코어 소스를 다시 컴파일해 하네스 22개 검사를 통과했습니다. XCTest 회귀 메서드는 코어 8개와 앱 상태 전환 2개를 추가했으며, [macOS CI](https://github.com/hyjoong/UsageBar/actions/runs/38556097802)에서 `swift build`와 전체 XCTest **173개, 실패 0개**를 확인했습니다.
+- **검증 제한:** 이 Mac은 Swift 5.8.1이며 로컬 `swift test`는 기존 CLT `PlatformPath` 오류로 시작하지 못합니다. 전체 build/XCTest는 위 CI에서 통과했지만 새 앱 번들 빌드와 UI 렌더링은 아직 검증하지 않았습니다. Swift 5.10 이상 환경에서 `--ui-codex-setup-error`, `--ui-codex --ui-connection-required`의 한국어·영어 화면과 실제 재연결 성공 전환을 확인해야 합니다.
+- **소스 반영:** 예약 시각인 한국시간 20:20 이후 [커밋 `a0ba8c2`](https://github.com/hyjoong/UsageBar/commit/a0ba8c25ed0e626569a80e943e20da22f487d7e7)를 `origin/main`에 push하고 원격 반영을 확인했습니다. 예약 후 별도 변경이 없는 것을 승인 당시 diff와 비교한 뒤 커밋했습니다.
+- **배포 상태:** 버전 변경·앱 배포·Homebrew tap 변경은 하지 않았습니다. 설치된 0.8.9 (27)에는 이번 수정이 없으므로 적용하려면 새 앱을 빌드해야 합니다. 집에서는 `main`을 받아 Swift 5.10 이상 환경에서 전체 build/test와 `zsh scripts/build-app.sh debug`를 실행한 뒤, 한국어·영어에서 초기 연결 실패·이전 기록·재연결 성공 화면을 확인합니다.
 
 ### 검증 후 공개하기
 
