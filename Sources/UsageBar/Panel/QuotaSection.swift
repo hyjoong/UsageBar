@@ -40,13 +40,10 @@ struct QuotaRow: View {
                 }
                 .help("\(window.label) \(Int(window.usedPercent.rounded()))% 사용 · 계정 전체 기준")
             } else {
+                // The record's age is in the footer; here only the cached value, set apart from a live reading.
                 Text("마지막 확인 시 \(remaining)% 남음")
                     .font(UsageType.headline).monospacedDigit()
                     .foregroundStyle(UsageTheme.secondaryInk)
-                if let last = store.selectedState.snapshot?.fetchedAt {
-                    Text(UsageFormat.freshness(last, now: store.clockNow))
-                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                }
             }
         }
         QuotaGauge(remainingPercent: window.remainingPercent, tone: tone, height: 10)
@@ -97,10 +94,8 @@ struct ConnectionNotice: View {
     private var provider: ProviderID { store.selectedProvider }
 
     var body: some View {
-        if store.selectedState.connectionIssue == .authentication {
-            AuthenticationRecoveryCard(store: store)
-        } else if provider == .codex, store.selectedState.connectionIssue == .setup {
-            CodexSetupRecoveryCard(store: store)
+        if RecoveryCard.applies(to: store.selectedState, provider: provider) {
+            RecoveryCard(store: store)
         } else {
             failureNotice
         }

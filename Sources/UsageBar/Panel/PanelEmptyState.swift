@@ -13,10 +13,8 @@ struct PanelEmptyState: View {
     var body: some View {
         if store.selectedState.isRefreshing {
             loading
-        } else if store.selectedState.connectionIssue == .authentication {
-            AuthenticationRecoveryCard(store: store)
-        } else if provider == .codex, store.selectedState.connectionIssue == .setup {
-            CodexSetupRecoveryCard(store: store)
+        } else if RecoveryCard.applies(to: store.selectedState, provider: provider) {
+            RecoveryCard(store: store)
         } else if needsConnectionSetup {
             ConnectionSetupCard(store: store)
         } else {
@@ -56,80 +54,74 @@ struct PanelEmptyState: View {
     }
 }
 
-/// CLI launch failures need executable discovery, not an instruction to sign in again.
-struct CodexSetupRecoveryCard: View {
+/// Recovery for a known connection problem: an expired login, or a Codex CLI that would not launch.
+/// The same card sits above cached usage and in place of the empty state, so both offer the same actions.
+struct RecoveryCard: View {
     @ObservedObject var store: AppStore
+    @State private var setupMessage: String?
+    private var provider: ProviderID { store.selectedProvider }
+    private var state: ProviderState { store.selectedState }
+    private var isLogin: Bool { state.connectionIssue == .authentication }
+
+    static func applies(to state: ProviderState, provider: ProviderID) -> Bool {
+        state.connectionIssue == .authentication || (provider == .codex && state.connectionIssue == .setup)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: UsageSpacing.compact) {
-            Label("Codex 연결을 확인해 주세요", systemImage: "exclamationmark.circle")
-                .font(UsageType.headline).foregroundStyle(UsageTheme.warning)
-            if let message = store.states[.codex]?.errorMessage {
+        VStack(alignment: .leading, spacing: UsageSpacing.item) {
+            title.font(UsageType.headline).foregroundStyle(UsageTheme.warning)
+            if let message = state.errorMessage {
                 Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text("설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
-                .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+            hint.font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: UsageSpacing.item) {
-                Button("Codex 다시 연결") { Task { await store.refresh(.codex, force: true) } }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!store.canRefresh(.codex))
-                Button("설치·업데이트 안내") {
-                    NSWorkspace.shared.open(URL(string: "https://github.com/openai/codex")!)
-                }
-                .buttonStyle(.link)
+                actions
+                if state.isRefreshing { ProgressView().controlSize(.small) }
             }
-            if store.states[.codex]?.isRefreshing == true {
-                Label("Codex 연결 확인 중", systemImage: "arrow.clockwise")
-                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-            } else if let retry = store.retryMessage(for: .codex) {
+            if let setupMessage {
+                Text(setupMessage).font(UsageType.caption).foregroundStyle(UsageTheme.warning)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let retry = store.retryMessage(for: provider) {
                 Text(retry).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-}
 
-/// The same recovery actions appear for a first fetch and an expired connection with cached usage.
-struct AuthenticationRecoveryCard: View {
-    @ObservedObject var store: AppStore
-    @State private var setupMessage: String?
-    private var provider: ProviderID { store.selectedProvider }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: UsageSpacing.group) {
+    @ViewBuilder private var title: some View {
+        if isLogin {
             Label("\(provider.title) 로그인 확인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
-                .font(UsageType.headline).foregroundStyle(UsageTheme.warning)
-            if let message = store.selectedState.errorMessage {
-                Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            if provider == .claude {
-                Text("터미널에서 안내를 확인해 주세요. 로그인이 필요하면 /login을 입력해 주세요.")
-                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text("codex login 으로 ChatGPT 계정에 로그인해요.")
-                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            HStack(spacing: UsageSpacing.item) {
-                if provider == .claude {
-                    Button("연결 설정 열기") { setupMessage = ClaudeSetupLauncher.open() }
-                        .buttonStyle(.borderedProminent)
-                }
-                Button("다시 확인") { Task { await store.refresh(provider, force: true) } }
-                    .buttonStyle(.bordered)
-                    .disabled(!store.canRefresh(provider))
-            }
-            if let setupMessage {
-                Text(setupMessage).font(UsageType.caption).foregroundStyle(UsageTheme.warning)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        } else {
+            Label("Codex 연결을 확인해 주세요", systemImage: "exclamationmark.circle")
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var hint: Text {
+        switch (isLogin, provider) {
+        case (true, .claude): Text("터미널에서 안내를 확인해 주세요. 로그인이 필요하면 /login을 입력해 주세요.")
+        case (true, .codex): Text("codex login 으로 ChatGPT 계정에 로그인해요.")
+        default: Text("설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
+        }
+    }
+
+    @ViewBuilder private var actions: some View {
+        if provider == .claude {
+            Button("연결 설정 열기") { setupMessage = ClaudeSetupLauncher.open() }.buttonStyle(.borderedProminent)
+            recheck("다시 확인").buttonStyle(.bordered)
+        } else if isLogin {
+            recheck("다시 확인").buttonStyle(.bordered)
+        } else {
+            recheck("Codex 다시 연결").buttonStyle(.borderedProminent)
+            Button("설치·업데이트 안내") { NSWorkspace.shared.open(provider.installURL) }.buttonStyle(.link)
+        }
+    }
+
+    private func recheck(_ title: LocalizedStringKey) -> some View {
+        Button(title) { Task { await store.refresh(provider, force: true) } }
+            .disabled(!store.canRefresh(provider))
     }
 }
 
@@ -184,7 +176,7 @@ struct ConnectionSetupCard: View {
 
     @ViewBuilder private var claudeSteps: some View {
         step(1, "Claude Code 설치") {
-            Button("설치 안내") { NSWorkspace.shared.open(URL(string: "https://code.claude.com/docs/en/quickstart")!) }
+            Button("설치 안내") { NSWorkspace.shared.open(provider.installURL) }
                 .buttonStyle(.link)
         }
         step(2, "터미널에서 로그인", detail: "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요.") {
@@ -196,7 +188,7 @@ struct ConnectionSetupCard: View {
 
     @ViewBuilder private var codexSteps: some View {
         step(1, "Codex CLI 설치") {
-            Button("설치 안내") { NSWorkspace.shared.open(URL(string: "https://github.com/openai/codex")!) }
+            Button("설치 안내") { NSWorkspace.shared.open(provider.installURL) }
                 .buttonStyle(.link)
         }
         step(2, "터미널에서 로그인", detail: "codex login 으로 ChatGPT 계정에 로그인해요.") { EmptyView() }

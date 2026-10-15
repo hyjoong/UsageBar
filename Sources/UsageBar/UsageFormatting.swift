@@ -10,6 +10,9 @@ extension ProviderID {
     var dashboardURL: URL {
         URL(string: self == .claude ? "https://claude.ai/settings/usage" : "https://chatgpt.com/codex/settings/usage")!
     }
+    var installURL: URL {
+        URL(string: self == .claude ? "https://code.claude.com/docs/en/quickstart" : "https://github.com/openai/codex")!
+    }
 }
 
 /// Human-readable labels shared by the panel, instrument, and windows.
