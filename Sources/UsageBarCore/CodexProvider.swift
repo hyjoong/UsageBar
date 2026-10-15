@@ -81,18 +81,26 @@ public actor CodexProvider: UsageProvider {
         guard !executables.isEmpty else {
             throw ProviderError.setupRequired(String(localized: "Codex CLI를 찾지 못했어요. Codex를 설치하거나 실행 파일 경로를 지정해 주세요."))
         }
+        // An outdated CLI earlier on PATH (an old nvm global, say) answers --version but cannot serve the
+        // usage methods, so every runnable candidate is compared and the newest wins; ties keep PATH order.
+        var best: (executable: URL, version: [Int])?
         for (index, executable) in executables.enumerated() {
             try cancellation.check()
             let now = ProcessInfo.processInfo.systemUptime
-            guard now < deadline else { break }
+            // Once one candidate works, later probes are short and must leave time for the usage query.
+            let reserve: TimeInterval = best == nil ? 0 : 8
+            guard now + reserve < deadline else { break }
             // Share the remaining budget so stalled PATH installs leave time for bundled candidates.
-            let probeBudget = min(3, (deadline - now) / Double(executables.count - index))
+            let share = (deadline - reserve - now) / Double(executables.count - index)
+            let probeBudget = min(best == nil ? 3 : 1, share)
             do {
-                _ = try CodexRPC.version(executable: executable, cancellation: cancellation,
-                                         deadline: min(deadline, now + probeBudget))
+                let version = try CodexRPC.version(executable: executable, cancellation: cancellation,
+                                                   deadline: min(deadline, now + probeBudget))
                 try cancellation.check()
-                guard ProcessInfo.processInfo.systemUptime < deadline else { break }
-                return executable
+                let key = versionKey(version)
+                if best.map({ key.lexicographicallyPrecedes($0.version) || key == $0.version }) != true {
+                    best = (executable, key)
+                }
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
@@ -100,7 +108,14 @@ public actor CodexProvider: UsageProvider {
             }
         }
         try cancellation.check()
-        throw versionError
+        guard let best, ProcessInfo.processInfo.systemUptime < deadline else { throw versionError }
+        return best.executable
+    }
+
+    /// "0.160.1" or "0.47.0-alpha.2" → [0, 160, 1] / [0, 47, 0]; anything after the numeric core is ignored.
+    static func versionKey(_ version: String) -> [Int] {
+        let core = version.prefix { $0.isNumber || $0 == "." }
+        return core.split(separator: ".").prefix(3).map { Int($0) ?? 0 }
     }
 }
 

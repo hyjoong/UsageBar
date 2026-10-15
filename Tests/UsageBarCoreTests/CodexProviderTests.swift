@@ -192,6 +192,20 @@ final class CodexProviderTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: attempts), "probe\n")
     }
 
+    func testDiscoveryPrefersNewestRunnableCLIOverEarlierOutdatedOne() throws {
+        let outdated = try executable("#!/bin/sh\nprintf 'codex-cli 0.46.0\\n'\n")
+        let current = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        let sameAsCurrent = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
+        defer {
+            for url in [outdated, current, sameAsCurrent] { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        }
+        let selected = try CodexProvider.resolveExecutable(path: nil, candidates: [outdated.path, current.path, sameAsCurrent.path],
+            cancellation: CodexCancellation(), deadline: ProcessInfo.processInfo.systemUptime + 15)
+        XCTAssertEqual(selected, current.resolvingSymlinksInPath().standardizedFileURL)
+        XCTAssertEqual(CodexProvider.versionKey("0.47.0-alpha.2"), [0, 47, 0])
+        XCTAssertTrue(CodexProvider.versionKey("0.46.0").lexicographicallyPrecedes(CodexProvider.versionKey("0.160.1")))
+    }
+
     func testExplicitExecutableFailureDoesNotSelectAnAutomaticFallback() throws {
         let broken = try executable("#!/bin/sh\nexit 127\n")
         let working = try executable("#!/bin/sh\nprintf 'codex-cli 0.160.1\\n'\n")
