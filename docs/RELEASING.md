@@ -84,7 +84,7 @@ Claude·Codex의 인증 오류를 초기 설정·지원하지 않는 계정·일
 - **집에서 이어서:** 앱 저장소의 `main`, tap의 `master`를 받습니다. Swift 5.10 이상이 포함된 Xcode에서 `swift build`, `swift test`, `zsh scripts/build-app.sh debug`를 실행합니다. 영어 번들에는 Xcode의 `xcstringstool`이 필요합니다. 새 앱에서 Claude·Codex 각각 이전 기록 유무, 인증 복구, 일반 오류, 구형 CLI 안내와 한국어·영어 레이아웃을 확인합니다. 초 단위 카운트다운은 이번 소스 변경에 포함되지 않은 후속 작업입니다.
 - **배포 상태:** 소스 커밋·push는 앱 릴리스가 아닙니다. 현재 main의 CI는 빌드와 테스트만 실행하며, 설치된 `0.8.8 (25)`에는 위 소스 수정이 들어 있지 않습니다. 새 버전 배포·공증·업데이트 피드·tap 버전과 체크섬 갱신은 후속 작업입니다.
 
-### 2026-10-14 Codex 실행 탐색·이전 기록 복구 — 소스 push 완료, 앱 미배포
+### 2026-10-14 Codex 실행 탐색·이전 기록 복구 — 0.8.10 (28)에 포함
 
 집에서 올린 `main`의 `cdb49b3`(0.8.9 빌드 27)을 받은 뒤 Codex 연결 실패를 재현했습니다. `/usr/local/bin/codex`는 Node 스크립트여서 터미널에서는 버전을 출력하지만, Finder 앱과 같은 제한된 `PATH`에서는 `env: node: No such file or directory`로 종료했습니다. 같은 Mac의 ChatGPT 내장 Codex 실행 파일은 이 환경에서도 정상 실행됐습니다.
 

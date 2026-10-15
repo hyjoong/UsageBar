@@ -108,6 +108,9 @@ final class AppStore: ObservableObject {
     @Published var showPercentage = true {
         didSet { if !isDemo { defaults.set(showPercentage, forKey: "showPercentage") } }
     }
+    @Published var showMenuIcon = true {
+        didSet { if !isDemo { defaults.set(showMenuIcon, forKey: "showMenuIcon") } }
+    }
     @Published var trackedWindowIDs: [ProviderID: String] = [:] {
         didSet {
             if !isDemo {
@@ -191,6 +194,7 @@ final class AppStore: ObservableObject {
             selectedProvider = ProviderID(rawValue: defaults.string(forKey: "selectedProvider") ?? "") ?? .claude
             menuBarDisplayMode = MenuBarDisplayMode(rawValue: defaults.string(forKey: "menuBarDisplayMode") ?? "") ?? .selected
             if defaults.object(forKey: "showPercentage") != nil { showPercentage = defaults.bool(forKey: "showPercentage") }
+            if defaults.object(forKey: "showMenuIcon") != nil { showMenuIcon = defaults.bool(forKey: "showMenuIcon") }
             showResetCountdown = defaults.bool(forKey: "showResetCountdown")
             if let saved = defaults.stringArray(forKey: "enabledProviders") {
                 let enabled = Set(saved.compactMap(ProviderID.init(rawValue:)))
@@ -308,6 +312,11 @@ final class AppStore: ObservableObject {
     }
 
     var menuTitle: String { menuTitle(for: selectedProvider) }
+
+    /// Without the mark a bare "—" or nothing at all would be unidentifiable, so it returns until a percentage exists.
+    var menuShowsIcon: Bool {
+        showMenuIcon || !showPercentage || menuProviders.allSatisfy { trackedWindow(for: $0) == nil }
+    }
 
     func menuTitle(for provider: ProviderID) -> String {
         guard showPercentage else { return "" }
@@ -755,6 +764,7 @@ final class AppStore: ObservableObject {
         }
         if CommandLine.arguments.contains("--ui-codex") { selectedProvider = .codex }
         if CommandLine.arguments.contains("--ui-menu-all") { menuBarDisplayMode = .all }
+        if CommandLine.arguments.contains("--ui-menu-no-icon") { showMenuIcon = false }
         if CommandLine.arguments.contains("--ui-rate-limited") {
             for id in ProviderID.allCases {
                 states[id] = ProviderState(errorMessage: ProviderError.rateLimited(retryAfter: 300).localizedDescription)

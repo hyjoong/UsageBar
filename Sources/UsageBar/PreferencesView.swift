@@ -50,6 +50,11 @@ struct PreferencesView: View {
                     ForEach(MenuBarDisplayMode.allCases) { Text($0.title).tag($0) }
                 }
                 Toggle("잔여율 표시", isOn: $store.showPercentage)
+                Toggle("앱 아이콘 표시", isOn: $store.showMenuIcon)
+                    .disabled(!store.showPercentage)
+                if !store.showMenuIcon && store.showPercentage {
+                    detail("잔여율만 보여요. 아직 확인한 한도가 없으면 아이콘이 잠시 나타나요.")
+                }
                 Toggle("리셋까지 남은 시간도 표시", isOn: $store.showResetCountdown)
                     .disabled(!store.showPercentage)
                 if store.showPercentage && store.showResetCountdown {

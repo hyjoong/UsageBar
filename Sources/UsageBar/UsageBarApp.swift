@@ -94,37 +94,16 @@ private struct UsageMenuLabel: View {
     }
 
     var body: some View {
-        HStack(spacing: 7) {
-            Image(nsImage: UsageBrandMark.menuImage)
-            if store.isDemo { Text("예시").font(.caption2) }
-            if let active = journal.state.active {
-                // The label is rendered to an image on every update, so it must not host a TimelineView:
-                // `.periodic(from: .now)` would reschedule on each render and spin the main thread.
-                // The store's clock already ticks once a minute.
-                HStack(spacing: 3) {
-                    Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
-                    Text(Self.compactDuration(store.clockNow.timeIntervalSince(active.startedAt))).monospacedDigit()
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("작업 기록 중")
-            }
-            ForEach(store.menuProviders) { provider in
-                HStack(spacing: 4) {
-                    if store.menuProviders.count > 1 {
-                        Image(systemName: provider.symbol).font(.system(size: 10, weight: .semibold))
-                            .accessibilityHidden(true)
-                    }
-                    if store.showPercentage { Text(store.menuTitle(for: provider)).monospacedDigit() }
-                }
-                .opacity(store.isStale(for: provider) ? 0.6 : 1)
-            }
-        }
+        // A menu bar extra label draws only its first Image and first Text and drops inline symbols,
+        // so the whole label is rendered into one template image.
+        Image(nsImage: renderedLabel)
         .onReceive(NotificationCenter.default.publisher(for: .usageBarReopen)) { _ in
             openWindow(id: "panel")
             NSApp.activate(ignoringOtherApps: true)
         }
         .help(store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: "\n"))
-        .accessibilityLabel("UsageBar, " + store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: ", "))
+        .accessibilityLabel("UsageBar, " + (journal.state.active == nil ? "" : String(localized: "작업 기록 중") + ", ")
+                            + store.menuProviders.map { store.menuDescription(for: $0) }.joined(separator: ", "))
         #if DEBUG
         .task {
             guard store.isDemo, !openedCheckWindow else { return }
@@ -138,6 +117,43 @@ private struct UsageMenuLabel: View {
             }
         }
         #endif
+    }
+
+    /// Rendered black and marked as a template so the menu bar tints it for light, dark and highlighted states.
+    /// This runs on every label update, so the content must not host a TimelineView: `.periodic(from: .now)`
+    /// would reschedule on each render and spin the main thread. The store's clock ticks once a minute.
+    private var renderedLabel: NSImage {
+        let renderer = ImageRenderer(content: content
+            .font(Font(NSFont.menuBarFont(ofSize: 0)))
+            .foregroundStyle(.black))
+        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
+        let image = renderer.nsImage ?? UsageBrandMark.menuImage
+        image.isTemplate = true
+        return image
+    }
+
+    private var content: some View {
+        HStack(spacing: 6) {
+            if store.menuShowsIcon { Image(nsImage: UsageBrandMark.menuImage).renderingMode(.template) }
+            if store.isDemo { Text("예시").font(.caption2) }
+            if let active = journal.state.active {
+                HStack(spacing: 3) {
+                    Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
+                    Text(verbatim: Self.compactDuration(store.clockNow.timeIntervalSince(active.startedAt))).monospacedDigit()
+                }
+            }
+            ForEach(store.menuProviders) { provider in
+                HStack(spacing: 4) {
+                    if store.menuProviders.count > 1 {
+                        Image(systemName: provider.symbol).font(.system(size: 10, weight: .semibold))
+                    }
+                    let title = store.menuTitle(for: provider)
+                    if !title.isEmpty { Text(verbatim: title).monospacedDigit() }
+                }
+                .opacity(store.isStale(for: provider) ? 0.6 : 1)
+            }
+        }
+        .fixedSize()
     }
 
     /// Short enough for the menu bar: minutes under an hour, whole hours after.

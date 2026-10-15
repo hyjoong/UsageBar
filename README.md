@@ -92,6 +92,7 @@ On first launch the panel walks you through the connection in three numbered ste
 | Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
 | Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
 | Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
+| Show only the percentage | Settings → Menu Bar → turn off **Show app icon**. |
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
 | Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
