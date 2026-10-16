@@ -68,6 +68,9 @@ public actor HistoryStore {
         let oldHash = archive.accountHashes[snapshot.provider]
         let hadData = archive.snapshots[snapshot.provider] != nil
             || archive.points.contains { $0.provider == snapshot.provider }
+        // Known account, then no account metadata this once (a CLI updating itself, a slow start): keep the
+        // history, but record nothing, because these samples cannot be attributed to that account.
+        if newHash == nil, oldHash != nil, hadData { return state() }
         // Unknown-to-known also begins a new history, so anonymous samples cannot cross accounts.
         let changed = hadData && oldHash != newHash
         if changed { archive.points.removeAll { $0.provider == snapshot.provider } }

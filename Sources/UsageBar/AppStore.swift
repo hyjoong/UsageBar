@@ -623,6 +623,20 @@ final class AppStore: ObservableObject {
         }
     }
 
+    /// A momentary failure to read account metadata (a CLI updating itself, a slow first launch) returns
+    /// usage without an account key. Treated as an account change, it would wipe history and make a
+    /// running session's receipt unverifiable, so a key seen in the last 30 minutes is carried over.
+    static func carryingAccount(into snapshot: ProviderSnapshot, from previous: ProviderSnapshot?,
+                                within: TimeInterval = 30 * 60) -> ProviderSnapshot {
+        guard snapshot.accountKey == nil, let previous, previous.provider == snapshot.provider,
+              let key = previous.accountKey,
+              (0...within).contains(snapshot.fetchedAt.timeIntervalSince(previous.fetchedAt)) else { return snapshot }
+        return ProviderSnapshot(provider: snapshot.provider, accountKey: key, plan: snapshot.plan ?? previous.plan,
+                                windows: snapshot.windows, resetCreditCount: snapshot.resetCreditCount,
+                                resetCredits: snapshot.resetCredits, dailyUsage: snapshot.dailyUsage,
+                                fetchedAt: snapshot.fetchedAt, source: snapshot.source)
+    }
+
     private func performRefresh(_ id: ProviderID, provider: any UsageProvider, generation expected: Int, token: UUID) async {
         guard !Task.isCancelled, enabledProviders.contains(id), generation == expected else { return }
         defer { exportStatusLine() }
@@ -630,9 +644,10 @@ final class AppStore: ObservableObject {
         states[id]?.lastAttempt = Date()
         defer { if generation == expected { states[id]?.isRefreshing = false } }
         do {
-            let snapshot = try await provider.fetch()
+            var snapshot = try await provider.fetch()
             guard !Task.isCancelled, generation == expected else { return }
             guard snapshot.provider == id else { throw ProviderError.unavailable(String(localized: "제공자 정보를 확인하지 못했어요.")) }
+            snapshot = Self.carryingAccount(into: snapshot, from: states[id]?.snapshot)
             let previousKey = states[id]?.snapshot?.accountKey
             if previousKey != snapshot.accountKey {
                 resetNotificationTracking(for: id)

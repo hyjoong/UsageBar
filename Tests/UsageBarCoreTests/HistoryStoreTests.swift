@@ -80,6 +80,18 @@ final class HistoryStoreTests: XCTestCase {
         XCTAssertEqual(result.snapshots[.codex]?.windows.count, 0)
     }
 
+    func testMomentarilyUnknownIdentityKeepsKnownHistoryWithoutAddingSamples() async throws {
+        let store = HistoryStore(directory: directory)
+        try await store.record(snapshot(), now: now)
+        let blank = try await store.record(snapshot(account: nil, at: now.addingTimeInterval(60), used: 50), now: now.addingTimeInterval(60))
+        XCTAssertFalse(blank.accountChanged)
+        XCTAssertEqual(blank.points.count, 1)
+        XCTAssertEqual(blank.points.first?.remaining, 76)
+        let back = try await store.record(snapshot(at: now.addingTimeInterval(120), used: 30), now: now.addingTimeInterval(120))
+        XCTAssertFalse(back.accountChanged)
+        XCTAssertEqual(back.points.count, 2)
+    }
+
     func testUnknownIdentityDoesNotMergeWithKnownAccount() async throws {
         let store = HistoryStore(directory: directory)
         try await store.record(snapshot(account: nil), now: now)

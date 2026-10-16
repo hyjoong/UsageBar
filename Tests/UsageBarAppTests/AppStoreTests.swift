@@ -173,6 +173,33 @@ final class AppStoreTests: XCTestCase {
         }
     }
 
+    func testMissingAccountKeyIsCarriedOverBrieflyButNeverAcrossAccountsOrLongGaps() {
+        let now = Date()
+        let known = ProviderSnapshot(provider: .claude, accountKey: "account-a", plan: "Max", windows: [], fetchedAt: now, source: "test")
+        let blank = ProviderSnapshot(provider: .claude, windows: [], fetchedAt: now.addingTimeInterval(300), source: "test")
+        let carried = AppStore.carryingAccount(into: blank, from: known)
+        XCTAssertEqual(carried.accountKey, "account-a")
+        XCTAssertEqual(carried.plan, "Max")
+        // A different, known account is reported as is.
+        let other = ProviderSnapshot(provider: .claude, accountKey: "account-b", windows: [], fetchedAt: blank.fetchedAt, source: "test")
+        XCTAssertEqual(AppStore.carryingAccount(into: other, from: known).accountKey, "account-b")
+        // After a long gap, or with nothing known before, unknown stays unknown.
+        let late = ProviderSnapshot(provider: .claude, windows: [], fetchedAt: now.addingTimeInterval(31 * 60), source: "test")
+        XCTAssertNil(AppStore.carryingAccount(into: late, from: known).accountKey)
+        XCTAssertNil(AppStore.carryingAccount(into: blank, from: nil).accountKey)
+        let codex = ProviderSnapshot(provider: .codex, accountKey: "account-a", windows: [], fetchedAt: now, source: "test")
+        XCTAssertNil(AppStore.carryingAccount(into: blank, from: codex).accountKey)
+    }
+
+    func testTransientMissingAccountKeyDoesNotLookLikeAnAccountChange() async {
+        let provider = StubProvider(.claude, snapshot: ProviderSnapshot(provider: .claude, accountKey: "account-a", windows: [], source: "test"))
+        let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())
+        await store.refresh(.claude, force: true)
+        await provider.setSnapshot(ProviderSnapshot(provider: .claude, windows: [], source: "test"))
+        await store.refresh(.claude, force: true)
+        XCTAssertEqual(store.states[.claude]?.snapshot?.accountKey, "account-a")
+    }
+
     func testExpiredAuthenticationKeepsPreviousSnapshotAndClearsAfterRecovery() async {
         let provider = StubProvider(.claude)
         let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())
