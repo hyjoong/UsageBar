@@ -99,6 +99,22 @@
         }
       }
     },
+    "%@ · 이 속도면 %@에 소진돼요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · At this rate it runs out at %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 이 속도면 %@에 소진돼요"
+          }
+        }
+      }
+    },
     "%@ · 자세히": {
       "localizations": {
         "en": {
@@ -191,6 +207,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 사용량 조회"
+          }
+        }
+      }
+    },
+    "%@ 소진 예상": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runs out %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 소진 예상"
           }
         }
       }
@@ -367,6 +399,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 한도 확인 중"
+          }
+        }
+      }
+    },
+    "%@ 한도가 곧 소진될 것 같아요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ limit may run out soon"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 한도가 곧 소진될 것 같아요"
           }
         }
       }
@@ -1800,6 +1848,22 @@
         }
       }
     },
+    "기간 경과": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elapsed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기간 경과"
+          }
+        }
+      }
+    },
     "기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요.": {
       "localizations": {
         "en": {
@@ -2536,6 +2600,22 @@
         }
       }
     },
+    "리셋 전에 소진될 것 같으면 알림": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify when a limit may run out before it resets"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋 전에 소진될 것 같으면 알림"
+          }
+        }
+      }
+    },
     "리셋 통과 · 추정 (리셋 전 +%@%%p, 리셋 후 +%@%%p)": {
       "localizations": {
         "en": {
@@ -2596,6 +2676,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "리셋까지 남은 시간도 표시"
+          }
+        }
+      }
+    },
+    "리셋까지 여유": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lasts until reset"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리셋까지 여유"
           }
         }
       }
@@ -4456,6 +4552,38 @@
         }
       }
     },
+    "이 속도면 %@에 소진돼요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At this rate it runs out at %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 속도면 %@에 소진돼요"
+          }
+        }
+      }
+    },
+    "이 속도면 리셋까지 남아요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At this rate it lasts until the reset"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 속도면 리셋까지 남아요"
+          }
+        }
+      }
+    },
     "이름 없는 한도": {
       "localizations": {
         "en": {
@@ -5544,6 +5672,22 @@
         }
       }
     },
+    "최근 %lld분 동안 시간당 %@%%p 사용": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ pts/hour over the last %1$lld min"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %lld분 동안 시간당 %@%%p 사용"
+          }
+        }
+      }
+    },
     "최근 일별 토큰": {
       "localizations": {
         "en": {
@@ -5892,6 +6036,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "한도 비교 없이 종료"
+          }
+        }
+      }
+    },
+    "한도 사용": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도 사용"
           }
         }
       }

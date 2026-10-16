@@ -118,6 +118,9 @@ final class AppStore: ObservableObject {
     }
     @Published private(set) var notificationsEnabled = false
     @Published private(set) var recoveryNotificationsEnabled = false
+    @Published private(set) var runOutNotificationsEnabled = false
+    /// Run-out warnings already sent, by provider, window and period. One per period is enough.
+    private var runOutNotified: Set<String> = []
     /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
     @Published var workRemindersEnabled = true {
         didSet {
@@ -201,6 +204,7 @@ final class AppStore: ObservableObject {
             }
             notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
             recoveryNotificationsEnabled = defaults.bool(forKey: "recoveryNotificationsEnabled")
+            runOutNotificationsEnabled = defaults.bool(forKey: "runOutNotificationsEnabled")
             if defaults.object(forKey: "workRemindersEnabled") != nil {
                 workRemindersEnabled = defaults.bool(forKey: "workRemindersEnabled")
             }
@@ -373,6 +377,17 @@ final class AppStore: ObservableObject {
     /// The window the menu bar shows: the saved choice, otherwise the shortest window.
     func trackedWindow(for provider: ProviderID) -> UsageWindow? {
         UsageWindowSelection.select(from: states[provider]?.snapshot?.windows ?? [], preferredID: trackedWindowIDs[provider])
+    }
+
+    /// When the window runs out at the recent rate, from this period's polled history. Current readings only.
+    func projection(for provider: ProviderID, window: UsageWindow) -> UsageProjection? {
+        guard freshness(for: provider) == .current, let observedAt = states[provider]?.snapshot?.fetchedAt else { return nil }
+        return UsageProjection.evaluate(window: window, history: history(for: provider), observedAt: observedAt, now: clockNow)
+    }
+
+    /// A menu bar percentage at or below the low-limit line, shown in the warning color.
+    var menuIsLow: Bool {
+        showPercentage && menuProviders.contains { trackedWindow(for: $0).map { $0.remainingPercent <= 20 } ?? false }
     }
 
     /// The window the panel leads with: always the shortest one (the 5-hour limit when present).
@@ -578,6 +593,10 @@ final class AppStore: ObservableObject {
         await setNotificationSetting(\.recoveryNotificationsEnabled, key: "recoveryNotificationsEnabled", enabled: enabled)
     }
 
+    func setRunOutNotificationsEnabled(_ enabled: Bool) async {
+        await setNotificationSetting(\.runOutNotificationsEnabled, key: "runOutNotificationsEnabled", enabled: enabled)
+    }
+
     /// Turning any notification on asks for permission; the stored value reflects what macOS granted.
     private func setNotificationSetting(_ path: ReferenceWritableKeyPath<AppStore, Bool>, key: String, enabled: Bool) async {
         let settingToken = UUID()
@@ -695,6 +714,15 @@ final class AppStore: ObservableObject {
                     body: String(localized: "\(window.label) · \(Int(remaining.rounded()))% 남음"))
                 if delivered { nextState.hasNotified = true }
             }
+            if runOutNotificationsEnabled && !isDemo, !runOutNotified.contains("\(key).\(period)"), let resetsAt = window.resetsAt,
+               let projection = UsageProjection.evaluate(window: window, history: history(for: snapshot.provider),
+                                                         observedAt: snapshot.fetchedAt, now: Date()),
+               projection.shouldWarn(resetsAt: resetsAt, now: Date()), case .runsOut(let at) = projection.outcome {
+                let delivered = await deliverNotification(id: "runout.\(key).\(period)",
+                    title: String(localized: "\(snapshot.provider.title) 한도가 곧 소진될 것 같아요"),
+                    body: String(localized: "\(window.label) · 이 속도면 \(UsageFormat.resetClock(at, now: Date()))에 소진돼요"))
+                if delivered { runOutNotified.insert("\(key).\(period)") }
+            }
             if decision.shouldNotifyRecovery && recoveryNotificationsEnabled && !isDemo {
                 _ = await deliverNotification(id: "recovery.\(key).\(period)",
                     title: String(localized: "\(snapshot.provider.title) 한도가 리셋됐어요"),
@@ -741,6 +769,13 @@ final class AppStore: ObservableObject {
                                tokens: Int64([2_100_000, 3_600_000, 1_200_000, 5_300_000, 6_000_000, 4_800_000, 8_400_000][$0]))
                 } : nil, fetchedAt: now, source: String(localized: "예시 데이터 · 외부 연결 없음"))
             states[id] = ProviderState(snapshot: snapshot)
+            let session = snapshot.windows.first { $0.id == "session" }
+            for minutes in stride(from: 60, through: 5, by: -5) {
+                // 12 points over the last hour: 68% left lasts past the 3-hour reset.
+                historyPoints.append(HistoryPoint(provider: id, date: now.addingTimeInterval(-Double(minutes) * 60),
+                                                  remaining: 68 + Double(minutes) / 5, windowName: String(localized: "5시간 한도"),
+                                                  windowID: "session", resetsAt: session?.resetsAt))
+            }
             for index in 0..<16 {
                 historyPoints.append(HistoryPoint(provider: id, date: now.addingTimeInterval(-Double(15 - index) * 3_600),
                                                   remaining: 96 - Double(index) * (20.0 / 15),
@@ -760,6 +795,21 @@ final class AppStore: ObservableObject {
             selectedProvider = .codex
         }
         if CommandLine.arguments.contains("--ui-codex") { selectedProvider = .codex }
+        if CommandLine.arguments.contains("--ui-runout"), let old = states[.claude]?.snapshot {
+            // 12% left after 18 points in the last hour: runs out in about 40 minutes, before the reset.
+            let windows = old.windows.map { window in
+                window.id == "session" ? UsageWindow(id: window.id, label: window.label, usedPercent: 88,
+                    resetsAt: window.resetsAt, durationMinutes: window.durationMinutes) : window
+            }
+            states[.claude]?.snapshot = ProviderSnapshot(provider: .claude, plan: old.plan, windows: windows,
+                fetchedAt: old.fetchedAt, source: old.source)
+            historyPoints.removeAll { $0.provider == .claude && $0.windowID == "session" }
+            for minutes in stride(from: 60, through: 5, by: -5) {
+                historyPoints.append(HistoryPoint(provider: .claude, date: now.addingTimeInterval(-Double(minutes) * 60),
+                    remaining: 12 + Double(minutes) * 0.3, windowName: String(localized: "5시간 한도"),
+                    windowID: "session", resetsAt: windows.first { $0.id == "session" }?.resetsAt))
+            }
+        }
         if CommandLine.arguments.contains("--ui-menu-all") { menuBarDisplayMode = .all }
         if CommandLine.arguments.contains("--ui-rate-limited") {
             for id in ProviderID.allCases {

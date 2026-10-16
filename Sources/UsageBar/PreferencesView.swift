@@ -71,6 +71,10 @@ struct PreferencesView: View {
                     get: { store.recoveryNotificationsEnabled },
                     set: { value in Task { await store.setRecoveryNotificationsEnabled(value) } }
                 ))
+                Toggle("리셋 전에 소진될 것 같으면 알림", isOn: Binding(
+                    get: { store.runOutNotificationsEnabled },
+                    set: { value in Task { await store.setRunOutNotificationsEnabled(value) } }
+                ))
                 detail("각 한도마다 기간당 한 번씩만 알려요. 켤 때 macOS 알림 권한을 요청해요.")
                 if let message = store.notificationMessage {
                     note(message, color: UsageTheme.warning)

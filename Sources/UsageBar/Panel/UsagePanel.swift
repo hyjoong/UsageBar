@@ -8,12 +8,17 @@ struct UsagePanel: View {
     @ObservedObject var updates: AppUpdateController
     @Environment(\.openWindow) private var openWindow
     @State private var showCredits = false
-    @State private var showPace = false
+    @State private var showPace = Self.paceOpenAtLaunch
     @State private var contentHeight: CGFloat = Self.maxContentHeight
     private var provider: ProviderID { store.selectedProvider }
     private var snapshot: ProviderSnapshot? { store.selectedState.snapshot }
 
     static let width: CGFloat = 360
+    #if DEBUG
+    private static let paceOpenAtLaunch = CommandLine.arguments.contains("--ui-pace")
+    #else
+    private static let paceOpenAtLaunch = false
+    #endif
     static let maxContentHeight: CGFloat = 480
 
     var body: some View {
@@ -60,7 +65,8 @@ struct UsagePanel: View {
             QuotaRow(store: store, window: first, prominent: true)
             if store.freshness(for: provider) == .current,
                let pace = UsagePace.evaluate(window: first, observedAt: snapshot.fetchedAt, now: store.clockNow) {
-                PaceSection(pace: pace, isExpanded: $showPace)
+                PaceSection(pace: pace, projection: store.projection(for: provider, window: first),
+                            observedAt: snapshot.fetchedAt, now: store.clockNow, isExpanded: $showPace)
             }
             let others = store.sortedWindows(for: provider).filter { $0.id != first.id }
             if !others.isEmpty {

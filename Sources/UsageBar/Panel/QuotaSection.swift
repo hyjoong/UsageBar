@@ -122,9 +122,13 @@ struct ConnectionNotice: View {
     }
 }
 
-/// Compares elapsed period against consumed quota for the pinned window.
+/// Compares elapsed period against consumed quota for the pinned window, and when a short window
+/// would run out at the recent rate, leads with that time.
 struct PaceSection: View {
     let pace: UsagePace
+    let projection: UsageProjection?
+    let observedAt: Date
+    let now: Date
     @Binding var isExpanded: Bool
 
     var body: some View {
@@ -134,7 +138,7 @@ struct PaceSection: View {
             HStack {
                 Text("사용 속도")
                 Spacer()
-                Text(title).foregroundStyle(UsageTheme.secondaryInk)
+                headline
             }.font(UsageType.secondary)
         }
     }
@@ -147,10 +151,22 @@ struct PaceSection: View {
         }
     }
 
+    @ViewBuilder private var headline: some View {
+        switch projection?.outcome {
+        case .runsOut(let at):
+            Text("\(UsageFormat.resetClock(at, now: now)) 소진 예상").foregroundStyle(UsageTheme.warning)
+        case .lastsUntilReset:
+            Text("리셋까지 여유").foregroundStyle(UsageTheme.secondaryInk)
+        case nil:
+            Text(title).foregroundStyle(UsageTheme.secondaryInk)
+        }
+    }
+
     private var card: some View {
         VStack(alignment: .leading, spacing: 10) {
-            row("기간 경과", percent: pace.elapsedPercent, color: UsageTheme.secondaryInk)
-            row("한도 사용", percent: pace.usedPercent, color: pace.position == .ahead ? UsageTheme.warning : UsageTheme.ink)
+            if let projection { projectionDetail(projection) }
+            row(String(localized: "기간 경과"), percent: pace.elapsedPercent, color: UsageTheme.secondaryInk)
+            row(String(localized: "한도 사용"), percent: pace.usedPercent, color: pace.position == .ahead ? UsageTheme.warning : UsageTheme.ink)
             Text("마지막 조회 시점 · 기간을 고르게 사용하는 기준")
                 .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
@@ -158,9 +174,26 @@ struct PaceSection: View {
         .help("기간 경과율과 실제 한도 사용률을 비교해요. 사용 패턴에 따라 차이가 날 수 있어요.")
     }
 
+    private func projectionDetail(_ projection: UsageProjection) -> some View {
+        let minutes = max(1, Int(observedAt.timeIntervalSince(projection.sampledSince) / 60))
+        let rate = projection.ratePerHour
+        let rateText = rate >= 10 || rate == 0 ? String(format: "%.0f", rate) : String(format: "%.1f", rate)
+        return VStack(alignment: .leading, spacing: 2) {
+            switch projection.outcome {
+            case .runsOut(let at):
+                Text("이 속도면 \(UsageFormat.resetClock(at, now: now))에 소진돼요").foregroundStyle(UsageTheme.warning)
+            case .lastsUntilReset:
+                Text("이 속도면 리셋까지 남아요")
+            }
+            Text("최근 \(minutes)분 동안 시간당 \(rateText)%p 사용")
+                .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk).monospacedDigit()
+        }
+        .font(UsageType.headline)
+    }
+
     private func row(_ label: String, percent: Double, color: Color) -> some View {
         HStack(spacing: 9) {
-            Text(label).frame(width: 55, alignment: .leading)
+            Text(verbatim: label).frame(width: 55, alignment: .leading)
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(UsageTheme.mutedSurface)

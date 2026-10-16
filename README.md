@@ -35,11 +35,12 @@
 ## Features
 
 - **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took, how many percentage points of each limit it used, and which models and projects were involved, with call and token counts from this Mac's CLI session logs. No other menu bar app answers "what did this refactor cost me?"
-- **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time.
+- **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time and turns orange at 20% or less.
+- **Run-out estimate.** From your last hour of use, the panel tells you whether the 5-hour limit lasts until the reset or when it will run out, and can notify you before it does.
 - **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
 - **Both services.** Claude Code and Codex side by side, or just the one you use.
 - **Nothing new to log in to.** UsageBar reads the CLI logins already on your Mac. It never asks for a password or an API key.
-- **Stays out of the way.** A menu bar popover that sizes to its content, a floating window when you want it to stay visible, and optional notifications when a limit drops below 20% and when a low limit resets.
+- **Stays out of the way.** A menu bar popover that sizes to its content, a floating window when you want it to stay visible, and optional notifications when a limit drops below 20%, when it may run out before the reset, and when a low limit resets.
 - **English and Korean.** Follows your system language.
 
 <p align="center">

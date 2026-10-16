@@ -45,6 +45,8 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-check --ui-journal-receipt-reset` | 리셋을 지나 한도 비교가 안 되는 영수증 (토큰이 헤드라인) |
 | `--demo --ui-window` | 패널을 떠 있는 창으로 연 상태 |
 | `--demo --ui-menu-all` | 메뉴바에 두 서비스를 함께 표시 |
+| `--demo --ui-runout` | Claude 5시간 한도가 12% 남고 최근 1시간에 18%p를 써서 리셋 전 소진이 예상되는 상태 (메뉴 막대 주황) |
+| 위 옵션에 `--ui-pace` 추가 | 사용 속도 영역을 펼친 채로 열기 |
 | `--demo --ui-window --ui-demo-flow` | 클릭 없이 작업 시작 → 진행 → 영수증까지 자동 진행 (README GIF 녹화용, `scripts/record-demo-flow.sh`) |
 | `--demo --ui-settings` | 설정 창 |
 | `--demo --ui-history` | 사용 기록 창 |

@@ -119,16 +119,19 @@ private struct UsageMenuLabel: View {
         #endif
     }
 
-    /// Rendered black and marked as a template so the menu bar tints it for light, dark and highlighted states.
+    /// Normally rendered black as a template so the menu bar tints it for light, dark and highlighted states.
+    /// At or below the low-limit line it is drawn in orange instead: a template cannot carry color, and
+    /// orange reads on both light and dark menu bars.
     /// This runs on every label update, so the content must not host a TimelineView: `.periodic(from: .now)`
     /// would reschedule on each render and spin the main thread. The store's clock ticks once a minute.
     private var renderedLabel: NSImage {
+        let low = store.menuIsLow
         let renderer = ImageRenderer(content: content
             .font(Font(NSFont.menuBarFont(ofSize: 0)))
-            .foregroundStyle(.black))
+            .foregroundStyle(low ? Color(nsColor: .systemOrange) : .black))
         renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
         let image = renderer.nsImage ?? UsageBrandMark.menuImage
-        image.isTemplate = true
+        image.isTemplate = !low
         return image
     }
 
