@@ -46,12 +46,12 @@
 - **English and Korean.** Follows your system language.
 
 <p align="center">
-  <img src="docs/images/receipts-en.jpg" width="31%" alt="Receipts window: active session card and finished receipts" />
+  <img src="docs/images/receipts-en.jpg" width="31%" alt="Receipts window: start card, last 7 days summary with limit totals by service, and finished receipts" />
   <img src="docs/images/panel-codex-en.jpg" width="31%" alt="Codex panel: limit gauges, reset credits with expiry, latest daily tokens" />
   <img src="docs/images/history-en.jpg" width="31%" alt="History window: remaining limit over time, period picker, CSV export" />
 </p>
 
-<p align="center"><sub>Receipts · Codex panel · History. All screenshots use demo data.</sub></p>
+<p align="center"><sub>Receipts with the weekly summary · Codex panel · History. All screenshots use demo data.</sub></p>
 
 ## Install
 

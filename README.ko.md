@@ -46,12 +46,12 @@
 - **한국어와 영어.** 시스템 언어를 따릅니다.
 
 <p align="center">
-  <img src="docs/images/receipts-ko.jpg" width="31%" alt="작업 영수증 창: 진행 중인 작업 카드와 완료된 영수증 목록" />
+  <img src="docs/images/receipts-ko.jpg" width="31%" alt="작업 영수증 창: 시작 카드, 서비스별 한도 합계가 담긴 최근 7일 요약, 완료된 영수증" />
   <img src="docs/images/panel-codex-ko.jpg" width="31%" alt="Codex 패널: 한도 게이지, 초기화권 수와 만료, 최근 일별 토큰" />
   <img src="docs/images/history-ko.jpg" width="31%" alt="사용 기록 창: 잔여 한도 추이 차트, 기간 선택, CSV 내보내기" />
 </p>
 
-<p align="center"><sub>작업 영수증 · Codex 패널 · 사용 기록. 모든 스크린샷은 예시 데이터입니다.</sub></p>
+<p align="center"><sub>주간 요약이 있는 작업 영수증 · Codex 패널 · 사용 기록. 모든 스크린샷은 예시 데이터입니다.</sub></p>
 
 ## 설치
 

@@ -162,7 +162,8 @@ final class WorkJournalController: ObservableObject {
         let now = Date()
         let start = now.addingTimeInterval(-47 * 60)
         let snapshot = ProviderSnapshot(provider: .claude, accountKey: "demo-only", plan: String(localized: "Max · 예시"),
-            windows: [UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 10,
+            // 22% → 24% weekly against 22% → 32% for the 5-hour window: a longer window moves less.
+            windows: [UsageWindow(id: "weekly", label: String(localized: "주간 한도"), usedPercent: 22,
                                   resetsAt: now.addingTimeInterval(5 * 86_400), durationMinutes: 10_080),
                       UsageWindow(id: "session", label: String(localized: "5시간 한도"), usedPercent: 22,
                                   resetsAt: now.addingTimeInterval(3 * 3_600), durationMinutes: 300)],
