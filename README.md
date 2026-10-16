@@ -67,7 +67,7 @@ On Apple Silicon, both native Homebrew and Intel Homebrew running through Rosett
 1. Download `UsageBar-<version>-<build>.zip` from the [latest release](https://github.com/hyjoong/UsageBar/releases/latest). The automatic *Source code* archives are not the app.
 2. Unzip it and move `UsageBar.app` to **Applications**.
 
-Then open it and click the **U** icon in the menu bar. There is no main window or Dock icon.
+Then open it. The menu bar shows your remaining limit as a percentage; click it to open the panel. The **U** icon stands in until the first check. There is no main window or Dock icon.
 
 The app is signed with a Developer ID and notarized by Apple. Updates install in place from Settings → About → **Check for Updates…**; settings and history are kept.
 
@@ -88,11 +88,10 @@ On first launch the panel walks you through the connection in three numbered ste
 
 | I want to… | Do this |
 | --- | --- |
-| See remaining limits | Click the U icon. The big number is the 5-hour limit; other limits follow below. |
+| See remaining limits | Click the percentage in the menu bar. The big number is the 5-hour limit; other limits follow below. |
 | Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
 | Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
 | Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
-| Show only the percentage | Settings → Menu Bar → turn off **Show app icon**. |
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
 | Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
@@ -100,8 +99,8 @@ On first launch the panel walks you through the connection in three numbered ste
 
 ## FAQ
 
-**The icon is not in my menu bar.**
-When the menu bar is full, macOS hides items that fall under the notch, and a newly added app lands right next to it. Remove a few Control Center items or use a menu bar manager; then ⌘-drag the U icon to the right so it keeps its spot. Until then, launching UsageBar again opens the panel as a window.
+**UsageBar is not in my menu bar.**
+When the menu bar is full, macOS hides items that fall under the notch, and a newly added app lands right next to it. Remove a few Control Center items or use a menu bar manager; then ⌘-drag the UsageBar percentage to the right so it keeps its spot. Until then, launching UsageBar again opens the panel as a window.
 
 **It says a login is needed.**
 Log in with the CLI in Terminal, then press **Check again**. UsageBar never handles the login itself.
