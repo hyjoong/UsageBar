@@ -142,7 +142,7 @@ private struct UsageMenuLabel: View {
             if let active = journal.state.active {
                 HStack(spacing: 3) {
                     Image(systemName: "record.circle").font(.system(size: 10, weight: .semibold))
-                    Text(verbatim: Self.compactDuration(store.clockNow.timeIntervalSince(active.startedAt))).monospacedDigit()
+                    Text(verbatim: UsageFormat.compactDuration(store.clockNow.timeIntervalSince(active.startedAt))).monospacedDigit()
                 }
             }
             ForEach(store.menuProviders) { provider in
@@ -157,12 +157,6 @@ private struct UsageMenuLabel: View {
             }
         }
         .fixedSize()
-    }
-
-    /// Short enough for the menu bar: minutes under an hour, whole hours after.
-    private static func compactDuration(_ interval: TimeInterval) -> String {
-        let minutes = max(0, Int(interval / 60))
-        return minutes < 60 ? String(localized: "\(minutes)분") : String(localized: "\(minutes / 60)시간")
     }
 }
 

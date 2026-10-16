@@ -93,6 +93,7 @@ On first launch the panel walks you through the connection in three numbered ste
 | Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
 | Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
 | Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
+| See limits inside Claude Code | Settings → Claude Code Status Line → **Show in Status Line**. The bottom of Claude Code then shows a recording session, each service's 5-hour limit and the run-out estimate. |
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
 | Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
 
@@ -123,6 +124,7 @@ Releases are built for Apple Silicon. Intel builds have not been tested.
 - UsageBar uses each CLI's existing login. It never asks for, stores, or transmits passwords, API keys or tokens.
 - Usage history and receipts live only in `~/Library/Application Support/UsageBar/`. Conversations, project files and raw CLI responses are not stored.
 - Receipt details come from the session logs Claude Code and Codex already keep in `~/.claude` and `~/.codex`. UsageBar reads only timestamps, model names, token counts and the project folder name, and never stores message content. You can turn this off under Settings → Work log.
+- UsageBar changes `~/.claude/settings.json` only when you press **Show in Status Line**. It backs the file up first, adds only the `statusLine` entry, and never replaces a status line you already have.
 - Billing dates, amounts and per-project costs are not shown, and nothing consumes reset credits.
 - No analytics, no telemetry. The only network activity is the CLIs' own usage queries and the signed update check you can turn off.
 

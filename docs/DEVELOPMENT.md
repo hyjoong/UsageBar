@@ -47,6 +47,7 @@ Debug 빌드에는 다음 화면 확인 옵션이 있습니다. Release 빌드�
 | `--demo --ui-menu-all` | 메뉴바에 두 서비스를 함께 표시 |
 | `--demo --ui-runout` | Claude 5시간 한도가 12% 남고 최근 1시간에 18%p를 써서 리셋 전 소진이 예상되는 상태 (메뉴 막대 주황) |
 | 위 옵션에 `--ui-pace` 추가 | 사용 속도 영역을 펼친 채로 열기 |
+| `--demo --ui-settings --ui-settings-statusline` | 설정 창을 Claude Code 상태줄 섹션까지 내려서 열기 (예시 모드에서는 실제 설정 파일을 바꾸지 않음) |
 | `--demo --ui-window --ui-demo-flow` | 클릭 없이 작업 시작 → 진행 → 영수증까지 자동 진행 (README GIF 녹화용, `scripts/record-demo-flow.sh`) |
 | `--demo --ui-settings` | 설정 창 |
 | `--demo --ui-history` | 사용 기록 창 |

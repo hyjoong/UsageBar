@@ -119,6 +119,12 @@ final class AppStore: ObservableObject {
     @Published private(set) var notificationsEnabled = false
     @Published private(set) var recoveryNotificationsEnabled = false
     @Published private(set) var runOutNotificationsEnabled = false
+    /// Keeps the Claude Code status line file current. Turned on by installing or copying the status line.
+    @Published private(set) var statusLineEnabled = false {
+        didSet { if !isDemo { defaults.set(statusLineEnabled, forKey: "statusLineEnabled") } }
+    }
+    @Published private(set) var statusLineState: ClaudeStatusLine.State = .notConfigured
+    @Published private(set) var statusLineMessage: String?
     /// Run-out warnings already sent, by provider, window and period. One per period is enough.
     private var runOutNotified: Set<String> = []
     /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
@@ -175,7 +181,7 @@ final class AppStore: ObservableObject {
         notificationsAvailable = !demo && providerOverrides == nil && Bundle.main.bundleIdentifier != nil
         states = Dictionary(uniqueKeysWithValues: ProviderID.allCases.map { ($0, ProviderState()) })
         journalObservation = workJournal.$state.map { $0.active?.id }.removeDuplicates()
-            .sink { [weak self] _ in Task { await self?.syncWorkReminders() } }
+            .sink { [weak self] _ in Task { await self?.syncWorkReminders(); self?.exportStatusLine() } }
         workJournal.historyProvider = { [weak self] provider in self?.history(for: provider) ?? [] }
         workJournal.activityCollector = { [weak self] provider, start, end in
             guard let self, self.sessionDetailsEnabled else { return nil }
@@ -205,6 +211,7 @@ final class AppStore: ObservableObject {
             notificationsEnabled = defaults.bool(forKey: "notificationsEnabled")
             recoveryNotificationsEnabled = defaults.bool(forKey: "recoveryNotificationsEnabled")
             runOutNotificationsEnabled = defaults.bool(forKey: "runOutNotificationsEnabled")
+            statusLineEnabled = defaults.bool(forKey: "statusLineEnabled")
             if defaults.object(forKey: "workRemindersEnabled") != nil {
                 workRemindersEnabled = defaults.bool(forKey: "workRemindersEnabled")
             }
@@ -385,6 +392,98 @@ final class AppStore: ObservableObject {
         return UsageProjection.evaluate(window: window, history: history(for: provider), observedAt: observedAt, now: clockNow)
     }
 
+    // MARK: Claude Code status line
+
+    private var statusLineDirectory: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("UsageBar", isDirectory: true)
+    }
+    private var statusLineFile: URL { statusLineDirectory.appendingPathComponent("statusline.txt") }
+    var statusLineScript: URL { statusLineDirectory.appendingPathComponent("statusline.sh") }
+    private var claudeSettingsFile: URL {
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/settings.json")
+    }
+    var statusLineCommand: String { ClaudeStatusLine.command(script: statusLineScript) }
+
+    /// Recording state, each enabled service's leading limit, and the run-out time when one is near.
+    func statusLineSegments() -> [ClaudeStatusLine.Segment] {
+        var segments: [ClaudeStatusLine.Segment] = []
+        if let active = workJournal.state.active {
+            let elapsed = UsageFormat.compactDuration(clockNow.timeIntervalSince(active.startedAt))
+            segments.append(.init(String(localized: "기록 중 \(elapsed)"), tone: .recording))
+        }
+        for provider in activeProviders {
+            guard let window = primaryWindow(for: provider) else { continue }
+            let current = freshness(for: provider) == .current
+            let tone: ClaudeStatusLine.Segment.Tone = !current ? .dim : (window.remainingPercent <= 20 ? .warning : .normal)
+            segments.append(.init("\(provider.title) \(Int(window.remainingPercent.rounded()))%", tone: tone))
+            if let projection = projection(for: provider, window: window), case .runsOut(let at) = projection.outcome {
+                segments.append(.init(String(localized: "\(UsageFormat.resetClock(at, now: clockNow)) 소진 예상"), tone: .warning))
+            }
+        }
+        return segments
+    }
+
+    func refreshStatusLineState() {
+        guard !isDemo else { return }
+        statusLineState = ClaudeStatusLine.state(settings: claudeSettingsFile)
+    }
+
+    func installStatusLine() {
+        statusLineMessage = nil
+        if isDemo { statusLineState = .installed; return }
+        do {
+            try ClaudeStatusLine.install(settings: claudeSettingsFile, script: statusLineScript, lineFile: statusLineFile)
+            statusLineEnabled = true
+            exportStatusLine()
+        } catch ClaudeStatusLine.Failure.otherStatusLine {
+            statusLineMessage = String(localized: "이미 다른 상태줄이 설정돼 있어서 바꾸지 않았어요.")
+        } catch ClaudeStatusLine.Failure.invalidSettings {
+            statusLineMessage = String(localized: "~/.claude/settings.json을 읽을 수 없어 바꾸지 않았어요. 파일 형식을 확인해 주세요.")
+        } catch {
+            statusLineMessage = String(localized: "상태줄을 설정하지 못했어요.")
+        }
+        refreshStatusLineState()
+    }
+
+    func removeStatusLine() {
+        statusLineMessage = nil
+        if isDemo { statusLineState = .notConfigured; return }
+        do { try ClaudeStatusLine.uninstall(settings: claudeSettingsFile) }
+        catch { statusLineMessage = String(localized: "상태줄 설정을 지우지 못했어요.") }
+        statusLineEnabled = false
+        try? FileManager.default.removeItem(at: statusLineFile)
+        refreshStatusLineState()
+    }
+
+    /// For people who already have a status line script: keep the line file current and hand them the command.
+    func copyStatusLineCommand() {
+        statusLineMessage = nil
+        if !isDemo {
+            do {
+                try FileManager.default.createDirectory(at: statusLineDirectory, withIntermediateDirectories: true)
+                try ClaudeStatusLine.script(lineFile: statusLineFile).write(to: statusLineScript, atomically: true, encoding: .utf8)
+                try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: statusLineScript.path)
+            } catch {
+                statusLineMessage = String(localized: "상태줄 스크립트를 만들지 못했어요.")
+                return
+            }
+            statusLineEnabled = true
+            exportStatusLine()
+        }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(statusLineCommand, forType: .string)
+        statusLineMessage = String(localized: "명령을 복사했어요. 기존 상태줄 스크립트 끝에 붙여 넣으세요.")
+    }
+
+    /// Rewritten every minute so the script can tell a running UsageBar from a closed one by the file's age.
+    private func exportStatusLine() {
+        guard statusLineEnabled, !isDemo, historyStore != nil else { return }
+        let line = ClaudeStatusLine.render(statusLineSegments())
+        try? FileManager.default.createDirectory(at: statusLineDirectory, withIntermediateDirectories: true)
+        try? Data(line.utf8).write(to: statusLineFile, options: .atomic)
+    }
+
     /// A menu bar percentage at or below the low-limit line, shown in the warning color.
     var menuIsLow: Bool {
         showPercentage && menuProviders.contains { trackedWindow(for: $0).map { $0.remainingPercent <= 20 } ?? false }
@@ -526,6 +625,7 @@ final class AppStore: ObservableObject {
 
     private func performRefresh(_ id: ProviderID, provider: any UsageProvider, generation expected: Int, token: UUID) async {
         guard !Task.isCancelled, enabledProviders.contains(id), generation == expected else { return }
+        defer { exportStatusLine() }
         states[id]?.isRefreshing = true
         states[id]?.lastAttempt = Date()
         defer { if generation == expected { states[id]?.isRefreshing = false } }
@@ -650,6 +750,7 @@ final class AppStore: ObservableObject {
                 do { try await Task.sleep(for: .seconds(60)) } catch { return }
                 guard let self, self.started else { return }
                 self.clockNow = Date()
+                self.exportStatusLine()
                 guard !self.isDemo, !self.sleeping else { continue }
                 for provider in self.activeProviders {
                     let pending = (self.states[provider]?.snapshot?.windows ?? []).compactMap { window -> (String, Date)? in

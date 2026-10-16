@@ -14,6 +14,18 @@ struct PreferencesView: View {
     }
 
     var body: some View {
+        ScrollViewReader { proxy in form.onAppear { scrollForCheck(proxy) } }
+    }
+
+    /// Demo screen checks: `--ui-settings-statusline` opens settings scrolled to the status line section.
+    private func scrollForCheck(_ proxy: ScrollViewProxy) {
+        #if DEBUG
+        guard store.isDemo, CommandLine.arguments.contains("--ui-settings-statusline") else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { proxy.scrollTo("statusline", anchor: .top) }
+        #endif
+    }
+
+    private var form: some View {
         Form {
             Section {
                 Picker("화면 모드", selection: $store.appearanceMode) {
@@ -93,6 +105,13 @@ struct PreferencesView: View {
             }
 
             Section {
+                statusLineRows
+            } header: {
+                sectionTitle("Claude Code 상태줄", symbol: "terminal")
+            }
+            .id("statusline")
+
+            Section {
                 ForEach(ProviderID.allCases) { provider in
                     Toggle("\(provider.title) 사용량 조회", isOn: Binding(
                         get: { store.enabledProviders.contains(provider) },
@@ -135,9 +154,43 @@ struct PreferencesView: View {
         .background(UsageTheme.canvas)
         .frame(width: 500)
         .frame(minHeight: 480, idealHeight: 620, maxHeight: 800)
-        .onAppear { launchAtLogin.refreshStatus() }
+        .onAppear { launchAtLogin.refreshStatus(); store.refreshStatusLineState() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             launchAtLogin.refreshStatus()
+        }
+    }
+
+    @ViewBuilder private var statusLineRows: some View {
+        let preview = ClaudeStatusLine.render(store.statusLineSegments(), ansi: false)
+        detail("Claude Code 화면 아래에 작업 기록 중 표시, 서비스별 5시간 잔여율, 소진 예상을 보여 줘요. UsageBar가 꺼져 있으면 10분 뒤 사라져요.")
+        if !preview.isEmpty {
+            Text(verbatim: preview).font(UsageType.secondary).monospacedDigit().foregroundStyle(UsageTheme.secondaryInk)
+                .textSelection(.enabled)
+        }
+        switch store.statusLineState {
+        case .notConfigured:
+            HStack {
+                Button("상태줄에 표시") { store.installStatusLine() }
+                Spacer()
+            }
+            detail("~/.claude/settings.json을 백업(settings.json.usagebar-backup)한 뒤 statusLine 항목만 추가해요.")
+        case .installed:
+            HStack {
+                Label("설정됨", systemImage: "checkmark.circle").foregroundStyle(UsageTheme.secondaryInk)
+                Spacer()
+                Button("상태줄에서 빼기") { store.removeStatusLine() }
+            }
+            detail("새로 여는 Claude Code 화면부터 보여요.")
+        case .otherStatusLine:
+            detail("이미 다른 상태줄을 쓰고 있어서 설정을 바꾸지 않아요. 그 스크립트 끝에 아래 명령을 추가하면 함께 보여요.")
+            Text(verbatim: store.statusLineCommand).font(UsageType.captionMono).textSelection(.enabled)
+            HStack {
+                Button("명령 복사") { store.copyStatusLineCommand() }
+                Spacer()
+            }
+        }
+        if let message = store.statusLineMessage {
+            note(message, color: UsageTheme.warning)
         }
     }
 

@@ -42,6 +42,12 @@ enum UsageFormat {
         return line
     }
 
+    /// Short enough for the menu bar and the Claude Code status line: minutes under an hour, whole hours after.
+    static func compactDuration(_ interval: TimeInterval) -> String {
+        let minutes = max(0, Int(interval / 60))
+        return minutes < 60 ? String(localized: "\(minutes)분") : String(localized: "\(minutes / 60)시간")
+    }
+
     static func durationLabel(_ interval: TimeInterval) -> String {
         guard interval.isFinite else { return String(localized: "시간 확인 불가") }
         let minutes = Int(min(max(0, interval / 60), Double(Int.max / 2)))
