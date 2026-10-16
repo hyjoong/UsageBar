@@ -67,6 +67,8 @@ zsh scripts/prepare-release.sh \
 
 ### Homebrew cask 갱신
 
+2026-10-16부터 tap의 **Bump UsageBar cask** 워크플로가 매시간 17분에 최신 릴리스를 확인합니다. 버전·빌드·체크섬 중 하나라도 cask와 다르면 ZIP을 받아 검증한 뒤 cask를 고쳐 커밋합니다. 검증 항목은 체크섬, 앱 안의 버전·빌드·번들 ID, Developer ID 서명과 팀 ID, 공증 스탬프, 아키텍처 테스트, `brew style`입니다. 하나라도 실패하면 갱신하지 않습니다. tap 자신의 기본 토큰만 쓰므로 비밀값은 없습니다. 게시 직후 바로 반영하려면 `gh workflow run bump-usagebar.yml -R hyjoong/homebrew-tap`을 실행하고, 커밋 없이 갱신 경로만 시험하려면 `-f verify_only=true`를 붙입니다. 아래의 수동 갱신도 그대로 쓸 수 있고, 그 경우 워크플로는 최신임을 확인하고 끝냅니다. 첫 실행에서 일반 실행은 0.8.16,34가 최신임을 확인하고 건너뛰었고, 검증 실행은 모든 검사를 통과한 뒤 커밋을 건너뛰었습니다.
+
 릴리스마다 [hyjoong/homebrew-tap](https://github.com/hyjoong/homebrew-tap)의 `Casks/usagebar.rb`에서 `version`(`버전,빌드`)과 `sha256`(`SHA256SUMS.txt`의 ZIP 값)을 새 값으로 바꾸고 `brew style hyjoong/tap`으로 검사한 뒤 푸시합니다. 릴리스가 게시된 뒤에 올려야 `brew install --cask hyjoong/tap/usagebar`가 동작합니다.
 
 #### 2026-10-12 Rosetta Homebrew 설치 검증 — 공개 tap 반영
