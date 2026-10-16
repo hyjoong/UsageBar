@@ -37,6 +37,7 @@
 - **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took, how many percentage points of each limit it used, and which models and projects were involved, with call and token counts from this Mac's CLI session logs. No other menu bar app answers "what did this refactor cost me?"
 - **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time and turns orange at 20% or less.
 - **Run-out estimate.** From your last hour of use, the panel tells you whether the 5-hour limit lasts until the reset or when it will run out, and can notify you before it does.
+- **Inside Claude Code.** An optional status line at the bottom of Claude Code shows a recording session, each service's 5-hour limit and the run-out time, and for 10 minutes after you finish, the result of that session.
 - **History.** Remaining limits over time and Codex daily tokens as charts, exportable to CSV.
 - **Both services.** Claude Code and Codex side by side, or just the one you use.
 - **Nothing new to log in to.** UsageBar reads the CLI logins already on your Mac. It never asks for a password or an API key.
@@ -83,7 +84,7 @@ On first launch the panel walks you through the connection in three numbered ste
 | Service | What to do |
 | --- | --- |
 | **Claude** | Install the Claude Code CLI, press **Open setup** to finish setup and log in from Terminal, then press **Check again**. |
-| **Codex** | Install the Codex CLI, run `codex login` with your ChatGPT subscription account, then press **Check again**. API key billing is not supported. |
+| **Codex** | Install the Codex CLI, or use the copy inside the ChatGPT or Codex app, and sign in with your ChatGPT subscription account (`codex login` for the CLI). Then press **Check again**. API key billing is not supported. |
 
 ## Usage
 
@@ -95,9 +96,9 @@ On first launch the panel walks you through the connection in three numbered ste
 | Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
 | See limits inside Claude Code | Settings → Claude Code Status Line → **Show in Status Line**. The bottom of Claude Code then shows a recording session, each service's 5-hour limit and the run-out estimate. |
 | Show both services in the menu bar | Settings → Menu Bar → **Show services** → **All enabled services**. |
-| Launch at login, low-limit alerts | Settings → **Launch UsageBar at login**, **Notify when a limit drops below 20%**. |
+| Launch at login, alerts | Settings → **Launch UsageBar at login**. Under **Notifications**, choose alerts for a limit below 20%, a limit that may run out before it resets, and a low limit that resets. |
 
-**How to read a receipt.** The numbers are the *account-wide* change over the observed interval. They include other windows and devices and are not a project's token count or cost. If the session crossed a limit reset, the receipt shows an estimate (≈) pieced together from the last poll before the reset and the new period's usage, and says so. When an account or plan change makes the comparison meaningless, it says why instead of showing a number.
+**How to read a receipt.** The numbers are the *account-wide* change over the observed interval. They include other windows and devices and are not a project's token count or cost. If the session crossed a limit reset, the receipt shows an estimate (≈) pieced together from the last poll before the reset and the new period's usage, and says so. When an account or plan change makes the comparison meaningless, it says why instead of showing a number. Services report limits in whole percentage points, so a short session often shows **no visible change**; the receipt then leads with the session's output tokens.
 
 ## FAQ
 
