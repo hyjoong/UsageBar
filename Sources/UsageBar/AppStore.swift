@@ -411,6 +411,8 @@ final class AppStore: ObservableObject {
         if let active = workJournal.state.active {
             let elapsed = UsageFormat.compactDuration(clockNow.timeIntervalSince(active.startedAt))
             segments.append(.init(String(localized: "기록 중 \(elapsed)"), tone: .recording))
+        } else if let last = Self.lastSessionSegment(receipts: workJournal.state.receipts, now: clockNow) {
+            segments.append(last)
         }
         for provider in activeProviders {
             guard let window = primaryWindow(for: provider) else { continue }
@@ -422,6 +424,25 @@ final class AppStore: ObservableObject {
             }
         }
         return segments
+    }
+
+    /// For 10 minutes after a session ends: "방금 작업 25분 · +3%p", so the result shows without opening the panel.
+    static func lastSessionSegment(receipts: [WorkReceipt], now: Date,
+                                   within: TimeInterval = 10 * 60) -> ClaudeStatusLine.Segment? {
+        guard let last = receipts.max(by: { $0.endedAt < $1.endedAt }),
+              (0...within).contains(now.timeIntervalSince(last.endedAt)) else { return nil }
+        let duration = UsageFormat.compactDuration(last.duration)
+        let result: String?
+        if let row = last.rows.first {
+            if let points = row.percentagePoints { result = UsageFormat.deltaLabel(points) }
+            else if let estimate = row.estimatedPercentagePoints {
+                result = "≈+\(estimate.formatted(.number.precision(.fractionLength(0...1))))%p"
+            } else { result = nil }
+        } else { result = nil }
+        let output = last.activity.map(\.outputTokens).flatMap { $0 > 0 ? $0 : nil }
+        let detail = result ?? output.map { String(localized: "출력 \(TokenFormat.compact($0))") }
+        guard let detail else { return .init(String(localized: "방금 작업 \(duration)")) }
+        return .init(String(localized: "방금 작업 \(duration) · \(detail)"))
     }
 
     func refreshStatusLineState() {
@@ -748,11 +769,23 @@ final class AppStore: ObservableObject {
 
     private func beginPolling() {
         pollTask?.cancel()
+        // Every service every 5 minutes; the service a work session is recording also every 2 minutes,
+        // so the status line and run-out estimate follow the work. Claude polls launch its CLI, so the
+        // faster pace applies only while recording.
         pollTask = Task { [weak self] in
+            var lastFullRefresh = Date()
             while !Task.isCancelled {
-                do { try await Task.sleep(for: .seconds(300)) } catch { return }
+                do { try await Task.sleep(for: .seconds(60)) } catch { return }
                 guard let self, self.started, !self.sleeping else { return }
-                await self.refreshAll()
+                let now = Date()
+                if now.timeIntervalSince(lastFullRefresh) >= 295 {
+                    lastFullRefresh = now
+                    await self.refreshAll()
+                } else if let provider = self.workJournal.state.active?.provider,
+                          let fetchedAt = self.states[provider]?.snapshot?.fetchedAt,
+                          now.timeIntervalSince(fetchedAt) >= 115 {
+                    await self.refresh(provider)
+                }
             }
         }
     }

@@ -9,6 +9,10 @@ struct WorkJournalPanel: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showingError = false
     @State private var copiedID: UUID?
+    /// The session whose Finish button is live. Start and Finish share a spot, so a second click right
+    /// after starting would end the session; Finish arms a few seconds after the start.
+    @State private var finishArmedFor: UUID?
+    private static let finishArmDelay: TimeInterval = 5
     private let openHistory: () -> Void
 
     init(store: AppStore, openHistory: @escaping () -> Void) {
@@ -123,8 +127,13 @@ struct WorkJournalPanel: View {
                 Task { await journal.finish { id in try await store.workSnapshot(for: id) } }
             }
             .buttonStyle(.borderedProminent).controlSize(.small)
-            .disabled(journal.isBusy)
+            .disabled(journal.isBusy || finishArmedFor != active.id)
             .help("\(active.provider.title)의 종료 한도를 확인하고 영수증을 저장해요")
+        }
+        .task(id: active.id) {
+            let wait = Self.finishArmDelay - Date().timeIntervalSince(active.startedAt)
+            if wait > 0 { try? await Task.sleep(for: .seconds(wait)) }
+            if !Task.isCancelled { finishArmedFor = active.id }
         }
         if journal.message != nil {
             HStack(spacing: UsageSpacing.compact) {

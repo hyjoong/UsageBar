@@ -191,6 +191,24 @@ final class AppStoreTests: XCTestCase {
         XCTAssertNil(AppStore.carryingAccount(into: blank, from: codex).accountKey)
     }
 
+    func testStatusLineSummarizesTheLastSessionForTenMinutes() {
+        let now = Date()
+        func receipt(endedAgo: TimeInterval, rows: [WorkQuotaDelta], output: Int64? = nil) -> WorkReceipt {
+            var receipt = WorkReceipt(kind: .refactor, provider: .claude, startedAt: now.addingTimeInterval(-endedAgo - 25 * 60),
+                                      endedAt: now.addingTimeInterval(-endedAgo), rows: rows)
+            if let output { receipt.activity = SessionActivity(models: [ModelActivity(model: "m", calls: 1, outputTokens: output)], projects: []) }
+            return receipt
+        }
+        let used = WorkQuotaDelta(id: "quota-0", label: "5시간 한도", percentagePoints: 3)
+        XCTAssertEqual(AppStore.lastSessionSegment(receipts: [receipt(endedAgo: 60, rows: [used])], now: now)?.text, "방금 작업 25분 · +3%p")
+        let unknown = WorkQuotaDelta(id: "quota-0", label: "5시간 한도", percentagePoints: nil, note: "x")
+        XCTAssertEqual(AppStore.lastSessionSegment(receipts: [receipt(endedAgo: 60, rows: [unknown], output: 1_240)], now: now)?.text,
+                       "방금 작업 25분 · 출력 1.2K")
+        XCTAssertEqual(AppStore.lastSessionSegment(receipts: [receipt(endedAgo: 60, rows: [])], now: now)?.text, "방금 작업 25분")
+        XCTAssertNil(AppStore.lastSessionSegment(receipts: [receipt(endedAgo: 11 * 60, rows: [used])], now: now))
+        XCTAssertNil(AppStore.lastSessionSegment(receipts: [], now: now))
+    }
+
     func testTransientMissingAccountKeyDoesNotLookLikeAnAccountChange() async {
         let provider = StubProvider(.claude, snapshot: ProviderSnapshot(provider: .claude, accountKey: "account-a", windows: [], source: "test"))
         let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())

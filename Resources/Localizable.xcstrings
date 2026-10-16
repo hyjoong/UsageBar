@@ -3048,6 +3048,38 @@
         }
       }
     },
+    "방금 작업 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last session %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방금 작업 %@"
+          }
+        }
+      }
+    },
+    "방금 작업 %@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last session %1$@ · %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방금 작업 %@ · %@"
+          }
+        }
+      }
+    },
     "방금 확인": {
       "localizations": {
         "en": {
@@ -5972,6 +6004,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "추가 한도"
+          }
+        }
+      }
+    },
+    "출력 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ output"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출력 %@"
           }
         }
       }
