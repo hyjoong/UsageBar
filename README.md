@@ -35,6 +35,7 @@
 ## Features
 
 - **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took, how many percentage points of each limit it used, and which models and projects were involved, with call and token counts from this Mac's CLI session logs. No other menu bar app answers "what did this refactor cost me?"
+- **Weekly summary.** The receipts window totals the last 7 days: sessions, time, output tokens, the limit share each service used, and a breakdown by session type. One button copies it as text.
 - **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time and turns orange at 20% or less.
 - **Run-out estimate.** From your last hour of use, the panel tells you whether the 5-hour limit lasts until the reset or when it will run out, and can notify you before it does.
 - **Inside Claude Code.** An optional status line at the bottom of Claude Code shows a recording session, each service's 5-hour limit and the run-out time, and for 10 minutes after you finish, the result of that session.

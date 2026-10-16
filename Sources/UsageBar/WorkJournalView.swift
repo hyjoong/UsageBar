@@ -10,6 +10,7 @@ struct WorkJournalView: View {
     @State private var provider: ProviderID
     @State private var copiedReceiptID: UUID?
     @State private var receiptToDelete: WorkReceipt?
+    @State private var summaryCopied = false
 
     init(store: AppStore) {
         _store = ObservedObject(wrappedValue: store)
@@ -30,6 +31,7 @@ struct WorkJournalView: View {
                             .font(UsageType.secondary).foregroundStyle(UsageTheme.warning)
                             .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
                     }
+                    if let summary = weekSummary { summaryCard(summary) }
                     receipts
                 }
             }
@@ -138,6 +140,67 @@ struct WorkJournalView: View {
     }
 
     // MARK: Receipts
+
+    // MARK: Weekly summary
+
+    private var weekSummary: WorkSummary? {
+        WorkSummary.make(receipts: journal.state.receipts, from: store.clockNow.addingTimeInterval(-7 * 86_400), to: store.clockNow)
+    }
+
+    private func limitText(_ limit: WorkSummary.LimitTotal) -> String {
+        let total = UsageFormat.deltaLabel(limit.comparedSessions > 0 ? limit.percentagePoints : nil)
+        return "\(limit.provider.title) \(limit.label) " + (limit.includesEstimate ? "≈" : "") + total
+    }
+
+    private func kindText(_ total: WorkSummary.KindTotal) -> String {
+        String(localized: "\(total.kind.title) \(total.sessions)번 · \(UsageFormat.durationLabel(total.duration))")
+    }
+
+    private func headline(_ summary: WorkSummary) -> String {
+        let base = String(localized: "작업 \(summary.sessions)번 · \(UsageFormat.durationLabel(summary.duration))")
+        return summary.outputTokens > 0 ? base + " · " + String(localized: "출력 \(TokenFormat.compact(summary.outputTokens))") : base
+    }
+
+    private func summaryCopyText(_ summary: WorkSummary) -> String {
+        ([String(localized: "UsageBar 최근 7일 작업 요약"), headline(summary)]
+            + summary.limits.map(limitText) + summary.kinds.map(kindText)).joined(separator: "\n")
+    }
+
+    private func summaryCard(_ summary: WorkSummary) -> some View {
+        let skipped = summary.limits.reduce(0) { max($0, $1.sessions - $1.comparedSessions) }
+        return VStack(alignment: .leading, spacing: UsageSpacing.item) {
+            HStack(spacing: UsageSpacing.item) {
+                Text("최근 7일").font(UsageType.title)
+                Spacer()
+                Button {
+                    NSPasteboard.general.clearContents()
+                    summaryCopied = NSPasteboard.general.setString(summaryCopyText(summary), forType: .string)
+                } label: {
+                    Image(systemName: summaryCopied ? "checkmark" : "doc.on.doc").frame(width: 24, height: 24).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain).foregroundStyle(summaryCopied ? UsageTheme.accent : UsageTheme.secondaryInk)
+                .help(summaryCopied ? "복사됨" : "요약 복사")
+                .accessibilityLabel("최근 7일 작업 요약 복사")
+            }
+            Text(verbatim: headline(summary)).font(UsageType.headline).monospacedDigit()
+            ForEach(summary.limits) { limit in
+                Text(verbatim: limitText(limit)).font(UsageType.secondary).monospacedDigit()
+            }
+            if skipped > 0 {
+                Text("비교할 수 없던 작업 \(skipped)번은 한도 합계에서 빠졌어요.")
+                    .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Divider()
+            ForEach(summary.kinds) { total in
+                Text(verbatim: kindText(total)).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk).monospacedDigit()
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: UsageRadius.card))
+        .onChange(of: journal.state.receipts.count) { _, _ in summaryCopied = false }
+    }
 
     private var receipts: some View {
         VStack(alignment: .leading, spacing: UsageSpacing.item) {

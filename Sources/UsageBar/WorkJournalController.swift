@@ -187,6 +187,27 @@ final class WorkJournalController: ObservableObject {
         guard let session = try? WorkSession.start(kind: .refactor, snapshot: before, now: start) else { return WorkJournalState() }
         var receipt = session.finish(snapshot: after, now: end)
         receipt.activity = .demo
-        return WorkJournalState(receipts: [receipt])
+        // A week of earlier sessions so the 7-day summary has an estimate, a gap and a second service.
+        let session5h = String(localized: "5시간 한도"), weekly = String(localized: "주간 한도")
+        func earlier(_ kind: WorkKind, _ provider: ProviderID = .claude, daysAgo: Double, minutes: Double,
+                     _ rows: [WorkQuotaDelta]) -> WorkReceipt {
+            let ended = now.addingTimeInterval(-daysAgo * 86_400)
+            return WorkReceipt(kind: kind, provider: provider, startedAt: ended.addingTimeInterval(-minutes * 60), endedAt: ended, rows: rows)
+        }
+        let history = [
+            earlier(.build, daysAgo: 1, minutes: 80, [WorkQuotaDelta(id: "quota-0", label: session5h, percentagePoints: 11),
+                                                      WorkQuotaDelta(id: "quota-1", label: weekly, percentagePoints: 3)]),
+            earlier(.debug, daysAgo: 2, minutes: 35, [WorkQuotaDelta(id: "quota-0", label: session5h, percentagePoints: 4),
+                                                      WorkQuotaDelta(id: "quota-1", label: weekly, percentagePoints: 1)]),
+            earlier(.refactor, daysAgo: 3, minutes: 50, [
+                WorkQuotaDelta(id: "quota-0", label: session5h, percentagePoints: nil, note: String(localized: "작업 구간에 한도 리셋 시각이 포함돼요."),
+                               estimatedPercentagePoints: 7, estimatedBeforeReset: 5, estimatedAfterReset: 2),
+                WorkQuotaDelta(id: "quota-1", label: weekly, percentagePoints: 2)]),
+            earlier(.review, .codex, daysAgo: 4, minutes: 20, [WorkQuotaDelta(id: "quota-0", label: weekly, percentagePoints: 2)]),
+            earlier(.other, daysAgo: 5, minutes: 15, [
+                WorkQuotaDelta(id: "quota-0", label: session5h, percentagePoints: nil, note: String(localized: "같은 계정인지 확인할 수 없어요.")),
+                WorkQuotaDelta(id: "quota-1", label: weekly, percentagePoints: nil, note: String(localized: "같은 계정인지 확인할 수 없어요."))]),
+        ]
+        return WorkJournalState(receipts: [receipt] + history)
     }
 }

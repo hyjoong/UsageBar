@@ -19,6 +19,22 @@
         }
       }
     },
+    "%@ %lld번 · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ×%2$lld · %3$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %lld번 · %@"
+          }
+        }
+      }
+    },
     "%@ %lld퍼센트": {
       "localizations": {
         "en": {
@@ -1655,6 +1671,22 @@
         }
       }
     },
+    "UsageBar 최근 7일 작업 요약": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar work summary, last 7 days"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UsageBar 최근 7일 작업 요약"
+          }
+        }
+      }
+    },
     "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요.": {
       "localizations": {
         "en": {
@@ -3172,6 +3204,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "비교 불가"
+          }
+        }
+      }
+    },
+    "비교할 수 없던 작업 %lld번은 한도 합계에서 빠졌어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessions left out of the limit totals because they could not be compared: %lld."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "비교할 수 없던 작업 %lld번은 한도 합계에서 빠졌어요."
           }
         }
       }
@@ -5000,6 +5048,22 @@
         }
       }
     },
+    "작업 %lld번 · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessions: %1$lld · %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 %lld번 · %@"
+          }
+        }
+      }
+    },
     "작업 구간에 한도 리셋 시각이 포함돼요.": {
       "localizations": {
         "en": {
@@ -5972,6 +6036,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "최근 %lld분 동안 시간당 %@%%p 사용"
+          }
+        }
+      }
+    },
+    "최근 7일": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 7 Days"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 7일"
+          }
+        }
+      }
+    },
+    "최근 7일 작업 요약 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy the last 7 days summary"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 7일 작업 요약 복사"
           }
         }
       }
