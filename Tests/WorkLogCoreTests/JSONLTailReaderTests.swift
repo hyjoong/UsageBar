@@ -64,11 +64,15 @@ final class JSONLTailReaderTests: XCTestCase {
         try Data("aaaa\nbbbb\ncccc\n".utf8).write(to: url)
         let (result, lines, _) = try readAll(url, from: nil, chunkSize: 5, maxBytes: 6)
         XCTAssertFalse(result.reachedEnd)
-        XCTAssertEqual(lines, ["aaaa", "bbbb"])
-        XCTAssertEqual(result.cursor.offset, 10)
+        XCTAssertEqual(lines, ["aaaa"], "reads no more than the budget")
+        XCTAssertEqual(result.cursor.offset, 5)
         let (rest, more, _) = try readAll(url, from: result.cursor)
         XCTAssertTrue(rest.reachedEnd)
-        XCTAssertEqual(more, ["cccc"])
+        XCTAssertEqual(more, ["bbbb", "cccc"])
+        // A line longer than the whole budget is still read, so the reader never stalls.
+        let (long, longLines, _) = try readAll(url, from: nil, maxBytes: 2)
+        XCTAssertEqual(longLines, ["aaaa"])
+        XCTAssertFalse(long.reachedEnd)
     }
 
     func testEmptyFileAndNothingNew() throws {

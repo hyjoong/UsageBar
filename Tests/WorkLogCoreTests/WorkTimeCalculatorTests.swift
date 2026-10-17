@@ -54,3 +54,20 @@ final class WorkTimeCalculatorTests: XCTestCase {
         XCTAssertEqual(WorkTimeCalculator.intervals(for: []), [])
     }
 }
+
+final class LogDateTests: XCTestCase {
+    func testFastDateMatchesFormatter() {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        for text in ["2026-10-17T01:02:03.456Z", "2026-02-28T23:59:59.9Z", "2024-02-29T12:00:00.000Z", "1999-12-31T23:59:59.5Z"] {
+            XCTAssertEqual(LogParsing.fastDate(Array(text.utf8))!.timeIntervalSince1970,
+                           formatter.date(from: text)!.timeIntervalSince1970, accuracy: 0.0005, text)
+        }
+        XCTAssertEqual(LogParsing.fastDate(Array("2026-10-17T10:00:00+09:00".utf8)), LogParsing.date("2026-10-17T01:00:00Z"))
+        XCTAssertEqual(LogParsing.fastDate(Array("2026-10-17T01:00:00-05:30".utf8))?.timeIntervalSince1970,
+                       LogParsing.fastDate(Array("2026-10-17T06:30:00Z".utf8))?.timeIntervalSince1970)
+        for bad in ["2026-13-01T00:00:00Z", "2026-10-17 01:00:00Z", "2026-10-17T01:00:00", "2026-10-17T01:00:00.Z", "x"] {
+            XCTAssertNil(LogParsing.fastDate(Array(bad.utf8)), bad)
+        }
+    }
+}

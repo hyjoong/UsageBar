@@ -84,16 +84,7 @@ public struct ClaudeLogParser: Codable, Equatable, Sendable {
         if object["isMeta"] as? Bool == true || object["isCompactSummary"] as? Bool == true { return nil }
         if let origin = object["origin"] as? [String: Any], origin["kind"] as? String != "human" { return nil }
         if object["promptSource"] as? String == "system" { return nil }
-        let parts: [String]
-        switch message?["content"] {
-        case let text as String:
-            parts = [text]
-        case let blocks as [[String: Any]]:
-            if blocks.contains(where: { $0["type"] as? String == "tool_result" }) { return nil }
-            parts = blocks.compactMap { $0["type"] as? String == "text" ? $0["text"] as? String : nil }
-        default:
-            return nil
-        }
+        guard let parts = LogParsing.claudeParts(message) else { return nil }
         return LogParsing.typedText(parts)?.count
     }
 

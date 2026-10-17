@@ -17,10 +17,20 @@ public struct CodexLogParser: Codable, Equatable, Sendable {
     private static let detailNeedles = ["\"session_meta\"", "\"turn_context\"", "\"task_complete\"", "\"turn_aborted\"",
                                         #""role":"user""#, "\"FileChange\""].map { Array($0.utf8) }
 
-    public mutating func consume(_ line: JSONLLine, path: String, into batch: inout WorkLogBatch) {
+    private static let userRole = Array(#""role":"user""#.utf8)
+    private static let stateNeedles = ["\"session_meta\"", "\"turn_context\""].map { Array($0.utf8) }
+
+    /// Lines stamped before `notBefore` only update the session and directory state; nothing else in them
+    /// is decoded, which keeps the first read of a long-running rollout cheap.
+    public mutating func consume(_ line: JSONLLine, path: String, notBefore: Date? = nil, into batch: inout WorkLogBatch) {
         let data = line.data
+        if let notBefore, let time = LogParsing.leadingTimestamp(data), time < notBefore,
+           !Self.stateNeedles.contains(where: { LogParsing.contains(data, $0, within: 512) }) { return }
         // Record types sit in the first few hundred bytes; tool output later in a line can be megabytes long.
-        let detailed = Self.detailNeedles.contains { LogParsing.contains(data, $0, within: 512) }
+        var detailed = Self.detailNeedles.contains { LogParsing.contains(data, $0, within: 512) }
+        // A subagent's user messages are briefs from another agent, often with large pasted context; they
+        // never become prompts, so only their time is needed.
+        if detailed, isSubagent, LogParsing.contains(data, Self.userRole, within: 512) { detailed = false }
         if !detailed {
             // Plain activity only needs the timestamp, so the line (often a large tool output) is never decoded.
             guard let time = LogParsing.leadingTimestamp(data) else { return }
@@ -47,10 +57,7 @@ public struct CodexLogParser: Codable, Equatable, Sendable {
             let length = min(Double(milliseconds) / 1000, Self.maxTurn)
             append(.turn(end: time), at: time.addingTimeInterval(-length), path: path, into: &batch)
         case ("response_item", "message"?) where payload["role"] as? String == "user":
-            let parts = (payload["content"] as? [[String: Any]] ?? []).compactMap { item in
-                item["type"] as? String == "input_text" ? item["text"] as? String : nil
-            }
-            if !isSubagent, let text = LogParsing.typedText(parts) {
+            if !isSubagent, let text = LogParsing.typedText(LogParsing.codexParts(payload)) {
                 append(.prompt(PromptLocation(path: path, offset: line.offset, length: data.count, characterCount: text.count)),
                        at: time, path: path, into: &batch)
             }

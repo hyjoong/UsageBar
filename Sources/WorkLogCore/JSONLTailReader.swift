@@ -50,9 +50,12 @@ public enum JSONLTailReader {
         var consumed = start           // offset just past the last complete line
         var searched = 0               // bytes of pending already known to hold no newline
         var read: UInt64 = 0
-        while consumed < size, read < maxBytes {
-            let wanted = Int(min(UInt64(chunkSize), size - (pendingOffset + UInt64(pending.count))))
-            guard wanted > 0, let chunk = try file.read(upToCount: wanted), !chunk.isEmpty else { break }
+        // Stop at the budget, but always finish at least one line so a line longer than the budget
+        // cannot stall the reader forever.
+        while consumed < size, read < maxBytes || consumed == start {
+            var wanted = min(UInt64(chunkSize), size - (pendingOffset + UInt64(pending.count)))
+            if read < maxBytes { wanted = min(wanted, maxBytes - read) }
+            guard wanted > 0, let chunk = try file.read(upToCount: Int(wanted)), !chunk.isEmpty else { break }
             read += UInt64(chunk.count)
             pending.append(chunk)
             let breaks = Self.newlines(in: pending, from: searched)

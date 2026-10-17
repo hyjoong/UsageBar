@@ -34,27 +34,57 @@ struct UsageBarDoctor {
     }
 
     /// Today's work log from local session logs, as counts only: no prompt text, paths or project names.
+    /// `--days N` indexes N days back, `--git` also reads commits (macOS may ask for folder access).
+    /// Each source is indexed twice in memory: a first pass from scratch, then an incremental pass.
     private static func workLog() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let day = DateInterval(start: today, duration: 86_400)
-        var all: [WorkLogEvent] = []
+        let arguments = Array(CommandLine.arguments.dropFirst(2))
+        let days = arguments.firstIndex(of: "--days").flatMap { arguments.indices.contains($0 + 1) ? Int(arguments[$0 + 1]) : nil } ?? 1
+        let readGit = arguments.contains("--git")
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let since = calendar.date(byAdding: .day, value: -(max(1, days) - 1), to: today) ?? today
+        let day = DateInterval(start: today, end: calendar.date(byAdding: .day, value: 1, to: today) ?? today.addingTimeInterval(86_400))
+
+        var index = LogIndex()
         for (source, roots) in [(WorkLogSource.claude, WorkLogRoots.claude), (.codex, WorkLogRoots.codex)] {
             let started = Date()
-            let (batch, stats) = WorkLogScanner.scan(source: source, roots: roots, since: today)
-            all += batch.events
+            let first = WorkLogIndexer.refresh(&index, source: source, roots: roots, since: since)
+            let firstSeconds = Date().timeIntervalSince(started)
+            let again = Date()
+            let second = WorkLogIndexer.refresh(&index, source: source, roots: roots, since: since)
+            let events = index.files.values.filter { $0.source == source }.flatMap(\.batch.events)
             var kinds: [String: Int] = [:]
-            for event in batch.events { kinds[kindName(event.kind), default: 0] += 1 }
-            write(["source": source.rawValue, "files": stats.files, "megabytes": Double(stats.bytes / 10_000) / 100,
-                   "lines": stats.lines, "partial": stats.isPartial, "events": kinds,
-                   "sessions": Set(batch.events.map(\.sessionID)).count,
-                   "folders": Set(batch.events.compactMap(\.cwd)).count,
-                   "activeMinutes": minutes(WorkTimeCalculator.clip(WorkTimeCalculator.intervals(for: batch.events), to: day)),
-                   "elapsedSeconds": (Date().timeIntervalSince(started) * 100).rounded() / 100])
+            for event in events { kinds[kindName(event.kind), default: 0] += 1 }
+            write(["source": source.rawValue, "days": days, "files": first.files,
+                   "megabytes": Double(first.bytes / 10_000) / 100, "lines": first.lines, "partial": first.isPartial,
+                   "events": kinds, "sessions": Set(events.map(\.sessionID)).count,
+                   "firstPassSeconds": rounded(firstSeconds),
+                   "incrementalSeconds": rounded(Date().timeIntervalSince(again)), "incrementalBytes": second.bytes])
         }
-        // Per folder, then the union, so parallel sessions are counted once.
-        let perFolder = Dictionary(grouping: all) { $0.cwd ?? "" }.values.flatMap { WorkTimeCalculator.intervals(for: $0) }
-        write(["source": "total", "activeMinutes": minutes(WorkTimeCalculator.clip(perFolder, to: day))])
+
+        var batch = index.batch
+        batch.titles.merge(CodexSessionTitles.read()) { current, _ in current }
+        let builder = DailyWorkLogBuilder(resolve: readGit ? WorkLogProject.repository : WorkLogProject.folder)
+        var git: [String: ProjectGit] = [:]
+        let started = Date()
+        if readGit {
+            let reader = ProcessGitRunner().map { GitHistoryReader(runner: $0) }
+            git = DailyWorkLogBuilder.readGit(for: Array(builder.projects(in: batch).keys), day: day, reader: reader)
+        }
+        let log = builder.build(day: day, batch: batch, git: git)
+        var states: [String: Int] = [:]
+        for project in log.projects { states[project.git.state.rawValue, default: 0] += 1 }
+        write(["source": "today", "projects": log.projects.count, "activeMinutes": Int((log.duration / 60).rounded()),
+               "projectMinutesSum": Int((log.projects.reduce(0) { $0 + $1.duration } / 60).rounded()),
+               "requests": log.projects.reduce(0) { $0 + $1.prompts.count },
+               "readableRequests": log.projects.flatMap(\.prompts).compactMap { PromptExcerpt.read($0.location) }.count,
+               "commits": log.commitCount, "changedFiles": log.changedFileCount,
+               "pullRequests": log.projects.reduce(0) { $0 + $1.pullRequests.count },
+               "gitStates": states, "buildSeconds": rounded(Date().timeIntervalSince(started)),
+               "indexMegabytes": Double(((try? JSONEncoder().encode(index))?.count ?? 0) / 10_000) / 100])
     }
+
+    private static func rounded(_ seconds: TimeInterval) -> Double { (seconds * 100).rounded() / 100 }
 
     private static func minutes(_ intervals: [WorkInterval]) -> Int {
         Int((WorkTimeCalculator.total(intervals) / 60).rounded())
