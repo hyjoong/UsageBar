@@ -506,9 +506,11 @@ final class AppStore: ObservableObject {
     }
 
     /// A menu bar percentage at or below the low-limit line, shown in the warning color.
-    var menuIsLow: Bool {
-        showPercentage && menuProviders.contains { trackedWindow(for: $0).map { $0.remainingPercent <= 20 } ?? false }
+    func menuIsLow(for provider: ProviderID) -> Bool {
+        showPercentage && (trackedWindow(for: provider).map { $0.remainingPercent <= 20 } ?? false)
     }
+
+    var menuIsLow: Bool { menuProviders.contains { menuIsLow(for: $0) } }
 
     /// The window the panel leads with: always the shortest one (the 5-hour limit when present).
     func primaryWindow(for provider: ProviderID) -> UsageWindow? {

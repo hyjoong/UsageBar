@@ -84,6 +84,7 @@ private struct UsageMenuLabel: View {
     @ObservedObject var store: AppStore
     @ObservedObject private var journal: WorkJournalController
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.colorScheme) private var menuBarScheme
     #if DEBUG
     @State private var openedCheckWindow = false
     #endif
@@ -120,20 +121,25 @@ private struct UsageMenuLabel: View {
     }
 
     /// Normally rendered black as a template so the menu bar tints it for light, dark and highlighted states.
-    /// At or below the low-limit line it is drawn in orange instead: a template cannot carry color, and
-    /// orange reads on both light and dark menu bars.
+    /// When a service is at or below the low-limit line, only that service is drawn in orange: a template
+    /// cannot carry color, so the image is drawn in color and everything else takes the menu bar's own
+    /// text color, read from the label's color scheme (it follows the menu bar, not the system setting).
+    /// Orange reads on both light and dark menu bars.
     /// This runs on every label update, so the content must not host a TimelineView: `.periodic(from: .now)`
     /// would reschedule on each render and spin the main thread. The store's clock ticks once a minute.
     private var renderedLabel: NSImage {
         let low = store.menuIsLow
         let renderer = ImageRenderer(content: content
             .font(Font(NSFont.menuBarFont(ofSize: 0)))
-            .foregroundStyle(low ? Color(nsColor: .systemOrange) : .black))
+            .foregroundStyle(plainColor))
         renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
         let image = renderer.nsImage ?? UsageBrandMark.menuImage
         image.isTemplate = !low
         return image
     }
+
+    /// Black for the template; in a colored image, the menu bar's own text color.
+    private var plainColor: Color { store.menuIsLow && menuBarScheme == .dark ? .white : .black }
 
     private var content: some View {
         HStack(spacing: 6) {
@@ -153,6 +159,7 @@ private struct UsageMenuLabel: View {
                     let title = store.menuTitle(for: provider)
                     if !title.isEmpty { Text(verbatim: title).monospacedDigit() }
                 }
+                .foregroundStyle(store.menuIsLow(for: provider) ? Color(nsColor: .systemOrange) : plainColor)
                 .opacity(store.isStale(for: provider) ? 0.6 : 1)
             }
         }
