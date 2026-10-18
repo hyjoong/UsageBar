@@ -2,6 +2,22 @@
   "sourceLanguage": "ko",
   "strings": {
     "": {},
+    "## %@ 작업 기록": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## %@ Work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "## %@ 작업 기록"
+          }
+        }
+      }
+    },
     "%": {},
     "%@ %lld%% 사용 · 계정 전체 기준": {
       "localizations": {
@@ -885,6 +901,142 @@
         }
       }
     },
+    "(미커밋 %lld파일)": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld file uncommitted)"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld files uncommitted)"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(미커밋 %lld파일)"
+          }
+        }
+      }
+    },
+    "(붙여넣은 내용)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(pasted content)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(붙여넣은 내용)"
+          }
+        }
+      }
+    },
+    "(커밋 %lld · 미커밋 %lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(%1$lld committed · %2$lld uncommitted)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(커밋 %lld · 미커밋 %lld)"
+          }
+        }
+      }
+    },
+    "(커밋 %lld)": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld commit)"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld commits)"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(커밋 %lld)"
+          }
+        }
+      }
+    },
+    "- 세션: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- Session: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- 세션: %@"
+          }
+        }
+      }
+    },
+    "- 요청: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- Request: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- 요청: %@"
+          }
+        }
+      }
+    },
+    "- 커밋: `%@` %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- Commit: `%1$@` %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "- 커밋: `%@` %@"
+          }
+        }
+      }
+    },
     "0": {},
     "1분 미만": {
       "localizations": {
@@ -1138,6 +1290,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude Code가 필요해요. 설치 후 터미널에서 로그인해 주세요."
+          }
+        }
+      }
+    },
+    "Claude Code나 Codex로 작업하면 여기에 프로젝트별로 모여요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work with Claude Code or Codex and it gathers here by project."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code나 Codex로 작업하면 여기에 프로젝트별로 모여요."
           }
         }
       }
@@ -1622,6 +1790,34 @@
         }
       }
     },
+    "PR %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld PR"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld PRs"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PR %lld"
+          }
+        }
+      }
+    },
     "Pro · 예시": {
       "localizations": {
         "en": {
@@ -1687,6 +1883,22 @@
         }
       }
     },
+    "_세션 기록 일부만 집계했습니다._": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "_Only part of the session logs was counted._"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "_세션 기록 일부만 집계했습니다._"
+          }
+        }
+      }
+    },
     "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요.": {
       "localizations": {
         "en": {
@@ -1715,6 +1927,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "codex login 으로 ChatGPT 계정에 로그인해요."
+          }
+        }
+      }
+    },
+    "git 커밋 포함": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include git commits"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "git 커밋 포함"
+          }
+        }
+      }
+    },
+    "git을 찾지 못해 커밋을 읽지 않았어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "git was not found, so commits were not read."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "git을 찾지 못해 커밋을 읽지 않았어요."
           }
         }
       }
@@ -1812,6 +2056,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "개발 버전"
+          }
+        }
+      }
+    },
+    "결제 웹훅이 실패하면 지수 백오프로 다시 시도하게 해 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry failed payment webhooks with exponential backoff"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "결제 웹훅이 실패하면 지수 백오프로 다시 시도하게 해 줘"
+          }
+        }
+      }
+    },
+    "계속": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계속"
           }
         }
       }
@@ -2008,6 +2284,22 @@
         }
       }
     },
+    "기록 없음": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No records"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 없음"
+          }
+        }
+      }
+    },
     "기록 종류": {
       "localizations": {
         "en": {
@@ -2084,6 +2376,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "기록을 유지했어요"
+          }
+        }
+      }
+    },
+    "기록을 읽는 중": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading logs"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록을 읽는 중"
+          }
+        }
+      }
+    },
+    "기록을 읽는 중…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading logs…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록을 읽는 중…"
           }
         }
       }
@@ -2184,6 +2508,22 @@
         }
       }
     },
+    "기타 %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other %lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기타 %lld"
+          }
+        }
+      }
+    },
     "기타 작업": {
       "localizations": {
         "en": {
@@ -2216,6 +2556,22 @@
         }
       }
     },
+    "끄면 세션 제목만 보여요. 요청 문장은 저장하지 않고 그릴 때마다 원본 기록에서 첫 줄만 읽어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When off, only session titles show. Requests are never stored; their first line is read from the original log each time."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "끄면 세션 제목만 보여요. 요청 문장은 저장하지 않고 그릴 때마다 원본 기록에서 첫 줄만 읽어요."
+          }
+        }
+      }
+    },
     "날짜": {
       "localizations": {
         "en": {
@@ -2228,6 +2584,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "날짜"
+          }
+        }
+      }
+    },
+    "날짜별": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜별"
           }
         }
       }
@@ -2292,6 +2664,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "남음"
+          }
+        }
+      }
+    },
+    "눌러서 커밋 해시 %@ 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to copy commit hash %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "눌러서 커밋 해시 %@ 복사"
           }
         }
       }
@@ -2408,6 +2796,22 @@
         }
       }
     },
+    "다음 날": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 날"
+          }
+        }
+      }
+    },
     "다음 로그인부터 UsageBar를 자동으로 실행해요.": {
       "localizations": {
         "en": {
@@ -2452,6 +2856,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "당시 %lld%% 남음"
+          }
+        }
+      }
+    },
+    "더 보기 (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show all (%lld)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더 보기 (%lld)"
           }
         }
       }
@@ -2936,6 +3356,22 @@
         }
       }
     },
+    "마크다운": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마크다운"
+          }
+        }
+      }
+    },
     "만료": {
       "localizations": {
         "en": {
@@ -3028,6 +3464,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "명령을 복사했어요. 기존 상태줄 스크립트 끝에 붙여 넣으세요."
+          }
+        }
+      }
+    },
+    "모든 처리는 이 Mac 안에서만 해요. 네트워크로 보내지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything is processed on this Mac. Nothing is sent over the network."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 처리는 이 Mac 안에서만 해요. 네트워크로 보내지 않아요."
           }
         }
       }
@@ -3156,6 +3608,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "변화 없음"
+          }
+        }
+      }
+    },
+    "복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복사"
           }
         }
       }
@@ -3832,6 +4300,22 @@
         }
       }
     },
+    "설정 → 작업 기록에서 언제든 끌 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can turn it off anytime in Settings → Work log."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 → 작업 기록에서 언제든 끌 수 있어요."
+          }
+        }
+      }
+    },
     "설정 메뉴": {
       "localizations": {
         "en": {
@@ -3992,6 +4476,38 @@
         }
       }
     },
+    "세션 기록과 커밋을 모아 하루 일지를 만들어요. 이 Mac 안에서만 처리하고, 끄면 일지 캐시를 지워요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Builds a daily log from session logs and commits. Processed only on this Mac; turning it off deletes the log cache."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세션 기록과 커밋을 모아 하루 일지를 만들어요. 이 Mac 안에서만 처리하고, 끄면 일지 캐시를 지워요."
+          }
+        }
+      }
+    },
+    "세션 기록이 커서 아직 다 읽지 못했어요. 잠시 후 이어서 읽어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The session logs are large and not fully read yet. Reading continues shortly."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세션 기록이 커서 아직 다 읽지 못했어요. 잠시 후 이어서 읽어요."
+          }
+        }
+      }
+    },
     "세션 기록이 커서 일부만 집계했습니다.": {
       "localizations": {
         "en": {
@@ -4020,6 +4536,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "세션 기록이 커서 일부만 집계했어요"
+          }
+        }
+      }
+    },
+    "쉼표로 구분": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comma-separated"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "쉼표로 구분"
+          }
+        }
+      }
+    },
+    "스크럼 3줄": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stand-up (3 lines)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스크럼 3줄"
           }
         }
       }
@@ -4148,6 +4696,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "알림"
+          }
+        }
+      }
+    },
+    "알림 권한을 거부했을 때 설정으로 안내하는 문구를 넣어 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point to Settings when notification permission is denied"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 권한을 거부했을 때 설정으로 안내하는 문구를 넣어 줘"
           }
         }
       }
@@ -4312,6 +4876,22 @@
         }
       }
     },
+    "여러 프로젝트를 동시에 진행한 시간은 한 번만 세요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time spent on several projects at once is counted once"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여러 프로젝트를 동시에 진행한 시간은 한 번만 세요"
+          }
+        }
+      }
+    },
     "여유 있는 속도": {
       "localizations": {
         "en": {
@@ -4440,6 +5020,22 @@
         }
       }
     },
+    "연속 기록 통계": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streak stats"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연속 기록 통계"
+          }
+        }
+      }
+    },
     "연한 부분은 작업 후 남은 한도, 진한 부분은 이 작업 구간에 줄어든 한도예요": {
       "localizations": {
         "en": {
@@ -4468,6 +5064,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "영수증"
+          }
+        }
+      }
+    },
+    "영수증 %lld · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts %1$lld · %2$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영수증 %lld · %@"
           }
         }
       }
@@ -4664,6 +5276,38 @@
         }
       }
     },
+    "오늘 기록된 세션이 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sessions recorded today"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 기록된 세션이 없어요"
+          }
+        }
+      }
+    },
+    "오늘 탭에서 켜기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn On in Today Tab"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 탭에서 켜기"
+          }
+        }
+      }
+    },
     "오래된 기록": {
       "localizations": {
         "en": {
@@ -4712,6 +5356,54 @@
         }
       }
     },
+    "요청": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requests"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요청"
+          }
+        }
+      }
+    },
+    "요청 문장 표시": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show requests"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요청 문장 표시"
+          }
+        }
+      }
+    },
+    "요청 문장은 저장하지 않고, 화면에 그릴 때 원본 기록에서 첫 줄만 읽어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requests are never stored; only their first line is read from the original log when shown."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요청 문장은 저장하지 않고, 화면에 그릴 때 원본 기록에서 첫 줄만 읽어요."
+          }
+        }
+      }
+    },
     "요청 제한 · 대기 중": {
       "localizations": {
         "en": {
@@ -4740,6 +5432,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "요청이 잠시 제한됐어요."
+          }
+        }
+      }
+    },
+    "웹훅 재시도": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Webhook retries"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "웹훅 재시도"
+          }
+        }
+      }
+    },
+    "위젯 타임라인이 자정에 갱신되는지 확인해 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check that the widget timeline refreshes at midnight"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위젯 타임라인이 자정에 갱신되는지 확인해 줘"
           }
         }
       }
@@ -4808,6 +5532,22 @@
         }
       }
     },
+    "이 Mac의 Claude Code·Codex 세션 기록을 모아 하루 동안 어떤 프로젝트에서 얼마나 일했는지, 어떤 요청을 했는지 보여줘요. 스크럼 3줄이나 마크다운으로 복사할 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gathers this Mac's Claude Code and Codex session logs to show which projects you worked on each day, for how long, and what you asked for. Copy it as a three-line stand-up or as Markdown."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 Mac의 Claude Code·Codex 세션 기록을 모아 하루 동안 어떤 프로젝트에서 얼마나 일했는지, 어떤 요청을 했는지 보여줘요. 스크럼 3줄이나 마크다운으로 복사할 수 있어요."
+          }
+        }
+      }
+    },
     "이 Mac의 세션 기록 (모델별)": {
       "localizations": {
         "en": {
@@ -4856,6 +5596,38 @@
         }
       }
     },
+    "이 날 기록된 세션이 없어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sessions recorded on this day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 날 기록된 세션이 없어요"
+          }
+        }
+      }
+    },
+    "이 날의 일지를 복사해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy this day's log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 날의 일지를 복사해요"
+          }
+        }
+      }
+    },
     "이 속도면 %@에 소진돼요": {
       "localizations": {
         "en": {
@@ -4888,6 +5660,22 @@
         }
       }
     },
+    "이 시간대에 기록한 작업 영수증이에요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work receipts recorded during this time"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 시간대에 기록한 작업 영수증이에요"
+          }
+        }
+      }
+    },
     "이름 없는 한도": {
       "localizations": {
         "en": {
@@ -4900,6 +5688,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "이름 없는 한도"
+          }
+        }
+      }
+    },
+    "이름이 같은 프로젝트는 일지와 복사본 모두에서 빠져요. Return으로 적용해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Projects with these names are left out of the log and its copies. Press Return to apply."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름이 같은 프로젝트는 일지와 복사본 모두에서 빠져요. Return으로 적용해요."
           }
         }
       }
@@ -4936,6 +5740,22 @@
         }
       }
     },
+    "이슈: ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issues: "
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이슈: "
+          }
+        }
+      }
+    },
     "이전 기록": {
       "localizations": {
         "en": {
@@ -4948,6 +5768,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "이전 기록"
+          }
+        }
+      }
+    },
+    "이전 날": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous day"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 날"
           }
         }
       }
@@ -5012,6 +5848,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "일별 토큰 (미지원)"
+          }
+        }
+      }
+    },
+    "일부만 집계됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partly counted"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일부만 집계됨"
           }
         }
       }
@@ -5096,6 +5948,22 @@
         }
       }
     },
+    "작업 기록 · UsageBar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work Log · UsageBar"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 · UsageBar"
+          }
+        }
+      }
+    },
     "작업 기록 경로가 안전하지 않아 저장하지 않았어요.": {
       "localizations": {
         "en": {
@@ -5128,6 +5996,22 @@
         }
       }
     },
+    "작업 기록 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work log view"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 보기"
+          }
+        }
+      }
+    },
     "작업 기록 불러오는 중": {
       "localizations": {
         "en": {
@@ -5140,6 +6024,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "작업 기록 불러오는 중"
+          }
+        }
+      }
+    },
+    "작업 기록 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 열기"
           }
         }
       }
@@ -5384,6 +6284,102 @@
         }
       }
     },
+    "작업 일지 사용": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use daily work log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지 사용"
+          }
+        }
+      }
+    },
+    "작업 일지 캐시를 저장하지 못했어요. 다음 갱신 때 다시 읽어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the work log cache. Logs are read again on the next refresh."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지 캐시를 저장하지 못했어요. 다음 갱신 때 다시 읽어요."
+          }
+        }
+      }
+    },
+    "작업 일지 캐시를 지우지 못했어요. 다시 꺼 보세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete the work log cache. Try turning it off again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지 캐시를 지우지 못했어요. 다시 꺼 보세요."
+          }
+        }
+      }
+    },
+    "작업 일지 켜기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn On Work Log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지 켜기"
+          }
+        }
+      }
+    },
+    "작업 일지를 켜면 날짜별 프로젝트와 작업 시간이 여기에 보여요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on the work log to see projects and work time by day here."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지를 켜면 날짜별 프로젝트와 작업 시간이 여기에 보여요."
+          }
+        }
+      }
+    },
+    "작업 일지를 켤까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on the daily work log?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 일지를 켤까요?"
+          }
+        }
+      }
+    },
     "작업 종료": {
       "localizations": {
         "en": {
@@ -5592,6 +6588,22 @@
         }
       }
     },
+    "접기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show less"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "접기"
+          }
+        }
+      }
+    },
     "제공된 한도 정보가 없어요": {
       "localizations": {
         "en": {
@@ -5636,6 +6648,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "제공자가 반환한 일별 토큰"
+          }
+        }
+      }
+    },
+    "제외할 프로젝트": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluded projects"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제외할 프로젝트"
           }
         }
       }
@@ -5784,6 +6812,38 @@
         }
       }
     },
+    "주간 마크다운 복사": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Week as Markdown"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주간 마크다운 복사"
+          }
+        }
+      }
+    },
+    "주간 통계 화면에 연속 기록 일수를 추가해 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the current streak to the weekly stats screen"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "주간 통계 화면에 연속 기록 일수를 추가해 줘"
+          }
+        }
+      }
+    },
     "주간 한도": {
       "localizations": {
         "en": {
@@ -5876,6 +6936,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "지금 종료해야 이번 작업의 한도 변화를 비교할 수 있어요"
+          }
+        }
+      }
+    },
+    "지난 글 목록에 읽는 시간 표시를 넣어 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show reading time in the past posts list"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 글 목록에 읽는 시간 표시를 넣어 줘"
+          }
+        }
+      }
+    },
+    "지난 작업에서 이어서 진행해 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick up where the last session left off"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 작업에서 이어서 진행해 줘"
+          }
+        }
+      }
+    },
+    "진행 중: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In progress: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진행 중: %@"
           }
         }
       }
@@ -6024,6 +7132,22 @@
         }
       }
     },
+    "총 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "총 %@"
+          }
+        }
+      }
+    },
     "최근 %lld분 동안 시간당 %@%%p 사용": {
       "localizations": {
         "en": {
@@ -6152,6 +7276,114 @@
         }
       }
     },
+    "커밋 %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld commit"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld commits"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋 %lld"
+          }
+        }
+      }
+    },
+    "커밋도 함께 보기…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show commits too…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋도 함께 보기…"
+          }
+        }
+      }
+    },
+    "커밋은 보이지 않아요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commits are hidden."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋은 보이지 않아요."
+          }
+        }
+      }
+    },
+    "커밋은 설정에서 따로 켜야 읽어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commits are read only after you turn them on in Settings."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋은 설정에서 따로 켜야 읽어요."
+          }
+        }
+      }
+    },
+    "커밋을 보여주려면 각 프로젝트의 git 기록을 읽어야 해요. 프로젝트가 데스크탑이나 문서 폴더에 있으면 macOS가 UsageBar의 폴더 접근을 허용할지 물어볼 수 있어요. 거부해도 커밋만 빠지고 나머지 일지는 그대로 보여요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To show commits, UsageBar reads each project's git history. If your projects are in Desktop or Documents, macOS may ask whether UsageBar can access that folder. If you decline, only commits are left out; the rest of the log still shows."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋을 보여주려면 각 프로젝트의 git 기록을 읽어야 해요. 프로젝트가 데스크탑이나 문서 폴더에 있으면 macOS가 UsageBar의 폴더 접근을 허용할지 물어볼 수 있어요. 거부해도 커밋만 빠지고 나머지 일지는 그대로 보여요."
+          }
+        }
+      }
+    },
+    "커밋을 읽지 못했어요. 시스템 설정 → 개인정보 보호 및 보안에서 폴더 접근 권한을 확인해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read commits. Check folder access in System Settings → Privacy & Security."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "커밋을 읽지 못했어요. 시스템 설정 → 개인정보 보호 및 보안에서 폴더 접근 권한을 확인해 주세요."
+          }
+        }
+      }
+    },
     "켜 둔 서비스만 5분마다 조회해요. 각 CLI의 로그인 상태를 사용하며, 끈 서비스의 기록은 보관돼요.": {
       "localizations": {
         "en": {
@@ -6164,6 +7396,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "켜 둔 서비스만 5분마다 조회해요. 각 CLI의 로그인 상태를 사용하며, 끈 서비스의 기록은 보관돼요."
+          }
+        }
+      }
+    },
+    "켜면 프로젝트 폴더의 git 기록을 읽기 전용으로 읽어요. macOS가 폴더 접근을 물어볼 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reads your project folders' git history, read-only. macOS may ask for folder access."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "켜면 프로젝트 폴더의 git 기록을 읽기 전용으로 읽어요. macOS가 폴더 접근을 물어볼 수 있어요."
           }
         }
       }
@@ -6264,6 +7512,78 @@
         }
       }
     },
+    "통계 계산 테스트를 경계값 위주로 보강해 줘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add edge-case tests for the stats calculation"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통계 계산 테스트를 경계값 위주로 보강해 줘"
+          }
+        }
+      }
+    },
+    "파일 %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld files"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일 %lld"
+          }
+        }
+      }
+    },
+    "파일 %lld개 변경": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld file changed"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld files changed"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일 %lld개 변경"
+          }
+        }
+      }
+    },
     "표시 예: 62% · 2h 10m": {
       "localizations": {
         "en": {
@@ -6328,6 +7648,50 @@
         }
       }
     },
+    "프로젝트 %lld": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld project"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld projects"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "프로젝트 %lld"
+          }
+        }
+      }
+    },
+    "프로젝트 폴더를 읽어도 될까요?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read your project folders?"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "프로젝트 폴더를 읽어도 될까요?"
+          }
+        }
+      }
+    },
     "프로젝트: %@": {
       "localizations": {
         "en": {
@@ -6340,6 +7704,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "프로젝트: %@"
+          }
+        }
+      }
+    },
+    "한 일: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한 일: %@"
           }
         }
       }

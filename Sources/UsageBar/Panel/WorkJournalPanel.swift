@@ -63,7 +63,7 @@ struct WorkJournalPanel: View {
                 busyIndicator(String(localized: "시작 한도 확인 중"))
                 Button("전체 기록", action: openHistory)
                     .buttonStyle(.plain).foregroundStyle(UsageTheme.secondaryInk)
-                    .help("작업 영수증 전체 기록 열기")
+                    .help("작업 기록 열기")
                 startMenu
             }
             .frame(minHeight: UsageSpacing.control)

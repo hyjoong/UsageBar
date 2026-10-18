@@ -42,10 +42,10 @@ struct UsageBarApp: App {
         .defaultSize(width: 720, height: 560)
         .windowResizability(.contentMinSize)
 
-        Window("작업 영수증 · UsageBar", id: "work-journal") {
-            WorkJournalView(store: store)
+        Window("작업 기록 · UsageBar", id: "work-journal") {
+            WorkLogView(store: store)
         }
-        .defaultSize(width: 520, height: 600)
+        .defaultSize(width: 540, height: 640)
         .windowResizability(.contentMinSize)
 
         Window("설정 · UsageBar", id: "settings") {

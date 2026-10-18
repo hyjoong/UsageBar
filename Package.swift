@@ -15,7 +15,7 @@ let package = Package(
         .target(name: "UsageBarCore"),
         // Work log (daily journal) engine. Depends on Foundation only so it can move to its own app later.
         .target(name: "WorkLogCore"),
-        .executableTarget(name: "UsageBar", dependencies: ["UsageBarCore", .product(name: "Sparkle", package: "Sparkle")],
+        .executableTarget(name: "UsageBar", dependencies: ["UsageBarCore", "WorkLogCore", .product(name: "Sparkle", package: "Sparkle")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
         .executableTarget(name: "UsageBarDoctor", dependencies: ["UsageBarCore", "WorkLogCore"]),
         .testTarget(name: "UsageBarCoreTests", dependencies: ["UsageBarCore"]),

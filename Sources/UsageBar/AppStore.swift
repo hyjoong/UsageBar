@@ -147,6 +147,7 @@ final class AppStore: ObservableObject {
 
     let isDemo: Bool
     let workJournal: WorkJournalController
+    let workLog: WorkLogController
     private let defaults: UserDefaults
     private let providers: [ProviderID: any UsageProvider]
     private let historyStore: HistoryStore?
@@ -176,6 +177,7 @@ final class AppStore: ObservableObject {
         isDemo = demo
         workJournal = WorkJournalController(demo: demo, usesPersistence: providerOverrides == nil)
         defaults = preferences
+        workLog = WorkLogController(demo: demo, defaults: preferences, usesIndex: providerOverrides == nil)
         providers = providerOverrides ?? (demo ? [:] : [.claude: ClaudeProvider(), .codex: CodexProvider()])
         historyStore = demo || providerOverrides != nil ? nil : HistoryStore()
         notificationsAvailable = !demo && providerOverrides == nil && Bundle.main.bundleIdentifier != nil

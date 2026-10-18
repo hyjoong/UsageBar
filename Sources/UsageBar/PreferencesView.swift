@@ -100,6 +100,7 @@ struct PreferencesView: View {
                 detail("시작 2시간 뒤와 리셋 10분 전에 알려요. 알림에서 바로 종료할 수 있어요.")
                 Toggle("영수증에 모델·토큰 상세 포함", isOn: $store.sessionDetailsEnabled)
                 detail("이 Mac의 Claude Code·Codex 세션 기록(~/.claude, ~/.codex)에서 작업 구간의 모델, 호출 수, 토큰 수, 프로젝트 폴더 이름만 집계해요. 대화 내용은 읽어 저장하지 않아요.")
+                WorkLogSettingsRows(workLog: store.workLog)
             } header: {
                 sectionTitle("작업 기록", symbol: "receipt")
             }
@@ -262,5 +263,51 @@ struct PreferencesView: View {
         if store.states[provider]?.isRefreshing == true { return UsageTheme.secondaryInk }
         if store.states[provider]?.errorMessage != nil || store.isStale(for: provider) { return UsageTheme.warning }
         return UsageTheme.secondaryInk
+    }
+}
+
+/// Settings → Work log: the daily journal switches (plan §4.4, §8).
+private struct WorkLogSettingsRows: View {
+    @ObservedObject var workLog: WorkLogController
+    @State private var showsGitNotice = false
+    @State private var excludedText = ""
+
+    var body: some View {
+        Toggle("작업 일지 사용", isOn: Binding(
+            get: { workLog.settings.isEnabled },
+            set: { value in Task { await workLog.setEnabled(value) } }
+        ))
+        detail("세션 기록과 커밋을 모아 하루 일지를 만들어요. 이 Mac 안에서만 처리하고, 끄면 일지 캐시를 지워요.")
+        Toggle("git 커밋 포함", isOn: Binding(
+            get: { workLog.settings.includesGit },
+            set: { value in
+                if value { showsGitNotice = true } else { Task { await workLog.setIncludesGit(false) } }
+            }
+        ))
+        .disabled(!workLog.settings.isEnabled)
+        detail("켜면 프로젝트 폴더의 git 기록을 읽기 전용으로 읽어요. macOS가 폴더 접근을 물어볼 수 있어요.")
+        Toggle("요청 문장 표시", isOn: Binding(
+            get: { workLog.settings.showsPrompts },
+            set: { workLog.setShowsPrompts($0) }
+        ))
+        .disabled(!workLog.settings.isEnabled)
+        detail("끄면 세션 제목만 보여요. 요청 문장은 저장하지 않고 그릴 때마다 원본 기록에서 첫 줄만 읽어요.")
+        TextField("제외할 프로젝트", text: $excludedText, prompt: Text("쉼표로 구분"))
+            .disabled(!workLog.settings.isEnabled)
+            .onSubmit(commitExcluded)
+            .onAppear { excludedText = workLog.settings.excludedProjects.joined(separator: ", ") }
+            .onDisappear(perform: commitExcluded)
+        detail("이름이 같은 프로젝트는 일지와 복사본 모두에서 빠져요. Return으로 적용해요.")
+            .workLogGitNotice(isPresented: $showsGitNotice, workLog: workLog)
+    }
+
+    private func commitExcluded() {
+        let names = WorkLogController.parseProjectList(excludedText)
+        Task { await workLog.setExcludedProjects(names) }
+    }
+
+    private func detail(_ key: LocalizedStringKey) -> some View {
+        Text(key).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
