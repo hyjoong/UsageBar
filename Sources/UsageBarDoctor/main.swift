@@ -34,16 +34,18 @@ struct UsageBarDoctor {
     }
 
     /// Today's work log from local session logs, as counts only: no prompt text, paths or project names.
-    /// `--days N` indexes N days back, `--git` also reads commits (macOS may ask for folder access).
+    /// `--days N` indexes N days back, `--ago N` builds the day N days ago, `--git` also reads commits (macOS may ask for folder access).
     /// Each source is indexed twice in memory: a first pass from scratch, then an incremental pass.
     private static func workLog() {
         let arguments = Array(CommandLine.arguments.dropFirst(2))
         let days = arguments.firstIndex(of: "--days").flatMap { arguments.indices.contains($0 + 1) ? Int(arguments[$0 + 1]) : nil } ?? 1
+        let ago = arguments.firstIndex(of: "--ago").flatMap { arguments.indices.contains($0 + 1) ? Int(arguments[$0 + 1]) : nil } ?? 0
         let readGit = arguments.contains("--git")
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let since = calendar.date(byAdding: .day, value: -(max(1, days) - 1), to: today) ?? today
-        let day = DateInterval(start: today, end: calendar.date(byAdding: .day, value: 1, to: today) ?? today.addingTimeInterval(86_400))
+        let since = calendar.date(byAdding: .day, value: -(max(1, days, ago + 1) - 1), to: today) ?? today
+        let shown = calendar.date(byAdding: .day, value: -max(0, ago), to: today) ?? today
+        let day = DateInterval(start: shown, end: calendar.date(byAdding: .day, value: 1, to: shown) ?? shown.addingTimeInterval(86_400))
 
         var index = LogIndex()
         for (source, roots) in [(WorkLogSource.claude, WorkLogRoots.claude), (.codex, WorkLogRoots.codex)] {
@@ -74,7 +76,7 @@ struct UsageBarDoctor {
         let log = builder.build(day: day, batch: batch, git: git)
         var states: [String: Int] = [:]
         for project in log.projects { states[project.git.state.rawValue, default: 0] += 1 }
-        write(["source": "today", "projects": log.projects.count, "activeMinutes": Int((log.duration / 60).rounded()),
+        write(["source": ago == 0 ? "today" : "\(ago) days ago", "projects": log.projects.count, "activeMinutes": Int((log.duration / 60).rounded()),
                "projectMinutesSum": Int((log.projects.reduce(0) { $0 + $1.duration } / 60).rounded()),
                "requests": log.projects.reduce(0) { $0 + $1.prompts.count },
                "readableRequests": log.projects.flatMap(\.prompts).compactMap { PromptExcerpt.read($0.location) }.count,

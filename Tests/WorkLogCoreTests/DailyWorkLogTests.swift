@@ -145,3 +145,46 @@ final class DailyWorkLogTests: XCTestCase {
         XCTAssertEqual(WorkLogFormatter.duration(.nan), "1분 미만")
     }
 }
+
+final class ProjectGroupingTests: XCTestCase {
+    private let day = DateInterval(start: LogParsing.date("2026-10-17T00:00:00Z")!, duration: 86_400)
+    private func event(_ minute: Double, _ cwd: String, session: String = "s1",
+                       _ kind: WorkLogEventKind = .activity) -> WorkLogEvent {
+        WorkLogEvent(time: day.start.addingTimeInterval(9 * 3600 + minute * 60), source: .claude, sessionID: session, cwd: cwd, kind: kind)
+    }
+    private let builder = DailyWorkLogBuilder(toolFolders: ["/home/.claude", "/home/.codex"])
+
+    func testSubfoldersAndToolFoldersJoinTheSessionFolder() {
+        let batch = WorkLogBatch(events: [
+            event(0, "/w/app/Sources/Deep"),                        // seen before the top folder
+            event(1, "/w/app"),
+            event(2, "/w/app/public", .fileEdit(path: "/w/app/public/index.html")),
+            event(3, "/home/.claude/projects/x/tool-results"),
+            event(4, "/w/other"),                                   // cd into another project stays separate
+            event(5, "/home/.claude/commands", session: "s2"),      // a session only in tool folders keeps them
+        ])
+        let names = builder.build(day: day, batch: batch).projects.map(\.name).sorted()
+        XCTAssertEqual(names, ["app", "commands", "other"])
+        let app = builder.build(day: day, batch: batch).projects.first { $0.name == "app" }!
+        XCTAssertEqual(app.editedFiles, ["public/index.html"])
+    }
+
+    func testWorktreeLayoutsJoinTheirRepositoryWithoutGit() {
+        let claudeWorktree = WorkLogProject.folder("/w/app/.claude/worktrees/fix-login/src")
+        XCTAssertEqual(claudeWorktree.id, "/w/app")
+        XCTAssertEqual(claudeWorktree.name, "app")
+        XCTAssertEqual(claudeWorktree.root, "/w/app/.claude/worktrees/fix-login")
+
+        let batch = WorkLogBatch(events: [
+            event(0, "/w/app"),
+            event(1, "/w/app/.claude/worktrees/fix-login", session: "s2",
+                  .fileEdit(path: "/w/app/.claude/worktrees/fix-login/a.swift")),
+            event(2, "/home/.codex/worktrees/1a2b/App", session: "t1",
+                  .fileEdit(path: "/home/.codex/worktrees/1a2b/App/b.swift")),
+            event(3, "/home/.codex/worktrees/9z9z/lonely", session: "t2"),
+        ])
+        let log = builder.build(day: day, batch: batch)
+        XCTAssertEqual(log.projects.map(\.name).sorted(), ["app", "lonely"])
+        XCTAssertEqual(log.projects.first { $0.name == "app" }?.editedFiles.sorted(), ["a.swift", "b.swift"])
+    }
+}

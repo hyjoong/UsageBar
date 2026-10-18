@@ -13,10 +13,34 @@ public struct WorkLogProject: Hashable, Sendable {
         self.id = id; self.name = name; self.root = root; self.repository = repository
     }
 
-    /// A project per folder, without touching the file system.
+    /// ID prefix of a Codex worktree read without git; the builder joins it to the same-named folder.
+    static let codexWorktreePrefix = "codex-worktree:"
+
+    /// A project per folder, from the path alone: nothing on disk is read, so no folder access is asked.
+    /// Agent worktrees are recognized by their layout:
+    /// `<repo>/.claude/worktrees/<name>` belongs to `<repo>`; `~/.codex/worktrees/<id>/<repo name>` cannot
+    /// be traced to its repository without reading git, so it carries the repository's folder name and the
+    /// builder joins it to a project of that name.
     public static func folder(_ cwd: String) -> WorkLogProject {
-        let name = URL(fileURLWithPath: cwd).lastPathComponent
-        return WorkLogProject(id: cwd, name: name.isEmpty ? cwd : String(name.prefix(80)), root: cwd, repository: nil)
+        func name(_ path: String) -> String {
+            let last = URL(fileURLWithPath: path).lastPathComponent
+            return last.isEmpty ? path : String(last.prefix(80))
+        }
+        if let marker = cwd.range(of: "/.claude/worktrees/") {
+            let repo = String(cwd[..<marker.lowerBound])
+            if let worktree = cwd[marker.upperBound...].split(separator: "/").first, !repo.isEmpty {
+                return WorkLogProject(id: repo, name: name(repo), root: repo + "/.claude/worktrees/" + worktree, repository: nil)
+            }
+        }
+        if let marker = cwd.range(of: "/.codex/worktrees/") {
+            let parts = cwd[marker.upperBound...].split(separator: "/")
+            if parts.count >= 2 {
+                let root = String(cwd[..<marker.upperBound]) + parts[0] + "/" + parts[1]
+                return WorkLogProject(id: codexWorktreePrefix + parts[1].lowercased(), name: String(parts[1].prefix(80)),
+                                      root: root, repository: nil)
+            }
+        }
+        return WorkLogProject(id: cwd, name: name(cwd), root: cwd, repository: nil)
     }
 
     /// A project per repository, so worktrees and subfolders join their repository. Falls back to the folder.
@@ -107,10 +131,19 @@ public struct DailyWorkLogBuilder {
     /// Project names left out of the journal and its copies (case-insensitive).
     public var excludedNames: Set<String>
     public var resolve: (String) -> WorkLogProject
+    /// Folders that hold the CLIs' own files rather than a project.
+    public var toolFolders: [String]
+
+    public static var defaultToolFolders: [String] {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        return [home + "/.claude", home + "/.codex"]
+    }
 
     public init(rules: WorkTimeRules = .standard, excludedNames: Set<String> = [],
+                toolFolders: [String] = DailyWorkLogBuilder.defaultToolFolders,
                 resolve: @escaping (String) -> WorkLogProject = WorkLogProject.folder) {
         self.rules = rules
+        self.toolFolders = toolFolders
         self.excludedNames = Set(excludedNames.map { $0.lowercased() })
         var cache: [String: WorkLogProject] = [:]
         self.resolve = { cwd in
@@ -121,22 +154,57 @@ public struct DailyWorkLogBuilder {
         }
     }
 
-    /// Every event of `batch` grouped by project, excluded projects left out. Events without a directory
-    /// take their session's. Callers read git for these projects before `build`, so a project with only
-    /// commits on a given day still appears.
+    /// Every event of `batch` grouped by project, excluded projects left out. Callers read git for these
+    /// projects before `build`, so a project with only commits on a given day still appears.
+    ///
+    /// A session's directory is first brought back to where the session works: Claude Code's `cwd` follows
+    /// `cd`, so a subfolder joins the session's top folder, and a visit to the CLIs' own folders
+    /// (`toolFolders`, such as reading `~/.claude`) counts toward the session's main folder.
     public func projects(in batch: WorkLogBatch) -> [WorkLogProject: [WorkLogEvent]] {
-        var sessionDirectory: [String: String] = [:]
-        for event in batch.events {
-            if let cwd = event.cwd, sessionDirectory[event.sessionID] == nil { sessionDirectory[event.sessionID] = cwd }
-        }
+        let directories = sessionDirectories(batch.events)
         var grouped: [WorkLogProject: [WorkLogEvent]] = [:]
         for event in batch.events {
-            guard let cwd = event.cwd ?? sessionDirectory[event.sessionID] else { continue }
+            guard let cwd = directories[event.sessionID]?[event.cwd ?? ""] ?? directories[event.sessionID]?[""] else { continue }
             let project = resolve(cwd)
             guard !excludedNames.contains(project.name.lowercased()) else { continue }
-            grouped[project, default: []].append(event)
+            // Carry the normalized directory, so later steps see where the work counts, not where `cd` led.
+            grouped[project, default: []].append(WorkLogEvent(time: event.time, source: event.source, sessionID: event.sessionID,
+                                                              cwd: cwd, isSubagent: event.isSubagent, kind: event.kind))
         }
         return grouped
+    }
+
+    /// For each session, every directory it reported mapped to the directory its work is counted under.
+    /// The key "" is the session's main directory, used for events that carry none.
+    private func sessionDirectories(_ events: [WorkLogEvent]) -> [String: [String: String]] {
+        var seen: [String: [String]] = [:]
+        for event in events {
+            guard let cwd = event.cwd else { continue }
+            if !(seen[event.sessionID]?.contains(cwd) ?? false) { seen[event.sessionID, default: []].append(cwd) }
+        }
+        var result: [String: [String: String]] = [:]
+        for (session, cwds) in seen {
+            let work = cwds.filter { !isToolFolder($0) }
+            var map: [String: String] = [:]
+            for cwd in work {
+                // The shortest of the session's own directories that contains this one.
+                map[cwd] = work.filter { Self.contains($0, cwd) }.min { $0.count < $1.count } ?? cwd
+            }
+            let main = work.first.map { map[$0] ?? $0 }
+            for cwd in cwds where isToolFolder(cwd) { map[cwd] = main ?? cwd }
+            map[""] = main ?? cwds.first
+            result[session] = map
+        }
+        return result
+    }
+
+    private func isToolFolder(_ path: String) -> Bool {
+        !path.contains("/worktrees/") && toolFolders.contains { Self.contains($0, path) }
+    }
+
+    /// `parent` is `child` or one of its ancestors.
+    static func contains(_ parent: String, _ child: String) -> Bool {
+        child == parent || child.hasPrefix(parent.hasSuffix("/") ? parent : parent + "/")
     }
 
     public func build(day: DateInterval, batch: WorkLogBatch, git: [String: ProjectGit] = [:],
@@ -146,8 +214,19 @@ public struct DailyWorkLogBuilder {
         // Only events near the day matter for its time; the gap on each side lets a stretch that crosses
         // midnight keep its shape before it is clipped.
         let window = DateInterval(start: day.start.addingTimeInterval(-rules.gap), end: day.end.addingTimeInterval(rules.gap))
-        for (project, events) in projects(in: batch) {
-            merged[project.id, default: (project, [])].1 += events.filter { window.contains($0.time) }
+        let grouped = projects(in: batch)
+        // A Codex worktree found without git joins the folder project of the same name, if there is one.
+        var byName: [String: WorkLogProject] = [:]
+        for project in grouped.keys.sorted(by: { $0.id < $1.id })
+        where !project.id.hasPrefix(WorkLogProject.codexWorktreePrefix) {
+            byName[project.name.lowercased()] = byName[project.name.lowercased()] ?? project
+        }
+        for (project, events) in grouped {
+            var owner = project
+            if project.id.hasPrefix(WorkLogProject.codexWorktreePrefix), let named = byName[project.name.lowercased()] {
+                owner = named
+            }
+            merged[owner.id, default: (owner, [])].1 += events.filter { window.contains($0.time) }
         }
         for (id, value) in merged {
             if let built = projectDay(value.0, events: value.1, titles: batch.titles, day: day,
@@ -210,8 +289,9 @@ public struct DailyWorkLogBuilder {
         for event in today.sorted(by: { $0.time < $1.time }) {
             switch event.kind {
             case .fileEdit(let path):
-                let root = event.cwd.map { resolve($0).root } ?? project.root
-                if let relative = Self.relative(path, to: root), seenFiles.insert(relative).inserted { edited.append(relative) }
+                // The session's own folder (a worktree's, when it worked in one), then the project's.
+                let relative = event.cwd.flatMap { Self.relative(path, to: resolve($0).root) } ?? Self.relative(path, to: project.root)
+                if let relative, seenFiles.insert(relative).inserted { edited.append(relative) }
             case .pullRequest(let url):
                 if !pullRequests.contains(url) { pullRequests.append(url) }
             default:
