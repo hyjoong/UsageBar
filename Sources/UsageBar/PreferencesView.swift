@@ -285,7 +285,7 @@ private struct WorkLogSettingsRows: View {
             }
         ))
         .disabled(!workLog.settings.isEnabled)
-        detail("켜면 프로젝트 폴더의 git 기록을 읽기 전용으로 읽어요. macOS가 폴더 접근을 물어볼 수 있어요.")
+        detail("켜면 프로젝트 폴더의 git 기록을 읽기 전용으로 읽고, 하위 폴더와 워크트리를 저장소 단위로 묶어요. macOS가 폴더 접근을 물어볼 수 있어요.")
         Toggle("요청 문장 표시", isOn: Binding(
             get: { workLog.settings.showsPrompts },
             set: { workLog.setShowsPrompts($0) }

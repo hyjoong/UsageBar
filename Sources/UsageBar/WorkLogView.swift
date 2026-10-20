@@ -118,6 +118,7 @@ private struct WorkLogTodayView: View {
                 HStack(spacing: UsageSpacing.tight) {
                     Text("커밋은 보이지 않아요.").foregroundStyle(UsageTheme.secondaryInk)
                     Button("커밋도 함께 보기…") { showsGitNotice = true }.buttonStyle(.link)
+                        .help("커밋과 미커밋 파일을 보여주고, 워크트리를 원래 저장소로 묶어요")
                 }
                 .font(UsageType.secondary)
             }
@@ -178,8 +179,9 @@ private struct WorkLogIntroCard: View {
             VStack(alignment: .leading, spacing: UsageSpacing.tight) {
                 Label("모든 처리는 이 Mac 안에서만 해요. 네트워크로 보내지 않아요.", systemImage: "lock")
                 Label("요청 문장은 저장하지 않고, 화면에 그릴 때 원본 기록에서 첫 줄만 읽어요.", systemImage: "eye.slash")
-                Label("커밋은 설정에서 따로 켜야 읽어요.", systemImage: "arrow.triangle.branch")
+                Label("커밋은 따로 켜야 읽어요. 켜면 하위 폴더와 워크트리도 저장소 단위로 묶여요.", systemImage: "arrow.triangle.branch")
             }
+            .labelStyle(AlignedIconLabelStyle())
             .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
             .fixedSize(horizontal: false, vertical: true)
             HStack {
@@ -192,6 +194,16 @@ private struct WorkLogIntroCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: UsageRadius.card))
+    }
+}
+
+/// Icons in one column, so the lines of a list start at the same place whatever the symbol's width.
+private struct AlignedIconLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: UsageSpacing.item) {
+            configuration.icon.frame(width: 18)
+            configuration.title
+        }
     }
 }
 
@@ -294,12 +306,14 @@ private struct WorkLogProjectCard: View {
                     }
                     .buttonStyle(.plain).font(UsageType.secondary)
                     .help("눌러서 커밋 해시 \(commit.shortSHA) 복사")
+                    .accessibilityLabel(Text(verbatim: "\(commit.subject), \(commit.time.formatted(date: .omitted, time: .shortened))"))
+                    .accessibilityHint("커밋 해시를 복사해요")
                 }
             }
         case .unavailable:
             gitNote(String(localized: "git을 찾지 못해 커밋을 읽지 않았어요."))
         case .failed:
-            gitNote(String(localized: "커밋을 읽지 못했어요. 시스템 설정 → 개인정보 보호 및 보안에서 폴더 접근 권한을 확인해 주세요."))
+            gitNote(String(localized: "커밋을 읽지 못했어요. 폴더 접근을 거부했다면 시스템 설정 → 개인정보 보호 및 보안 → 파일 및 폴더에서 UsageBar를 허용해 주세요."))
         default:
             EmptyView()
         }
@@ -445,7 +459,7 @@ extension View {
             Button("계속") { Task { await workLog.setIncludesGit(true) } }
             Button("취소", role: .cancel) {}
         } message: {
-            Text("커밋을 보여주려면 각 프로젝트의 git 기록을 읽어야 해요. 프로젝트가 데스크탑이나 문서 폴더에 있으면 macOS가 UsageBar의 폴더 접근을 허용할지 물어볼 수 있어요. 거부해도 커밋만 빠지고 나머지 일지는 그대로 보여요.")
+            Text("커밋을 보여주려면 각 프로젝트의 git 기록을 읽어야 해요. 켜면 하위 폴더와 에이전트 워크트리도 원래 저장소로 묶어 보여줘요. 프로젝트가 데스크탑이나 문서 폴더에 있으면 macOS가 UsageBar의 폴더 접근을 허용할지 물어볼 수 있어요. 거부해도 커밋만 빠지고 나머지 일지는 그대로 보여요.")
         }
     }
 }

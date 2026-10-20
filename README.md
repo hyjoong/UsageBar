@@ -35,7 +35,8 @@
 ## Features
 
 - **Work receipts.** Pick a session type, do your work, press Finish. The receipt tells you how long it took, how many percentage points of each limit it used, and which models and projects were involved, with call and token counts from this Mac's CLI session logs. No other menu bar app answers "what did this refactor cost me?"
-- **Weekly summary.** The receipts window totals the last 7 days: sessions, time, output tokens, the limit share each service used, and a breakdown by session type. One button copies it as text.
+- **Daily work log.** Turn it on and UsageBar gathers this Mac's Claude Code and Codex session logs (and, if you like, git commits) into a log by project: how long you worked on each, what you asked the agents, and what you committed. It is built on your Mac without AI summaries and copies as a three-line stand-up or Markdown.
+- **Weekly summary.** The work log window's 7-day tab totals your receipts for the last 7 days (sessions, time, output tokens, the limit share each service used, a breakdown by session type) and lists each day's log. Copy it as text or Markdown.
 - **At a glance.** The 5-hour limit as a big number and a 20-segment gauge, with the exact reset time. The weekly limit follows below. The menu bar shows the percentage all the time and turns orange at 20% or less.
 - **Run-out estimate.** From your last hour of use, the panel tells you whether the 5-hour limit lasts until the reset or when it will run out, and can notify you before it does.
 - **Inside Claude Code.** An optional status line at the bottom of Claude Code shows a recording session, each service's 5-hour limit and the run-out time, and for 10 minutes after you finish, the result of that session.
@@ -46,12 +47,12 @@
 - **English and Korean.** Follows your system language.
 
 <p align="center">
-  <img src="docs/images/receipts-en.jpg" width="31%" alt="Receipts window: start card, last 7 days summary with limit totals by service, and finished receipts" />
+  <img src="docs/images/worklog-en.jpg" width="31%" alt="Work log window, Today tab: day total, each project's time with a timeline bar, requests, commits, changed files and overlapping receipts" />
   <img src="docs/images/panel-codex-en.jpg" width="31%" alt="Codex panel: limit gauges, reset credits with expiry, latest daily tokens" />
   <img src="docs/images/history-en.jpg" width="31%" alt="History window: remaining limit over time, period picker, CSV export" />
 </p>
 
-<p align="center"><sub>Receipts with the weekly summary · Codex panel · History. All screenshots use demo data.</sub></p>
+<p align="center"><sub>Daily work log (Today) · Codex panel · History. All screenshots use demo data.</sub></p>
 
 ## Install
 
@@ -92,7 +93,8 @@ On first launch the panel walks you through the connection in three numbered ste
 | I want to… | Do this |
 | --- | --- |
 | See remaining limits | Click the percentage in the menu bar. The big number is the 5-hour limit; other limits follow below. |
-| Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **All receipts** lets you copy or delete them. |
+| Record a session | Choose a type under **Start session**. Finishing records the duration and the limit change in percentage points. **Work log** → **Receipts** lets you copy or delete them. |
+| Sum up the day | In the panel, **Work log** → **Today**, turn on the work log. Step back through the last 7 days, and use **Copy** for a stand-up or Markdown. Commits have their own switch, **Show commits too…**. |
 | Review or export history | Click the history icon at the bottom, choose service, period and limit, then **Export CSV**. |
 | Keep the panel visible | Gear menu → **Open as Window**. The window floats above others. Launching the app again opens the same window. |
 | See limits inside Claude Code | Settings → Claude Code Status Line → **Show in Status Line**. The bottom of Claude Code then shows a recording session, each service's 5-hour limit and the run-out estimate. |
@@ -126,6 +128,7 @@ Releases are built for Apple Silicon. Intel builds have not been tested.
 - UsageBar uses each CLI's existing login. It never asks for, stores, or transmits passwords, API keys or tokens.
 - Usage history and receipts live only in `~/Library/Application Support/UsageBar/`. Conversations, project files and raw CLI responses are not stored.
 - Receipt details come from the session logs Claude Code and Codex already keep in `~/.claude` and `~/.codex`. UsageBar reads only timestamps, model names, token counts and the project folder name, and never stores message content. You can turn this off under Settings → Work log.
+- The work log is built from the same session logs, only when you turn it on (off by default). Requests are never stored: their first line is read from the original log when drawn, with anything that looks like a key, token or email masked. Git history is read, read-only, only when you also turn on commits.
 - UsageBar changes `~/.claude/settings.json` only when you press **Show in Status Line**. It backs the file up first, adds only the `statusLine` entry, and never replaces a status line you already have.
 - Billing dates, amounts and per-project costs are not shown, and nothing consumes reset credits.
 - No analytics, no telemetry. The only network activity is the CLIs' own usage queries and the signed update check you can turn off.
