@@ -53,6 +53,34 @@ final class DailyWorkLogTests: XCTestCase {
         XCTAssertEqual(log.changedFileCount, 1)
     }
 
+    func testCodexTurnStartedBeforeMidnightCountsOnTheNextDay() {
+        // 22:00 yesterday to 00:40 today: only the part after midnight belongs to today.
+        let batch = WorkLogBatch(events: [
+            event(-2, .turn(end: at(40.0 / 60)), session: "t1", cwd: "/w/api", source: .codex),
+        ], titles: [:])
+        let log = DailyWorkLogBuilder().build(day: day, batch: batch)
+        let api = try? XCTUnwrap(log.projects.first)
+        XCTAssertEqual(api?.name, "api")
+        let minutes = (api?.duration ?? 0) / 60
+        XCTAssertGreaterThanOrEqual(minutes, 40)
+        XCTAssertLessThanOrEqual(minutes, 46)
+    }
+
+    func testTitlesCommitsAndPullRequestsAreMaskedLikePrompts() {
+        let batch = WorkLogBatch(events: [
+            prompt(9, offset: 1),
+            event(9.1, .pullRequest(url: "https://example.com/pr/1?token=abc")),
+        ], titles: ["s1": "rotate sk-ant-api03-abcdefghijklmnop1234"])
+        let git = ProjectGit(state: .ok, commits: [
+            GitCommit(sha: "abc1234", time: at(9.2), subject: "set DB_PASSWORD=hunter2 in fixtures", files: []),
+        ])
+        let log = DailyWorkLogBuilder().build(day: day, batch: batch, git: ["/w/app": git])
+        let app = log.projects.first
+        XCTAssertEqual(app?.sessions.first?.title, "rotate •••")
+        XCTAssertEqual(app?.pullRequests, ["https://example.com/pr/1?•••"])
+        XCTAssertEqual(app?.commits.first?.subject, "set DB_PASSWORD=••• in fixtures")
+    }
+
     func testParallelProjectsCountOnceInTotal() {
         let batch = WorkLogBatch(events: [event(9), event(9.25), event(9, cwd: "/w/api"), event(9.25, cwd: "/w/api")])
         let log = DailyWorkLogBuilder().build(day: day, batch: batch)

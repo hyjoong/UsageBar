@@ -26,6 +26,15 @@ public struct TailReadResult: Equatable, Sendable {
 /// hundreds of megabytes never sits in memory at once. A trailing line without a newline is left for the
 /// next read, since the CLI may still be writing it.
 public enum JSONLTailReader {
+    /// Whether reading from `cursor` would start over: the file is gone, was replaced, or shrank.
+    /// Checked before reading, so a caller can reset its parser state and read the file only once.
+    public static func needsRestart(_ url: URL, from cursor: LogCursor?) -> Bool {
+        guard let cursor, let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else { return true }
+        let fileID = (attributes[.systemFileNumber] as? NSNumber)?.uint64Value ?? 0
+        let size = (attributes[.size] as? NSNumber)?.uint64Value ?? 0
+        return cursor.fileID != fileID || cursor.offset > size
+    }
+
     public static func read(_ url: URL, from cursor: LogCursor?, chunkSize: Int = 1 << 20,
                             maxBytes: UInt64 = .max, line handle: (JSONLLine) -> Void) throws -> TailReadResult {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)

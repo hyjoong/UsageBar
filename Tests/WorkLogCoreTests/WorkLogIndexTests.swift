@@ -56,7 +56,8 @@ final class WorkLogIndexTests: XCTestCase {
         XCTAssertEqual(index.batch.events.count, 4)
 
         try Data((claudeLine("2026-10-17T05:00:00Z") + "\n").utf8).write(to: file, options: .atomic)
-        WorkLogIndexer.refresh(&index, source: .claude, roots: [logs], since: since)
+        let replaced = WorkLogIndexer.refresh(&index, source: .claude, roots: [logs], since: since)
+        XCTAssertEqual(replaced.lines, 1, "a replaced file is parsed from the start with fresh state")
         XCTAssertEqual(index.batch.events.map(\.time), [LogParsing.date("2026-10-17T05:00:00Z")!, LogParsing.date("2026-10-17T05:00:00Z")!])
 
         try FileManager.default.setAttributes([.modificationDate: LogParsing.date("2026-10-10T00:00:00Z")!], ofItemAtPath: file.path)
