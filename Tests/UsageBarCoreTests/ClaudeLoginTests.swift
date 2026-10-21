@@ -83,6 +83,23 @@ final class ClaudeLoginTests: XCTestCase {
         XCTAssertEqual(outcome, .cancelled)
     }
 
+    func testCancelKillsACLIThatIgnoresTermination() async throws {
+        let base = try fixtureDirectory()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let stubborn = base.appendingPathComponent("stubborn")
+        try writeExecutable("#!/bin/sh\ntrap '' TERM\nwhile :; do sleep 1; done\n", to: stubborn)
+        let login = ClaudeLogin()
+        let started = Date()
+        let task = Task.detached {
+            login.runProcess(executable: stubborn.path, directory: base, environment: [:], timeout: 60, onSignInURL: { _ in })
+        }
+        try await Task.sleep(nanoseconds: 300_000_000)
+        login.cancel()
+        let outcome = await task.value
+        XCTAssertEqual(outcome, .cancelled)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 6, "SIGTERM is ignored, so SIGKILL must follow within the grace period")
+    }
+
     private func fixtureDirectory() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("ClaudeLoginTests-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
