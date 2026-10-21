@@ -56,14 +56,12 @@ struct PanelEmptyState: View {
 
 /// Recovery for a known connection problem: an expired login, or a Codex CLI that would not launch.
 /// The same card sits above cached usage and in place of the empty state, so both offer the same actions.
+/// Claude reaches this card only for a lost login, which it can fix from here with the login controls.
 struct RecoveryCard: View {
     @ObservedObject var store: AppStore
-    @State private var setupMessage: String?
     private var provider: ProviderID { store.selectedProvider }
     private var state: ProviderState { store.selectedState }
     private var isLogin: Bool { state.connectionIssue == .authentication }
-    /// Claude can sign in again from here, so the card is one line and the login controls.
-    private var isClaudeLogin: Bool { isLogin && provider == .claude }
 
     static func applies(to state: ProviderState, provider: ProviderID) -> Bool {
         state.connectionIssue == .authentication || (provider == .codex && state.connectionIssue == .setup)
@@ -72,40 +70,44 @@ struct RecoveryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: UsageSpacing.item) {
             title.font(UsageType.headline).foregroundStyle(UsageTheme.warning)
-            if isClaudeLogin {
+            if provider == .claude {
                 Text("Claude Code 로그인이 풀렸어요. 브라우저에서 다시 로그인하면 바로 이어서 보여 드려요.")
                     .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
                 ClaudeLoginControls(store: store)
             } else {
-                details
+                codexDetails
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder private var details: some View {
-            if let message = state.errorMessage {
-                Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            hint.font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+    @ViewBuilder private var codexDetails: some View {
+        if let message = state.errorMessage {
+            Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: UsageSpacing.item) {
-                actions
-                if state.isRefreshing { ProgressView().controlSize(.small) }
+        }
+        Text(isLogin ? "codex login 으로 ChatGPT 계정에 로그인해요." : "설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
+            .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+            .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: UsageSpacing.item) {
+            if isLogin {
+                CopyCommandButton(command: "codex login", help: "터미널에서 로그인하는 명령어를 복사해요")
+                recheck("다시 확인").buttonStyle(.bordered)
+            } else {
+                recheck("Codex 다시 연결").buttonStyle(.borderedProminent)
+                Button("설치·업데이트 안내") { NSWorkspace.shared.open(provider.installURL) }.buttonStyle(.link)
             }
-            if let setupMessage {
-                Text(setupMessage).font(UsageType.caption).foregroundStyle(UsageTheme.warning)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else if let retry = store.retryMessage(for: provider) {
-                Text(retry).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            if state.isRefreshing { ProgressView().controlSize(.small) }
+        }
+        if let retry = store.retryMessage(for: provider) {
+            Text(retry).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     @ViewBuilder private var title: some View {
-        if isClaudeLogin {
+        if provider == .claude {
             Label("Claude 로그인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
         } else if isLogin {
             Label("\(provider.title) 로그인 확인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
@@ -114,36 +116,34 @@ struct RecoveryCard: View {
         }
     }
 
-    private var hint: Text {
-        switch (isLogin, provider) {
-        case (true, .claude): Text("터미널에서 안내를 확인해 주세요. 로그인이 필요하면 /login을 입력해 주세요.")
-        case (true, .codex): Text("codex login 으로 ChatGPT 계정에 로그인해요.")
-        default: Text("설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
-        }
-    }
-
-    @ViewBuilder private var actions: some View {
-        if provider == .claude {
-            Button("연결 설정 열기") { openClaudeSetup() }.buttonStyle(.borderedProminent)
-            recheck("다시 확인").buttonStyle(.bordered)
-        } else if isLogin {
-            recheck("다시 확인").buttonStyle(.bordered)
-        } else {
-            recheck("Codex 다시 연결").buttonStyle(.borderedProminent)
-            Button("설치·업데이트 안내") { NSWorkspace.shared.open(provider.installURL) }.buttonStyle(.link)
-        }
-    }
-
     private func recheck(_ title: LocalizedStringKey) -> some View {
         Button(title) { Task { await store.refresh(provider, force: true) } }
             .disabled(!store.canRefresh(provider))
     }
+}
 
-    private func openClaudeSetup() {
-        Task {
-            setupMessage = await ClaudeSetupLauncher.open()
-            if setupMessage == nil { store.watchClaudeConnection() }
+/// Copies a terminal command and says so for two seconds, so a second copy gets feedback too.
+struct CopyCommandButton: View {
+    let command: String
+    let help: LocalizedStringKey
+    var onCopy: () -> Void = {}
+    @State private var copied = false
+    @State private var reset: Task<Void, Never>?
+
+    var body: some View {
+        Button(copied ? LocalizedStringKey("복사했어요") : LocalizedStringKey("명령어 복사")) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(command, forType: .string)
+            copied = true
+            onCopy()
+            reset?.cancel()
+            reset = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                if !Task.isCancelled { copied = false }
+            }
         }
+        .buttonStyle(.bordered)
+        .help(help)
     }
 }
 
@@ -170,9 +170,10 @@ struct ClaudeLoginControls: View {
                 HStack(spacing: UsageSpacing.item) {
                     Button("브라우저에서 로그인") { copied = false; store.startClaudeLogin() }
                         .buttonStyle(.borderedProminent)
-                    Button(copied ? LocalizedStringKey("복사했어요") : LocalizedStringKey("명령어 복사")) { copyCommand() }
-                        .buttonStyle(.bordered)
-                        .help("터미널에서 직접 로그인하는 명령어를 복사해요")
+                    CopyCommandButton(command: ClaudeLogin.manualCommand(), help: "터미널에서 직접 로그인하는 명령어를 복사해요") {
+                        copied = true
+                        store.watchClaudeConnection()
+                    }
                     if store.selectedState.isRefreshing { ProgressView().controlSize(.small) }
                 }
                 if case .failed(let message) = store.claudeLogin {
@@ -188,12 +189,6 @@ struct ClaudeLoginControls: View {
         }
     }
 
-    private func copyCommand() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(ClaudeLogin.manualCommand(), forType: .string)
-        copied = true
-        store.watchClaudeConnection()
-    }
 }
 
 /// Three numbered steps that take a new user from an installed CLI to a working connection.
@@ -252,10 +247,7 @@ struct ConnectionSetupCard: View {
         }
         step(2, "터미널에서 로그인", detail: "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요.") {
             Button("연결 설정 열기") {
-                Task {
-                    setupMessage = await ClaudeSetupLauncher.open()
-                    if setupMessage == nil { store.watchClaudeConnection() }
-                }
+                Task { setupMessage = await ClaudeSetupLauncher.open(watching: store) }
             }
             .buttonStyle(.borderedProminent).controlSize(.small)
         }
@@ -267,7 +259,9 @@ struct ConnectionSetupCard: View {
             Button("설치 안내") { NSWorkspace.shared.open(provider.installURL) }
                 .buttonStyle(.link)
         }
-        step(2, "터미널에서 로그인", detail: "codex login 으로 ChatGPT 계정에 로그인해요.") { EmptyView() }
+        step(2, "터미널에서 로그인", detail: "codex login 으로 ChatGPT 계정에 로그인해요.") {
+            CopyCommandButton(command: "codex login", help: "터미널에서 로그인하는 명령어를 복사해요").controlSize(.small)
+        }
         step(3, "돌아와서 확인") { recheck }
     }
 

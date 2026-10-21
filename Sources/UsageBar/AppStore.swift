@@ -423,10 +423,6 @@ final class AppStore: ObservableObject {
         }
     }
 
-    var nextReset: Date? {
-        trackedWindow(for: selectedProvider)?.resetsAt
-    }
-
     func selectionNotice(for provider: ProviderID) -> String? {
         guard let savedID = trackedWindowIDs[provider],
               let displayed = trackedWindow(for: provider), displayed.id != savedID else { return nil }
