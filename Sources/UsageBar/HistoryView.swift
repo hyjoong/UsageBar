@@ -96,12 +96,14 @@ struct HistoryView: View {
             Picker("서비스", selection: $selectedProvider) {
                 ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
             }.pickerStyle(.segmented).labelsHidden().frame(width: 150)
-            // Claude reports no daily tokens, so the choice only appears where there is data to show.
-            Picker("기록 종류", selection: $kind) {
-                Text("잔여 한도").tag("limits")
-                if selectedProvider != .claude { Text("일별 토큰").tag("tokens") }
-            }.pickerStyle(.segmented).labelsHidden().frame(width: 250)
             .onChange(of: selectedProvider) { _, provider in if provider == .claude { kind = "limits" } }
+            // Claude reports no daily tokens, so there is nothing to choose and the picker stays hidden.
+            if selectedProvider != .claude {
+                Picker("기록 종류", selection: $kind) {
+                    Text("잔여 한도").tag("limits")
+                    Text("일별 토큰").tag("tokens")
+                }.pickerStyle(.segmented).labelsHidden().frame(width: 250)
+            }
             Spacer()
             Picker("기간", selection: $days) {
                 Text(kind == "tokens" ? "오늘" : "24시간").tag(1)
