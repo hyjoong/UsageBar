@@ -21,11 +21,16 @@ public struct GitRepository: Codable, Hashable, Sendable {
 /// On macOS, looking inside Desktop or Documents can make the system ask the person for folder access,
 /// so callers do this only when git reading is turned on.
 public enum RepositoryLocator {
-    public static func repository(for cwd: String, fileManager: FileManager = .default) -> GitRepository? {
+    public static func repository(for cwd: String, fileManager: FileManager = .default,
+                                  home: String? = nil) -> GitRepository? {
         // Paths are normalized by hand: Foundation's standardizing turns /private/tmp into /tmp.
         var folder = URL(fileURLWithPath: normalize(cwd), isDirectory: true)
-        let home = fileManager.homeDirectoryForCurrentUser.path
+        let start = folder.path
+        let home = normalize(home ?? fileManager.homeDirectoryForCurrentUser.path)
         while folder.path != "/" {
+            // A dotfiles repository in the home folder is not the project of everything below it.
+            // It counts only when the session ran in the home folder itself.
+            if folder.path == home && folder.path != start { break }
             let marker = folder.appendingPathComponent(".git")
             var isDirectory: ObjCBool = false
             if fileManager.fileExists(atPath: marker.path, isDirectory: &isDirectory) {

@@ -21,8 +21,21 @@ final class PromptExcerptTests: XCTestCase {
             ("key AKIAABCDEFGHIJKLMNOP end", "key ••• end"),
             ("edit Sources/WorkLogCore/JSONLTailReaderPerformance.swift", "edit Sources/WorkLogCore/JSONLTailReaderPerformance.swift"),
             ("rename veryLongFunctionNameWithoutAnyDigitsInIt", "rename veryLongFunctionNameWithoutAnyDigitsInIt"),
+            ("connect postgres://admin:S3cretPw@localhost:5432/db", "connect postgres://admin:•••@localhost:5432/db"),
+            ("set export DB_PASSWORD=hunter2 then", "set export DB_PASSWORD=••• then"),
+            (#"use api_key: "abc123" here"#, "use api_key: ••• here"),
+            ("send Authorization: Bearer abc123def456 now", "send Authorization: Bearer ••• now"),
+            ("fix the password field label", "fix the password field label"),
         ]
         for (input, expected) in cases { XCTAssertEqual(PromptExcerpt.redact(input), expected, input) }
+    }
+
+    func testHugeSingleLineIsCutBeforeMasking() {
+        let blob = String(repeating: "A1+B2-", count: 200_000)   // 1.2 MB with no newline
+        let started = Date()
+        let excerpt = PromptExcerpt.excerpt(blob)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 1)
+        XCTAssertLessThanOrEqual(excerpt.count, PromptExcerpt.maxCharacters)
     }
 
     func testReadsPromptBackFromLogAndGivesUpWhenItChanged() throws {

@@ -226,7 +226,7 @@ public struct DailyWorkLogBuilder {
             if project.id.hasPrefix(WorkLogProject.codexWorktreePrefix), let named = byName[project.name.lowercased()] {
                 owner = named
             }
-            merged[owner.id, default: (owner, [])].1 += events.filter { window.contains($0.time) }
+            merged[owner.id, default: (owner, [])].1 += events.filter { Self.touches($0, window) }
         }
         for (id, value) in merged {
             if let built = projectDay(value.0, events: value.1, titles: batch.titles, day: day,
@@ -241,12 +241,20 @@ public struct DailyWorkLogBuilder {
         return DailyWorkLog(day: day, projects: days, duration: total, isPartial: isPartial)
     }
 
+    /// An event belongs near a range by its time, or, for a Codex turn, by any overlap of the turn.
+    /// A turn that starts before midnight and ends after it still counts on the later day.
+    static func touches(_ event: WorkLogEvent, _ range: DateInterval) -> Bool {
+        if range.contains(event.time) { return true }
+        if case .turn(let end) = event.kind { return event.time < range.end && end > range.start }
+        return false
+    }
+
     private func projectDay(_ project: WorkLogProject, events: [WorkLogEvent], titles: [String: String],
                             day: DateInterval, git: ProjectGit) -> ProjectDay? {
         let commits = git.commits.filter { day.contains($0.time) && $0.time < day.end }
         let commitMoments = commits.map { WorkLogEvent(time: $0.time, source: .git, sessionID: "git", cwd: nil, kind: .activity) }
         let intervals = WorkTimeCalculator.clip(WorkTimeCalculator.intervals(for: events + commitMoments, rules: rules), to: day)
-        let today = events.filter { day.contains($0.time) && $0.time < day.end }
+        let today = events.filter { Self.touches($0, day) && $0.time < day.end }
         guard !today.isEmpty || !commits.isEmpty else { return nil }
 
         // Sessions
@@ -255,7 +263,8 @@ public struct DailyWorkLogBuilder {
         let sessions = bySession.map { id, events -> WorkLogSession in
             let sorted = events.sorted { $0.time < $1.time }
             let prompts = sorted.filter { if case .prompt = $0.kind { return true } else { return false } }.count
-            return WorkLogSession(id: id, source: sorted[0].source, title: titles[id], start: sorted[0].time,
+            // Titles are written by the CLI from what the person typed, so they get the prompts' masking.
+            return WorkLogSession(id: id, source: sorted[0].source, title: titles[id].map(PromptExcerpt.redact), start: sorted[0].time,
                                   end: sorted[sorted.count - 1].time, promptCount: prompts)
         }.sorted { $0.start < $1.start }
 
@@ -292,7 +301,8 @@ public struct DailyWorkLogBuilder {
                 // The session's own folder (a worktree's, when it worked in one), then the project's.
                 let relative = event.cwd.flatMap { Self.relative(path, to: resolve($0).root) } ?? Self.relative(path, to: project.root)
                 if let relative, seenFiles.insert(relative).inserted { edited.append(relative) }
-            case .pullRequest(let url):
+            case .pullRequest(let raw):
+                let url = PromptExcerpt.redact(raw)
                 if !pullRequests.contains(url) { pullRequests.append(url) }
             default:
                 break
@@ -303,7 +313,9 @@ public struct DailyWorkLogBuilder {
         return ProjectDay(id: project.id, name: project.name, duration: WorkTimeCalculator.total(intervals),
                           intervals: intervals, sources: WorkLogSource.allCases.filter(sources.contains),
                           sessions: sessions, prompts: Array(prompts),
-                          git: ProjectGit(state: git.state, commits: commits.sorted { $0.time < $1.time },
+                          git: ProjectGit(state: git.state, commits: commits.sorted { $0.time < $1.time }.map {
+                              GitCommit(sha: $0.sha, time: $0.time, subject: PromptExcerpt.redact($0.subject), files: $0.files)
+                          },
                                           uncommittedFiles: git.uncommittedFiles),
                           editedFiles: edited, pullRequests: pullRequests)
     }

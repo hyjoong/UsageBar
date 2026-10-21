@@ -68,6 +68,11 @@ public enum WorkLogIndexer {
             let path = url.path
             var entry = index.files[path] ?? LogIndex.Entry(source: source)
             guard budget > 0 else { stats.isPartial = true; break }
+            // Replaced or truncated: start over with fresh parser state, since the old state described a
+            // different file. Deciding before the read keeps a large file from being read twice.
+            if entry.cursor != nil, JSONLTailReader.needsRestart(url, from: entry.cursor) {
+                entry = LogIndex.Entry(source: source)
+            }
             var claude = entry.claude, codex = entry.codex
             var fresh = WorkLogBatch()
             var lines = 0
@@ -81,15 +86,7 @@ public enum WorkLogIndexer {
                     }
                 }
             }
-            guard var result = read(from: entry.cursor) else { continue }
-            if result.restarted, entry.cursor != nil {
-                // Replaced or truncated: start over with fresh parser state, since the old state described
-                // a different file.
-                entry = LogIndex.Entry(source: source)
-                claude = entry.claude; codex = entry.codex; fresh = WorkLogBatch(); lines = 0
-                guard let again = read(from: nil) else { index.files[path] = nil; continue }
-                result = again
-            }
+            guard let result = read(from: entry.cursor) else { continue }
             let bytes = result.cursor.offset - (result.restarted ? 0 : entry.cursor?.offset ?? 0)
             entry.cursor = result.cursor
             entry.claude = claude

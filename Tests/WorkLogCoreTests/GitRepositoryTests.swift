@@ -33,6 +33,15 @@ final class GitRepositoryTests: XCTestCase {
         XCTAssertEqual(project.root, worktree.path)
     }
 
+    func testHomeDotfilesRepositoryDoesNotClaimItsSubfolders() throws {
+        let home = directory.appendingPathComponent("home")
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".git"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: home.appendingPathComponent("Desktop/notes"), withIntermediateDirectories: true)
+        XCTAssertNil(RepositoryLocator.repository(for: home.appendingPathComponent("Desktop/notes").path, home: home.path))
+        XCTAssertEqual(RepositoryLocator.repository(for: home.path, home: home.path)?.root, home.path,
+                       "a session run in the home folder itself still uses its repository")
+    }
+
     func testParseLogSkipsDuplicatesAndBrokenRecords() {
         let output = "\u{1e}aaaaaaa1\u{1f}2026-10-17T10:00:00+09:00\u{1f}Fix: a | b\nSources/A.swift\nREADME.md\n"
             + "\u{1e}aaaaaaa1\u{1f}2026-10-17T10:00:00+09:00\u{1f}Fix: a | b\n"
