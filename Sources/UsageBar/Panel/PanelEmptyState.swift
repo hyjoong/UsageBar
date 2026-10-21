@@ -62,6 +62,8 @@ struct RecoveryCard: View {
     private var provider: ProviderID { store.selectedProvider }
     private var state: ProviderState { store.selectedState }
     private var isLogin: Bool { state.connectionIssue == .authentication }
+    /// Claude can sign in again from here, so the card is one line and the login controls.
+    private var isClaudeLogin: Bool { isLogin && provider == .claude }
 
     static func applies(to state: ProviderState, provider: ProviderID) -> Bool {
         state.connectionIssue == .authentication || (provider == .codex && state.connectionIssue == .setup)
@@ -70,6 +72,19 @@ struct RecoveryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: UsageSpacing.item) {
             title.font(UsageType.headline).foregroundStyle(UsageTheme.warning)
+            if isClaudeLogin {
+                Text("Claude Code 로그인이 풀렸어요. 브라우저에서 다시 로그인하면 바로 이어서 보여 드려요.")
+                    .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
+                    .fixedSize(horizontal: false, vertical: true)
+                ClaudeLoginControls(store: store)
+            } else {
+                details
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder private var details: some View {
             if let message = state.errorMessage {
                 Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
@@ -87,12 +102,12 @@ struct RecoveryCard: View {
                 Text(retry).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder private var title: some View {
-        if isLogin {
+        if isClaudeLogin {
+            Label("Claude 로그인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
+        } else if isLogin {
             Label("\(provider.title) 로그인 확인이 필요해요", systemImage: "person.crop.circle.badge.exclamationmark")
         } else {
             Label("Codex 연결을 확인해 주세요", systemImage: "exclamationmark.circle")
@@ -109,7 +124,7 @@ struct RecoveryCard: View {
 
     @ViewBuilder private var actions: some View {
         if provider == .claude {
-            Button("연결 설정 열기") { setupMessage = ClaudeSetupLauncher.open() }.buttonStyle(.borderedProminent)
+            Button("연결 설정 열기") { openClaudeSetup() }.buttonStyle(.borderedProminent)
             recheck("다시 확인").buttonStyle(.bordered)
         } else if isLogin {
             recheck("다시 확인").buttonStyle(.bordered)
@@ -122,6 +137,62 @@ struct RecoveryCard: View {
     private func recheck(_ title: LocalizedStringKey) -> some View {
         Button(title) { Task { await store.refresh(provider, force: true) } }
             .disabled(!store.canRefresh(provider))
+    }
+
+    private func openClaudeSetup() {
+        Task {
+            setupMessage = await ClaudeSetupLauncher.open()
+            if setupMessage == nil { store.watchClaudeConnection() }
+        }
+    }
+}
+
+/// Signs Claude in again without a Terminal: the CLI's own `auth login` opens the browser and
+/// UsageBar rechecks when it finishes. Copying the command covers a Mac where that cannot run.
+struct ClaudeLoginControls: View {
+    @ObservedObject var store: AppStore
+    @State private var copied = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: UsageSpacing.compact) {
+            if case .waiting(let url) = store.claudeLogin {
+                HStack(spacing: UsageSpacing.item) {
+                    ProgressView().controlSize(.small)
+                    Text("브라우저에서 로그인을 마쳐 주세요").font(UsageType.secondary)
+                    Spacer(minLength: 0)
+                    Button("취소") { store.cancelClaudeLogin() }.buttonStyle(.link)
+                }
+                if let url {
+                    Button("브라우저가 열리지 않았나요? 로그인 페이지 열기") { NSWorkspace.shared.open(url) }
+                        .buttonStyle(.link).font(UsageType.caption)
+                }
+            } else {
+                HStack(spacing: UsageSpacing.item) {
+                    Button("브라우저에서 로그인") { copied = false; store.startClaudeLogin() }
+                        .buttonStyle(.borderedProminent)
+                    Button(copied ? LocalizedStringKey("복사했어요") : LocalizedStringKey("명령어 복사")) { copyCommand() }
+                        .buttonStyle(.bordered)
+                        .help("터미널에서 직접 로그인하는 명령어를 복사해요")
+                    if store.selectedState.isRefreshing { ProgressView().controlSize(.small) }
+                }
+                if case .failed(let message) = store.claudeLogin {
+                    Text(message).font(UsageType.caption).foregroundStyle(UsageTheme.warning)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if copied {
+                    Text("터미널에 붙여넣어 실행하고 로그인하면 자동으로 다시 확인해요.")
+                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func copyCommand() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(ClaudeLogin.manualCommand(), forType: .string)
+        copied = true
+        store.watchClaudeConnection()
     }
 }
 
@@ -180,8 +251,13 @@ struct ConnectionSetupCard: View {
                 .buttonStyle(.link)
         }
         step(2, "터미널에서 로그인", detail: "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요.") {
-            Button("연결 설정 열기") { setupMessage = ClaudeSetupLauncher.open() }
-                .buttonStyle(.borderedProminent).controlSize(.small)
+            Button("연결 설정 열기") {
+                Task {
+                    setupMessage = await ClaudeSetupLauncher.open()
+                    if setupMessage == nil { store.watchClaudeConnection() }
+                }
+            }
+            .buttonStyle(.borderedProminent).controlSize(.small)
         }
         step(3, "돌아와서 확인") { recheck }
     }

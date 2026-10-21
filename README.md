@@ -109,7 +109,10 @@ On first launch the panel walks you through the connection in three numbered ste
 When the menu bar is full, macOS hides items that fall under the notch, and a newly added app lands right next to it. Remove a few Control Center items or use a menu bar manager; then ⌘-drag the UsageBar percentage to the right so it keeps its spot. Until then, launching UsageBar again opens the panel as a window.
 
 **It says a login is needed.**
-Log in with the CLI in Terminal, then press **Check again**. UsageBar never handles the login itself.
+For Claude, press **Sign in with browser** in the panel. UsageBar runs Claude Code's own `claude auth login`, which opens your browser; when you finish, UsageBar checks again by itself. It never sees your password or token. If that can't run on your Mac, **Copy command** copies the same command to paste into Terminal. For Codex, run `codex login` in Terminal, then press **Check again**.
+
+**Claude setup on 0.9.1 or earlier reports `Users/.../ConnectClaude.command: no such file or directory`.**
+A shell startup question, such as an oh-my-zsh update prompt, swallowed the leading `/` of the setup path. 0.10.0 starts the setup without your shell startup files, and signing in again needs no Terminal at all. On an older version, run `claude auth login` in Terminal and press **Check again**.
 
 **It shows "earlier record" or an error.**
 That is the last successful check. Verify your internet connection and the CLI login, then refresh. The gear menu links to each service's status page.

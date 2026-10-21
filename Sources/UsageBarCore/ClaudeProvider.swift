@@ -32,6 +32,35 @@ public actor ClaudeProvider: UsageProvider {
                                     home: FileManager.default.homeDirectoryForCurrentUser)
     }
 
+    /// Terminal normally types a .command path into the user's login shell. A shell startup
+    /// prompt can consume that input before the script runs. This profile starts zsh directly,
+    /// with user startup files disabled, without changing the user's default Terminal profile.
+    public static func prepareConnectionTerminalProfile(scriptURL: URL) throws -> URL {
+        try prepareConnectionTerminalProfile(scriptURL: scriptURL, directory: connectionDirectoryURL,
+                                             environment: ProcessInfo.processInfo.environment,
+                                             home: FileManager.default.homeDirectoryForCurrentUser)
+    }
+
+    static func prepareConnectionTerminalProfile(scriptURL: URL, directory: URL,
+                                                 environment: [String: String], home: URL,
+                                                 systemPaths: [String]? = nil) throws -> URL {
+        let launcher = try prepareConnectionScript(scriptURL: scriptURL, directory: directory,
+                                                   environment: environment, home: home, systemPaths: systemPaths)
+        let profile = launcher.deletingLastPathComponent().appendingPathComponent("ConnectClaude.terminal")
+        try validateConnectionFile(profile)
+        let settings: [String: Any] = [
+            "type": "Window Settings",
+            "name": "UsageBar Claude Connection",
+            "ProfileCurrentVersion": 2.07,
+            "CommandString": shellCommand(["/bin/zsh", "-f", launcher.path]),
+            "RunCommandAsShell": false
+        ]
+        let data = try PropertyListSerialization.data(fromPropertyList: settings, format: .xml, options: 0)
+        try data.write(to: profile, options: .atomic)
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: profile.path)
+        return profile
+    }
+
     static func prepareConnectionScript(scriptURL: URL, directory: URL,
                                         environment: [String: String], home: URL,
                                         systemPaths: [String]? = nil) throws -> URL {
@@ -48,22 +77,52 @@ public actor ClaudeProvider: UsageProvider {
         }
         let folder = try prepareConnectionDirectory(at: directory)
         let launcher = folder.appendingPathComponent("ConnectClaude.command")
-        guard (try? manager.destinationOfSymbolicLink(atPath: launcher.path)) == nil else {
+        try validateConnectionFile(launcher)
+        let command = shellCommand(["/bin/zsh", "-f", scriptURL.standardizedFileURL.path, "--claude-executable", executable])
+        let searchPath = connectionSearchPath(executable: executable, environment: environment, home: home)
+        try ("#!/bin/zsh -f\nset -euo pipefail\nexport PATH=" + shellCommand([searchPath]) + "\nexec " + command + "\n")
+            .write(to: launcher, atomically: true, encoding: .utf8)
+        try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: launcher.path)
+        return launcher
+    }
+
+    private static func shellCommand(_ arguments: [String]) -> String {
+        arguments.map { "'" + $0.replacingOccurrences(of: "'", with: "'\\''") + "'" }.joined(separator: " ")
+    }
+
+    /// A clean Terminal shell must still find Node for npm installs. Keep the app's search
+    /// path and common runtime locations; never source shell files to discover them.
+    private static func connectionSearchPath(executable: String, environment: [String: String], home: URL) -> String {
+        let npm = executable.range(of: "/lib/node_modules/")
+        var paths: [String] = []
+        if let npm { paths.append(String(executable[..<npm.lowerBound]) + "/bin") }
+        paths += (environment["PATH"] ?? "").split(separator: ":").map(String.init)
+        paths += ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin"]
+        if npm != nil {
+            let versions = home.appendingPathComponent(".nvm/versions/node", isDirectory: true)
+            let installed = (try? FileManager.default.contentsOfDirectory(at: versions, includingPropertiesForKeys: nil)) ?? []
+            paths += installed.sorted {
+                $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedDescending
+            }.compactMap { version in
+                let bin = version.appendingPathComponent("bin", isDirectory: true)
+                return FileManager.default.isExecutableFile(atPath: bin.appendingPathComponent("node").path) ? bin.path : nil
+            }
+        }
+        var seen = Set<String>()
+        return paths.filter { $0.hasPrefix("/") && !$0.utf8.contains(0) && seen.insert($0).inserted }.joined(separator: ":")
+    }
+
+    private static func validateConnectionFile(_ file: URL) throws {
+        let manager = FileManager.default
+        guard (try? manager.destinationOfSymbolicLink(atPath: file.path)) == nil else {
             throw ProviderError.setupRequired(String(localized: "Claude 연결 실행 파일이 다른 위치로 연결되어 있어요."))
         }
-        if manager.fileExists(atPath: launcher.path) {
-            let values = try launcher.resourceValues(forKeys: [.isRegularFileKey])
+        if manager.fileExists(atPath: file.path) {
+            let values = try file.resourceValues(forKeys: [.isRegularFileKey])
             guard values.isRegularFile == true else {
                 throw ProviderError.setupRequired(String(localized: "Claude 연결 실행 파일의 경로를 확인해 주세요."))
             }
         }
-        let arguments = ["/bin/zsh", scriptURL.standardizedFileURL.path, "--claude-executable", executable]
-        let command = arguments.map { "'" + $0.replacingOccurrences(of: "'", with: "'\\''") + "'" }
-            .joined(separator: " ")
-        try ("#!/bin/zsh\nset -euo pipefail\nexec " + command + "\n")
-            .write(to: launcher, atomically: true, encoding: .utf8)
-        try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: launcher.path)
-        return launcher
     }
 
     static func prepareConnectionDirectory(at directory: URL) throws -> URL {

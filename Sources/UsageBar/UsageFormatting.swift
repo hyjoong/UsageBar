@@ -95,13 +95,22 @@ enum UsageFormat {
 
 /// Opens the bundled Claude connection script in Terminal and reports a user-facing failure message.
 enum ClaudeSetupLauncher {
-    @MainActor static func open() -> String? {
+    @MainActor static func open() async -> String? {
         do {
             guard let script = Bundle.main.url(forResource: "setup-claude", withExtension: "command") else {
                 return String(localized: "build 폴더의 UsageBar.app에서 연결 설정을 열어 주세요.")
             }
-            let launcher = try ClaudeProvider.prepareConnectionScript(scriptURL: script)
-            return NSWorkspace.shared.open(launcher) ? nil : String(localized: "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요.")
+            let launcher = try ClaudeProvider.prepareConnectionTerminalProfile(scriptURL: script)
+            guard let terminal = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Terminal") else {
+                return String(localized: "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요.")
+            }
+            do {
+                _ = try await NSWorkspace.shared.open([launcher], withApplicationAt: terminal,
+                                                      configuration: NSWorkspace.OpenConfiguration())
+                return nil
+            } catch {
+                return String(localized: "터미널을 열지 못했어요. 연결 설정 파일을 다시 열어 주세요.")
+            }
         } catch { return error.localizedDescription }
     }
 }

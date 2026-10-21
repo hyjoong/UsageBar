@@ -137,9 +137,9 @@ final class WorkLogControllerTests: XCTestCase {
         XCTAssertEqual(controller.selectedDay, day(2).start)
     }
 
-    func testHiddenPromptsReadNothing() async {
+    func testHiddenPromptsReadNothing() async throws {
         let controller = WorkLogController(demo: true, defaults: defaults)
-        let location = controller.logs.first!.projects.first!.prompts.first!.location
+        let location = try XCTUnwrap(controller.logs.flatMap(\.projects).flatMap(\.prompts).first?.location)
         let shown = await controller.excerpts([location])
         XCTAssertEqual(shown.count, 1)
         controller.setShowsPrompts(false)
@@ -157,16 +157,17 @@ final class WorkLogControllerTests: XCTestCase {
         XCTAssertEqual(WorkLogController.receipts([outside, inside], overlapping: project).map(\.id), [inside.id])
     }
 
-    func testDemoWeekHasProjectsCommitsAndAnExclusion() async {
+    func testDemoWeekHasProjectsCommitsAndAnExclusion() async throws {
         let controller = WorkLogController(demo: true, defaults: defaults)
         XCTAssertEqual(controller.logs.count, WorkLogController.days)
-        let today = try! XCTUnwrap(controller.logs.first)
-        XCTAssertGreaterThanOrEqual(today.projects.count, 2)
-        XCTAssertGreaterThan(today.commitCount, 0)
+        // Demo sessions are relative to now; just after midnight most belong to yesterday.
+        let projects = controller.logs.flatMap(\.projects)
+        XCTAssertGreaterThanOrEqual(Set(projects.map(\.name)).count, 2)
+        XCTAssertGreaterThan(controller.logs.reduce(0) { $0 + $1.commitCount }, 0)
         XCTAssertFalse(controller.weekMarkdown().isEmpty)
-        let name = today.projects[0].name
+        let name = try XCTUnwrap(projects.first).name
         await controller.setExcludedProjects([name.uppercased()])
-        XCTAssertFalse(controller.logs.first!.projects.contains { $0.name == name })
+        XCTAssertFalse(controller.logs.flatMap(\.projects).contains { $0.name == name })
         XCTAssertNil(defaults.object(forKey: "workLogExcludedProjects"))
     }
 

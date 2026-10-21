@@ -69,6 +69,13 @@ struct ProviderState {
     var lastAttempt: Date?
 }
 
+enum ClaudeLoginState: Equatable {
+    case idle
+    /// The browser sign-in is open. The address is the CLI's fallback for when the browser did not open.
+    case waiting(URL?)
+    case failed(String)
+}
+
 @MainActor
 final class AppStore: ObservableObject {
     @Published var selectedProvider: ProviderID = .claude {
@@ -127,6 +134,13 @@ final class AppStore: ObservableObject {
     @Published private(set) var statusLineMessage: String?
     /// Run-out warnings already sent, by provider, window and period. One per period is enough.
     private var runOutNotified: Set<String> = []
+    /// Providers whose lost login was already announced; cleared by the next successful check.
+    private var loginLostNotified: Set<ProviderID> = []
+    /// The in-app Claude sign-in: the CLI's own `auth login`, which opens the browser.
+    @Published private(set) var claudeLogin: ClaudeLoginState = .idle
+    private var claudeLoginTask: Task<Void, Never>?
+    /// Rechecks Claude every few seconds after the setup Terminal opens, so finishing there is enough.
+    private var claudeConnectionWatch: Task<Void, Never>?
     /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
     @Published var workRemindersEnabled = true {
         didSet {
@@ -314,6 +328,53 @@ final class AppStore: ObservableObject {
         return retry.rateLimited ? String(localized: "약 \(minutes)분 후 다시 확인할 수 있어요") : String(localized: "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요")
     }
 
+    /// Starts `claude auth login`. The browser opens; when the CLI exits successfully, usage is checked again.
+    func startClaudeLogin() {
+        guard claudeLoginTask == nil else { return }
+        claudeLogin = .waiting(nil)
+        if isDemo { return }
+        let runner = ClaudeLogin()
+        let showSignInURL: @Sendable (URL) -> Void = { [weak self] url in
+            Task { @MainActor in self?.showClaudeSignInURL(url) }
+        }
+        claudeLoginTask = Task { [weak self] in
+            let outcome = await runner.run(onSignInURL: showSignInURL)
+            guard let self else { return }
+            self.claudeLoginTask = nil
+            switch outcome {
+            case .succeeded:
+                self.claudeLogin = .idle
+                await self.refresh(.claude, force: true)
+            case .failed(let message): self.claudeLogin = .failed(message)
+            case .cancelled: self.claudeLogin = .idle
+            }
+        }
+    }
+
+    private func showClaudeSignInURL(_ url: URL) {
+        if case .waiting = claudeLogin { claudeLogin = .waiting(url) }
+    }
+
+    func cancelClaudeLogin() {
+        claudeLoginTask?.cancel()
+        if isDemo { claudeLogin = .idle }
+    }
+
+    /// After the setup Terminal opens, recheck every 5 seconds for up to 10 minutes until Claude connects.
+    func watchClaudeConnection() {
+        claudeConnectionWatch?.cancel()
+        guard !isDemo else { return }
+        claudeConnectionWatch = Task { [weak self] in
+            let deadline = Date().addingTimeInterval(ClaudeLogin.timeout)
+            while Date() < deadline {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                guard !Task.isCancelled, let self, self.enabledProviders.contains(.claude),
+                      self.states[.claude]?.requiresConnection == true else { return }
+                if self.states[.claude]?.isRefreshing != true { await self.refresh(.claude, force: true) }
+            }
+        }
+    }
+
     func canRefresh(_ provider: ProviderID) -> Bool {
         guard enabledProviders.contains(provider), states[provider]?.isRefreshing != true else { return false }
         if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return false }
@@ -330,6 +391,8 @@ final class AppStore: ObservableObject {
 
     func menuTitle(for provider: ProviderID) -> String {
         guard showPercentage else { return "" }
+        // A signed-out CLI leaves only an old value. Showing it as a percentage invites a wrong decision.
+        if states[provider]?.connectionIssue == .authentication { return "!" }
         guard let window = trackedWindow(for: provider) else { return states[provider]?.isRefreshing == true ? "…" : "—" }
         return UsageMenuBarFormatter.title(for: window, includeReset: showResetCountdown, now: clockNow) + (isStale(for: provider) ? " ·" : "")
     }
@@ -509,7 +572,7 @@ final class AppStore: ObservableObject {
 
     /// A menu bar percentage at or below the low-limit line, shown in the warning color.
     func menuIsLow(for provider: ProviderID) -> Bool {
-        showPercentage && (trackedWindow(for: provider).map { $0.remainingPercent <= 20 } ?? false)
+        showPercentage && states[provider]?.connectionIssue != .authentication && (trackedWindow(for: provider).map { $0.remainingPercent <= 20 } ?? false)
     }
 
     var menuIsLow: Bool { menuProviders.contains { menuIsLow(for: $0) } }
@@ -685,6 +748,7 @@ final class AppStore: ObservableObject {
             states[id]?.errorMessage = nil
             states[id]?.connectionIssue = nil
             retryStates[id] = nil
+            loginLostNotified.remove(id)
             if let historyStore {
                 do {
                     let history = try await historyStore.record(snapshot)
@@ -722,6 +786,11 @@ final class AppStore: ObservableObject {
             retryStates[id] = RetryState(attempts: attempt, notBefore: clockNow.addingTimeInterval(delay), rateLimited: limited)
             states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? String(localized: "지금 사용량을 가져올 수 없어요.")
             states[id]?.connectionIssue = connectionIssue
+            if connectionIssue == .authentication, notificationsEnabled, !isDemo, loginLostNotified.insert(id).inserted {
+                _ = await deliverNotification(id: "login.\(id.rawValue)",
+                    title: String(localized: "\(id.title) 로그인이 풀렸어요"),
+                    body: String(localized: "메뉴 막대에서 다시 로그인하면 사용량을 계속 볼 수 있어요."))
+            }
         }
     }
 
@@ -982,6 +1051,9 @@ final class AppStore: ObservableObject {
             states[.claude]?.errorMessage = String(localized: "Claude Code에 로그인이 필요해요. 연결 설정을 열어 로그인한 뒤 다시 확인해 주세요.")
             states[.claude]?.connectionIssue = .authentication
             states[.codex] = ProviderState(errorMessage: String(localized: "Codex에 ChatGPT 계정으로 로그인해 주세요."), connectionIssue: .authentication)
+            if CommandLine.arguments.contains("--ui-login-waiting") {
+                claudeLogin = .waiting(URL(string: "https://claude.com/oauth/authorize"))
+            }
         }
         if CommandLine.arguments.contains("--ui-codex-setup-error") {
             selectedProvider = .codex

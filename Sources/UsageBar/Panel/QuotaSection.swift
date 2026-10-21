@@ -116,7 +116,13 @@ struct ConnectionNotice: View {
                 .font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
         }
         if store.selectedState.requiresConnection, provider == .claude {
-            Button("Claude 다시 연결") { setupMessage = ClaudeSetupLauncher.open() }.buttonStyle(.bordered)
+            Button("Claude 다시 연결") {
+                Task {
+                    setupMessage = await ClaudeSetupLauncher.open()
+                    if setupMessage == nil { store.watchClaudeConnection() }
+                }
+            }
+            .buttonStyle(.bordered)
             if let setupMessage { Text(setupMessage).font(.caption).foregroundStyle(UsageTheme.warning) }
         }
     }

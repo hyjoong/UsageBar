@@ -231,9 +231,12 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(store.states[.claude]?.connectionIssue, .authentication)
         XCTAssertEqual(store.connectionStatus(for: .claude), "로그인 확인 필요")
         XCTAssertNotEqual(store.freshness(for: .claude), .current)
+        XCTAssertEqual(store.menuTitle(for: .claude), "!", "A signed-out CLI must not show the old value as a percentage")
+        XCTAssertFalse(store.menuIsLow(for: .claude))
 
         await provider.setFailure(nil)
         await store.refresh(.claude, force: true)
+        XCTAssertNotEqual(store.menuTitle(for: .claude), "!")
         XCTAssertNil(store.states[.claude]?.connectionIssue)
         XCTAssertNil(store.states[.claude]?.errorMessage)
         XCTAssertFalse(store.states[.claude]?.requiresConnection ?? true)
