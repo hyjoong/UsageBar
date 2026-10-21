@@ -132,7 +132,7 @@ final class WorkLogController: ObservableObject {
         } else {
             // Let a pass in flight finish first, or it would write the index back after it was removed.
             generation += 1
-            _ = await refreshTask?.value
+            await waitForRefreshes()
             logs = []
             lastRefreshed = nil
             do { try await clearIndex(); message = nil } catch {
@@ -191,7 +191,9 @@ final class WorkLogController: ObservableObject {
 
     func refresh() async {
         guard settings.isEnabled, !isDemo else { return }
-        if let running = refreshTask { _ = await running.value }
+        await waitForRefreshes()
+        // Turned off while waiting: starting a pass now would write the index back after it was cleared.
+        guard settings.isEnabled else { return }
         generation += 1
         let token = generation
         let request = WorkLogRequest(now: Date(), days: Self.days, settings: settings)
@@ -209,6 +211,15 @@ final class WorkLogController: ObservableObject {
         lastRefreshed = request.now
         message = result.savedIndex ? nil : String(localized: "작업 일지 캐시를 저장하지 못했어요. 다음 갱신 때 다시 읽어요.")
         clampSelection()
+    }
+
+    /// Waits until no pass is running, including one another waiter started in the meantime.
+    private func waitForRefreshes() async {
+        while let running = refreshTask {
+            _ = await running.value
+            // The pass's owner may not have resumed yet to clear it; clearing here ends the loop.
+            if refreshTask == running { refreshTask = nil }
+        }
     }
 
     // MARK: Days
