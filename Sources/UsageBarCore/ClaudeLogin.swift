@@ -74,10 +74,9 @@ public final class ClaudeLogin: @unchecked Sendable {
         lock.unlock()
         try? output.fileHandleForWriting.close()
         let deadline = Date().addingTimeInterval(timeout)
-        while process.isRunning, Date() < deadline { usleep(100_000) }
+        while process.isRunning, Date() < deadline, !isCancelled { usleep(100_000) }
         if process.isRunning {
-            process.terminate()
-            process.waitUntilExit()
+            Self.stop(process)
             lock.lock(); child = nil; let wasCancelled = cancelled; lock.unlock()
             return wasCancelled ? .cancelled : .failed(String(localized: "로그인을 기다리다 시간이 지났어요. 다시 시도해 주세요."))
         }
@@ -87,6 +86,22 @@ public final class ClaudeLogin: @unchecked Sendable {
             return .failed(String(localized: "로그인이 끝나지 않았어요. 다시 시도하거나 명령어를 복사해 터미널에서 로그인해 주세요."))
         }
         return .succeeded
+    }
+
+    private var isCancelled: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return cancelled
+    }
+
+    /// SIGTERM, then SIGKILL if the CLI is still running two seconds later. Never waits without a limit.
+    static func stop(_ process: Process, grace: TimeInterval = 2) {
+        guard process.isRunning else { return }
+        process.terminate()
+        let deadline = Date().addingTimeInterval(grace)
+        while process.isRunning, Date() < deadline { usleep(20_000) }
+        if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+        let reaped = Date().addingTimeInterval(1)
+        while process.isRunning, Date() < reaped { usleep(20_000) }
     }
 
     /// The first https address on an Anthropic sign-in host. Anything else the CLI prints is ignored.

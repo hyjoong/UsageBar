@@ -138,7 +138,8 @@ final class AppStore: ObservableObject {
     private var loginLostNotified: Set<ProviderID> = []
     /// The in-app Claude sign-in: the CLI's own `auth login`, which opens the browser.
     @Published private(set) var claudeLogin: ClaudeLoginState = .idle
-    private var claudeLoginTask: Task<Void, Never>?
+    /// The running sign-in. Its id keeps a cancelled run from overwriting the state of a newer one.
+    private var claudeLoginRun: (id: UUID, runner: ClaudeLogin, task: Task<Void, Never>)?
     /// Rechecks Claude every few seconds after the setup Terminal opens, so finishing there is enough.
     private var claudeConnectionWatch: Task<Void, Never>?
     /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
@@ -330,34 +331,39 @@ final class AppStore: ObservableObject {
 
     /// Starts `claude auth login`. The browser opens; when the CLI exits successfully, usage is checked again.
     func startClaudeLogin() {
-        guard claudeLoginTask == nil else { return }
+        guard claudeLoginRun == nil else { return }
         claudeLogin = .waiting(nil)
         if isDemo { return }
-        let runner = ClaudeLogin()
+        let runner = ClaudeLogin(), id = UUID()
         let showSignInURL: @Sendable (URL) -> Void = { [weak self] url in
             Task { @MainActor in self?.showClaudeSignInURL(url) }
         }
-        claudeLoginTask = Task { [weak self] in
+        let task = Task { [weak self] in
             let outcome = await runner.run(onSignInURL: showSignInURL)
-            guard let self else { return }
-            self.claudeLoginTask = nil
+            guard let self, self.claudeLoginRun?.id == id else { return }
+            self.claudeLoginRun = nil
             switch outcome {
             case .succeeded:
                 self.claudeLogin = .idle
+                self.claudeConnectionWatch?.cancel()
                 await self.refresh(.claude, force: true)
             case .failed(let message): self.claudeLogin = .failed(message)
             case .cancelled: self.claudeLogin = .idle
             }
         }
+        claudeLoginRun = (id, runner, task)
     }
 
     private func showClaudeSignInURL(_ url: URL) {
         if case .waiting = claudeLogin { claudeLogin = .waiting(url) }
     }
 
+    /// Stops the CLI right away, so the button works again at once and quitting leaves no sign-in behind.
     func cancelClaudeLogin() {
-        claudeLoginTask?.cancel()
-        if isDemo { claudeLogin = .idle }
+        claudeLoginRun?.runner.cancel()
+        claudeLoginRun?.task.cancel()
+        claudeLoginRun = nil
+        claudeLogin = .idle
     }
 
     /// After the setup Terminal opens, recheck every 5 seconds for up to 10 minutes until Claude connects.
@@ -629,6 +635,8 @@ final class AppStore: ObservableObject {
         startupTask?.cancel(); startupTask = nil
         pollTask?.cancel(); pollTask = nil
         clockTask?.cancel(); clockTask = nil
+        claudeConnectionWatch?.cancel(); claudeConnectionWatch = nil
+        if claudeLoginRun != nil { cancelClaudeLogin() }
         cancelRefreshes()
         let center = NSWorkspace.shared.notificationCenter
         observations.forEach { center.removeObserver($0) }
@@ -782,7 +790,9 @@ final class AppStore: ObservableObject {
             retryStates[id] = RetryState(attempts: attempt, notBefore: clockNow.addingTimeInterval(delay), rateLimited: limited)
             states[id]?.errorMessage = (error as? LocalizedError)?.errorDescription ?? String(localized: "지금 사용량을 가져올 수 없어요.")
             states[id]?.connectionIssue = connectionIssue
-            if connectionIssue == .authentication, notificationsEnabled, !isDemo, loginLostNotified.insert(id).inserted {
+            // Only a login that worked before can be lost; a first launch without one is not news.
+            if connectionIssue == .authentication, states[id]?.snapshot != nil, notificationsEnabled, !isDemo,
+               loginLostNotified.insert(id).inserted {
                 _ = await deliverNotification(id: "login.\(id.rawValue)",
                     title: String(localized: "\(id.title) 로그인이 풀렸어요"),
                     body: String(localized: "메뉴 막대에서 다시 로그인하면 사용량을 계속 볼 수 있어요."))
