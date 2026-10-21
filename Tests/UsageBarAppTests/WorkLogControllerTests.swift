@@ -118,6 +118,28 @@ final class WorkLogControllerTests: XCTestCase {
         XCTAssertEqual(controller.tab, .today)
     }
 
+    func testTurningOffWhileAPassRunsStartsNoNewPassAndClearsLast() async {
+        final class Gate: @unchecked Sendable { var loads = 0; var clears = 0; var clearedAfterLoad = true }
+        let gate = Gate()
+        let controller = WorkLogController(defaults: defaults, loader: { _ in
+            gate.loads += 1
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            if gate.clears > 0 { gate.clearedAfterLoad = false }
+            return WorkLogResult(logs: [])
+        }, clearIndex: { gate.clears += 1 })
+        await controller.setEnabled(true)
+        XCTAssertEqual(gate.loads, 1)
+        async let first: Void = controller.refresh()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        async let waiter: Void = controller.refresh()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        await controller.setEnabled(false)
+        _ = await (first, waiter)
+        XCTAssertEqual(gate.loads, 2, "the waiting refresh must not start a pass after the log was turned off")
+        XCTAssertEqual(gate.clears, 1)
+        XCTAssertTrue(gate.clearedAfterLoad, "no pass may finish after the index was cleared")
+    }
+
     func testNewestDayIsFollowedAcrossMidnight() async {
         final class Results: @unchecked Sendable { var next: [DailyWorkLog] = [] }
         let results = Results()
