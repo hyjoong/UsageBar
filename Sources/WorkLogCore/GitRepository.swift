@@ -110,7 +110,9 @@ public protocol GitRunning: Sendable {
 public struct ProcessGitRunner: GitRunning {
     public let executable: String
     public var timeout: TimeInterval = 3
-    public var maxOutput = 1_000_000
+    /// A week of `git log --name-only` in a large monorepo easily passes 1 MB; past this the whole
+    /// repository shows as failed, so the cap only guards against runaway output.
+    public var maxOutput = 8_000_000
 
     /// Nil when no usable git exists. `/usr/bin/git` is only a shim that offers to install the Command
     /// Line Tools when they are missing, so it is used only when a developer directory is installed.

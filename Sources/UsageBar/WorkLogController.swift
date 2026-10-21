@@ -54,6 +54,10 @@ final class WorkLogController: ObservableObject {
     static let refreshInterval: Duration = .seconds(600)
     /// A partial pass continues soon instead of waiting for the next interval.
     static let partialRetry: Duration = .seconds(3)
+    /// After the index could not be saved, every pass starts from the beginning again; retrying every
+    /// few seconds would reread hundreds of megabytes in a loop.
+    static let unsavedRetry: Duration = .seconds(60)
+    private var indexSaveFailed = false
 
     @Published private(set) var settings = WorkLogSettings()
     @Published var tab: WorkLogTab = .today {
@@ -181,7 +185,7 @@ final class WorkLogController: ObservableObject {
             guard settings.isEnabled else { return }
             await refresh()
             let partial = logs.first?.isPartial ?? false
-            try? await Task.sleep(for: partial ? Self.partialRetry : Self.refreshInterval)
+            try? await Task.sleep(for: indexSaveFailed ? Self.unsavedRetry : partial ? Self.partialRetry : Self.refreshInterval)
         }
     }
 
@@ -209,6 +213,7 @@ final class WorkLogController: ObservableObject {
         logs = result.logs
         if followsNewest, let newest = logs.first { selectedDay = newest.day.start }
         lastRefreshed = request.now
+        indexSaveFailed = !result.savedIndex
         message = result.savedIndex ? nil : String(localized: "작업 일지 캐시를 저장하지 못했어요. 다음 갱신 때 다시 읽어요.")
         clampSelection()
     }
