@@ -95,6 +95,13 @@ enum UsageFormat {
 
 /// Opens the bundled Claude connection script in Terminal and reports a user-facing failure message.
 enum ClaudeSetupLauncher {
+    /// Opens setup and, once Terminal is up, rechecks Claude until it connects. Returns a failure message.
+    @MainActor static func open(watching store: AppStore) async -> String? {
+        let message = await open()
+        if message == nil { store.watchClaudeConnection() }
+        return message
+    }
+
     @MainActor static func open() async -> String? {
         do {
             guard let script = Bundle.main.url(forResource: "setup-claude", withExtension: "command") else {

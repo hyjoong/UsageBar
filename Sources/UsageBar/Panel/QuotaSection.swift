@@ -117,10 +117,7 @@ struct ConnectionNotice: View {
         }
         if store.selectedState.requiresConnection, provider == .claude {
             Button("Claude 다시 연결") {
-                Task {
-                    setupMessage = await ClaudeSetupLauncher.open()
-                    if setupMessage == nil { store.watchClaudeConnection() }
-                }
+                Task { setupMessage = await ClaudeSetupLauncher.open(watching: store) }
             }
             .buttonStyle(.bordered)
             if let setupMessage { Text(setupMessage).font(.caption).foregroundStyle(UsageTheme.warning) }
