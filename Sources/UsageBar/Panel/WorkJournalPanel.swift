@@ -53,6 +53,15 @@ struct WorkJournalPanel: View {
             .background(UsageTheme.surface, in: RoundedRectangle(cornerRadius: UsageRadius.panelCard))
     }
 
+    /// "복사됨" for two seconds, so the label never claims an old copy and a second copy gets feedback.
+    private func markCopied(_ id: UUID) {
+        copiedID = id
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            if copiedID == id { copiedID = nil }
+        }
+    }
+
     // MARK: Idle
 
     private var idle: some View {
@@ -61,9 +70,9 @@ struct WorkJournalPanel: View {
                 Label("작업 기록", systemImage: "receipt").foregroundStyle(UsageTheme.secondaryInk)
                 Spacer(minLength: UsageSpacing.tight)
                 busyIndicator(String(localized: "시작 한도 확인 중"))
-                Button("전체 기록", action: openHistory)
+                Button("기록 보기", action: openHistory)
                     .buttonStyle(.plain).foregroundStyle(UsageTheme.secondaryInk)
-                    .help("작업 기록 열기")
+                    .help("작업 기록 창 열기")
                 startMenu
             }
             .frame(minHeight: UsageSpacing.control)
@@ -87,8 +96,15 @@ struct WorkJournalPanel: View {
         .fixedSize()
         .disabled(journal.isBusy || store.selectedState.snapshot == nil
                   || !store.activeProviders.contains(store.selectedProvider))
-        .help("작업 유형을 고르면 현재 한도를 확인하고 바로 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요.")
+        .help(startHelp)
         .accessibilityLabel("작업 시작, 작업 유형 선택")
+    }
+
+    /// A disabled Start says why, instead of looking broken.
+    private var startHelp: LocalizedStringKey {
+        if !store.activeProviders.contains(store.selectedProvider) { return "\(store.selectedProvider.title) 조회가 꺼져 있어요. 설정 → 연결에서 켤 수 있어요." }
+        if store.selectedState.snapshot == nil { return "한도를 아직 불러오지 못했어요. 새로고침한 뒤 시작해 주세요." }
+        return "작업 유형을 고르면 현재 한도를 확인하고 바로 시작해요. 끝낼 때 한도 변화를 영수증으로 남겨요."
     }
 
     private func start(_ kind: WorkKind) {
@@ -114,7 +130,7 @@ struct WorkJournalPanel: View {
             Spacer(minLength: UsageSpacing.tight)
             busyIndicator(String(localized: "종료 한도 확인 중"))
             Menu {
-                Button("전체 기록", action: openHistory)
+                Button("기록 보기", action: openHistory)
                 Divider()
                 Button("기록 취소", role: .destructive) { Task { await journal.discard() } }
             } label: {
@@ -128,7 +144,8 @@ struct WorkJournalPanel: View {
             }
             .buttonStyle(.borderedProminent).controlSize(.small)
             .disabled(journal.isBusy || finishArmedFor != active.id)
-            .help("\(active.provider.title)의 종료 한도를 확인하고 영수증을 저장해요")
+            .help(finishArmedFor == active.id ? LocalizedStringKey("\(active.provider.title)의 종료 한도를 확인하고 영수증을 저장해요")
+                                              : LocalizedStringKey("시작한 직후에는 몇 초 뒤에 종료할 수 있어요"))
         }
         .task(id: active.id) {
             let wait = Self.finishArmDelay - Date().timeIntervalSince(active.startedAt)
@@ -158,7 +175,7 @@ struct WorkJournalPanel: View {
             Spacer(minLength: UsageSpacing.tight)
             Button {
                 NSPasteboard.general.clearContents()
-                if NSPasteboard.general.setString(receipt.copyText, forType: .string) { copiedID = receipt.id }
+                if NSPasteboard.general.setString(receipt.copyText, forType: .string) { markCopied(receipt.id) }
             } label: {
                 Label(copiedID == receipt.id ? "복사됨" : "요약 복사",
                       systemImage: copiedID == receipt.id ? "checkmark" : "doc.on.doc")
