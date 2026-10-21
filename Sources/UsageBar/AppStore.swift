@@ -127,21 +127,23 @@ final class AppStore: ObservableObject {
     @Published private(set) var recoveryNotificationsEnabled = false
     @Published private(set) var runOutNotificationsEnabled = false
     /// Keeps the Claude Code status line file current. Turned on by installing or copying the status line.
-    @Published private(set) var statusLineEnabled = false {
+    /// Set from AppStore+StatusLine.swift as well; read-only everywhere else by convention.
+    @Published var statusLineEnabled = false {
         didSet { if !isDemo { defaults.set(statusLineEnabled, forKey: "statusLineEnabled") } }
     }
-    @Published private(set) var statusLineState: ClaudeStatusLine.State = .notConfigured
-    @Published private(set) var statusLineMessage: String?
+    @Published var statusLineState: ClaudeStatusLine.State = .notConfigured
+    @Published var statusLineMessage: String?
     /// Run-out warnings already sent, by provider, window and period. One per period is enough.
     private var runOutNotified: Set<String> = []
     /// Providers whose lost login was already announced; cleared by the next successful check.
     private var loginLostNotified: Set<ProviderID> = []
     /// The in-app Claude sign-in: the CLI's own `auth login`, which opens the browser.
-    @Published private(set) var claudeLogin: ClaudeLoginState = .idle
+    /// Set from AppStore+ClaudeLogin.swift; read-only everywhere else by convention.
+    @Published var claudeLogin: ClaudeLoginState = .idle
     /// The running sign-in. Its id keeps a cancelled run from overwriting the state of a newer one.
-    private var claudeLoginRun: (id: UUID, runner: ClaudeLogin, task: Task<Void, Never>)?
+    var claudeLoginRun: (id: UUID, runner: ClaudeLogin, task: Task<Void, Never>)?
     /// Rechecks Claude every few seconds after the setup Terminal opens, so finishing there is enough.
-    private var claudeConnectionWatch: Task<Void, Never>?
+    var claudeConnectionWatch: Task<Void, Never>?
     /// Reminds about a running work session: a check-in after two hours and a warning before the limit resets.
     @Published var workRemindersEnabled = true {
         didSet {
@@ -166,6 +168,8 @@ final class AppStore: ObservableObject {
     private let defaults: UserDefaults
     private let providers: [ProviderID: any UsageProvider]
     private let historyStore: HistoryStore?
+    /// False for demo runs and tests with fake providers, which must never write to the home folder.
+    var writesToDisk: Bool { historyStore != nil }
     private var refreshTasks: [ProviderID: Task<Void, Never>] = [:]
     private var successfulRefreshTokens: [ProviderID: UUID] = [:]
     private var taskTokens: [ProviderID: UUID] = [:]
@@ -329,58 +333,6 @@ final class AppStore: ObservableObject {
         return retry.rateLimited ? String(localized: "약 \(minutes)분 후 다시 확인할 수 있어요") : String(localized: "자동 조회 잠시 대기 · 직접 다시 확인할 수 있어요")
     }
 
-    /// Starts `claude auth login`. The browser opens; when the CLI exits successfully, usage is checked again.
-    func startClaudeLogin() {
-        guard claudeLoginRun == nil else { return }
-        claudeLogin = .waiting(nil)
-        if isDemo { return }
-        let runner = ClaudeLogin(), id = UUID()
-        let showSignInURL: @Sendable (URL) -> Void = { [weak self] url in
-            Task { @MainActor in self?.showClaudeSignInURL(url) }
-        }
-        let task = Task { [weak self] in
-            let outcome = await runner.run(onSignInURL: showSignInURL)
-            guard let self, self.claudeLoginRun?.id == id else { return }
-            self.claudeLoginRun = nil
-            switch outcome {
-            case .succeeded:
-                self.claudeLogin = .idle
-                self.claudeConnectionWatch?.cancel()
-                await self.refresh(.claude, force: true)
-            case .failed(let message): self.claudeLogin = .failed(message)
-            case .cancelled: self.claudeLogin = .idle
-            }
-        }
-        claudeLoginRun = (id, runner, task)
-    }
-
-    private func showClaudeSignInURL(_ url: URL) {
-        if case .waiting = claudeLogin { claudeLogin = .waiting(url) }
-    }
-
-    /// Stops the CLI right away, so the button works again at once and quitting leaves no sign-in behind.
-    func cancelClaudeLogin() {
-        claudeLoginRun?.runner.cancel()
-        claudeLoginRun?.task.cancel()
-        claudeLoginRun = nil
-        claudeLogin = .idle
-    }
-
-    /// After the setup Terminal opens, recheck every 5 seconds for up to 10 minutes until Claude connects.
-    func watchClaudeConnection() {
-        claudeConnectionWatch?.cancel()
-        guard !isDemo else { return }
-        claudeConnectionWatch = Task { [weak self] in
-            let deadline = Date().addingTimeInterval(ClaudeLogin.timeout)
-            while Date() < deadline {
-                try? await Task.sleep(nanoseconds: 5_000_000_000)
-                guard !Task.isCancelled, let self, self.enabledProviders.contains(.claude),
-                      self.states[.claude]?.requiresConnection == true else { return }
-                if self.states[.claude]?.isRefreshing != true { await self.refresh(.claude, force: true) }
-            }
-        }
-    }
-
     func canRefresh(_ provider: ProviderID) -> Bool {
         guard enabledProviders.contains(provider), states[provider]?.isRefreshing != true else { return false }
         if let retry = retryStates[provider], retry.rateLimited, retry.notBefore > clockNow { return false }
@@ -457,119 +409,6 @@ final class AppStore: ObservableObject {
     func projection(for provider: ProviderID, window: UsageWindow) -> UsageProjection? {
         guard freshness(for: provider) == .current, let observedAt = states[provider]?.snapshot?.fetchedAt else { return nil }
         return UsageProjection.evaluate(window: window, history: history(for: provider), observedAt: observedAt, now: clockNow)
-    }
-
-    // MARK: Claude Code status line
-
-    private var statusLineDirectory: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("UsageBar", isDirectory: true)
-    }
-    private var statusLineFile: URL { statusLineDirectory.appendingPathComponent("statusline.txt") }
-    var statusLineScript: URL { statusLineDirectory.appendingPathComponent("statusline.sh") }
-    private var claudeSettingsFile: URL {
-        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/settings.json")
-    }
-    var statusLineCommand: String { ClaudeStatusLine.command(script: statusLineScript) }
-
-    /// Recording state, each enabled service's leading limit, and the run-out time when one is near.
-    func statusLineSegments() -> [ClaudeStatusLine.Segment] {
-        var segments: [ClaudeStatusLine.Segment] = []
-        if let active = workJournal.state.active {
-            let elapsed = UsageFormat.compactDuration(clockNow.timeIntervalSince(active.startedAt))
-            segments.append(.init(String(localized: "기록 중 \(elapsed)"), tone: .recording))
-        } else if let last = Self.lastSessionSegment(receipts: workJournal.state.receipts, now: clockNow) {
-            segments.append(last)
-        }
-        for provider in activeProviders {
-            guard let window = primaryWindow(for: provider) else { continue }
-            let current = freshness(for: provider) == .current
-            let tone: ClaudeStatusLine.Segment.Tone = !current ? .dim : (window.remainingPercent <= 20 ? .warning : .normal)
-            segments.append(.init("\(provider.title) \(Int(window.remainingPercent.rounded()))%", tone: tone))
-            if let projection = projection(for: provider, window: window), case .runsOut(let at) = projection.outcome {
-                segments.append(.init(String(localized: "\(UsageFormat.resetClock(at, now: clockNow)) 소진 예상"), tone: .warning))
-            }
-        }
-        return segments
-    }
-
-    /// For 10 minutes after a session ends: "방금 작업 25분 · +3%p", so the result shows without opening the panel.
-    static func lastSessionSegment(receipts: [WorkReceipt], now: Date,
-                                   within: TimeInterval = 10 * 60) -> ClaudeStatusLine.Segment? {
-        guard let last = receipts.max(by: { $0.endedAt < $1.endedAt }),
-              (0...within).contains(now.timeIntervalSince(last.endedAt)) else { return nil }
-        let duration = UsageFormat.compactDuration(last.duration)
-        let result: String?
-        if let row = last.rows.first {
-            if let points = row.percentagePoints { result = UsageFormat.deltaLabel(points) }
-            else if let estimate = row.estimatedPercentagePoints {
-                result = "≈+\(estimate.formatted(.number.precision(.fractionLength(0...1))))%p"
-            } else { result = nil }
-        } else { result = nil }
-        let output = last.activity.map(\.outputTokens).flatMap { $0 > 0 ? $0 : nil }
-        let detail = result ?? output.map { String(localized: "출력 \(TokenFormat.compact($0))") }
-        guard let detail else { return .init(String(localized: "방금 작업 \(duration)")) }
-        return .init(String(localized: "방금 작업 \(duration) · \(detail)"))
-    }
-
-    func refreshStatusLineState() {
-        guard !isDemo else { return }
-        statusLineState = ClaudeStatusLine.state(settings: claudeSettingsFile)
-    }
-
-    func installStatusLine() {
-        statusLineMessage = nil
-        if isDemo { statusLineState = .installed; return }
-        do {
-            try ClaudeStatusLine.install(settings: claudeSettingsFile, script: statusLineScript, lineFile: statusLineFile)
-            statusLineEnabled = true
-            exportStatusLine()
-        } catch ClaudeStatusLine.Failure.otherStatusLine {
-            statusLineMessage = String(localized: "이미 다른 상태줄이 설정돼 있어서 바꾸지 않았어요.")
-        } catch ClaudeStatusLine.Failure.invalidSettings {
-            statusLineMessage = String(localized: "~/.claude/settings.json을 읽을 수 없어 바꾸지 않았어요. 파일 형식을 확인해 주세요.")
-        } catch {
-            statusLineMessage = String(localized: "상태줄을 설정하지 못했어요.")
-        }
-        refreshStatusLineState()
-    }
-
-    func removeStatusLine() {
-        statusLineMessage = nil
-        if isDemo { statusLineState = .notConfigured; return }
-        do { try ClaudeStatusLine.uninstall(settings: claudeSettingsFile) }
-        catch { statusLineMessage = String(localized: "상태줄 설정을 지우지 못했어요.") }
-        statusLineEnabled = false
-        try? FileManager.default.removeItem(at: statusLineFile)
-        refreshStatusLineState()
-    }
-
-    /// For people who already have a status line script: keep the line file current and hand them the command.
-    func copyStatusLineCommand() {
-        statusLineMessage = nil
-        if !isDemo {
-            do {
-                try FileManager.default.createDirectory(at: statusLineDirectory, withIntermediateDirectories: true)
-                try ClaudeStatusLine.script(lineFile: statusLineFile).write(to: statusLineScript, atomically: true, encoding: .utf8)
-                try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: statusLineScript.path)
-            } catch {
-                statusLineMessage = String(localized: "상태줄 스크립트를 만들지 못했어요.")
-                return
-            }
-            statusLineEnabled = true
-            exportStatusLine()
-        }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(statusLineCommand, forType: .string)
-        statusLineMessage = String(localized: "명령을 복사했어요. 기존 상태줄 스크립트 끝에 붙여 넣으세요.")
-    }
-
-    /// Rewritten every minute so the script can tell a running UsageBar from a closed one by the file's age.
-    private func exportStatusLine() {
-        guard statusLineEnabled, !isDemo, historyStore != nil else { return }
-        let line = ClaudeStatusLine.render(statusLineSegments())
-        try? FileManager.default.createDirectory(at: statusLineDirectory, withIntermediateDirectories: true)
-        try? Data(line.utf8).write(to: statusLineFile, options: .atomic)
     }
 
     /// A menu bar percentage at or below the low-limit line, shown in the warning color.
