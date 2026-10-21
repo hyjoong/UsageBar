@@ -291,6 +291,22 @@
         }
       }
     },
+    "%@ 업데이트 가능, 업데이트 시작": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ available, start update"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 업데이트 가능, 업데이트 시작"
+          }
+        }
+      }
+    },
     "%@ 연결 확인": {
       "localizations": {
         "en": {
@@ -383,6 +399,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 작업 영수증을 삭제합니다. 삭제한 영수증은 복구할 수 없어요."
+          }
+        }
+      }
+    },
+    "%@ 조회가 꺼져 있어요. 설정 → 연결에서 켤 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ checks are off. Turn them on in Settings → Connection."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 조회가 꺼져 있어요. 설정 → 연결에서 켤 수 있어요."
+          }
+        }
+      }
+    },
+    "%@ 조회를 꺼요. 설정 → 연결에서 언제든 다시 켤 수 있어요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turns off %@ checks. Turn them back on anytime in Settings → Connection."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 조회를 꺼요. 설정 → 연결에서 언제든 다시 켤 수 있어요."
           }
         }
       }
@@ -623,6 +671,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@만 사용할게요 · %@ 조회 끄기"
+          }
+        }
+      }
+    },
+    "%@만 쓸게요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use %@ only"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@만 쓸게요"
           }
         }
       }
@@ -2348,6 +2412,22 @@
         }
       }
     },
+    "기록 보기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View log"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록 보기"
+          }
+        }
+      }
+    },
     "기록 없음": {
       "localizations": {
         "en": {
@@ -2872,6 +2952,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "다음 날"
+          }
+        }
+      }
+    },
+    "다음 날 (⌘])": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next day (⌘])"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 날 (⌘])"
           }
         }
       }
@@ -4748,6 +4844,22 @@
         }
       }
     },
+    "쉼표로 구분한 이름의 프로젝트가 일지와 복사본에서 빠져요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Projects named here, separated by commas, are left out of the log and copies."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "쉼표로 구분한 이름의 프로젝트가 일지와 복사본에서 빠져요."
+          }
+        }
+      }
+    },
     "스크럼 3줄": {
       "localizations": {
         "en": {
@@ -4856,6 +4968,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "시작하지 못했어요"
+          }
+        }
+      }
+    },
+    "시작한 직후에는 몇 초 뒤에 종료할 수 있어요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right after starting, Finish unlocks in a few seconds"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작한 직후에는 몇 초 뒤에 종료할 수 있어요"
           }
         }
       }
@@ -5020,6 +5148,22 @@
         }
       }
     },
+    "업데이트": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트"
+          }
+        }
+      }
+    },
     "업데이트 설정을 확인할 수 없어요. 배포자에게 문의해 주세요.": {
       "localizations": {
         "en": {
@@ -5144,6 +5288,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "연결 설정을 열면 터미널에서 초기 설정과 로그인을 진행해요."
+          }
+        }
+      }
+    },
+    "연결 필요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연결 필요"
           }
         }
       }
@@ -5980,6 +6140,22 @@
         }
       }
     },
+    "이전 날 (⌘[)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous day (⌘[)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이전 날 (⌘[)"
+          }
+        }
+      }
+    },
     "일반": {
       "localizations": {
         "en": {
@@ -6264,6 +6440,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "작업 기록 중 알림"
+          }
+        }
+      }
+    },
+    "작업 기록 창 열기": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the work log window"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업 기록 창 열기"
           }
         }
       }
@@ -6844,6 +7036,22 @@
         }
       }
     },
+    "제외됨: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluded: %@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제외됨: %@"
+          }
+        }
+      }
+    },
     "제외할 프로젝트": {
       "localizations": {
         "en": {
@@ -7404,6 +7612,22 @@
         }
       }
     },
+    "최소 한 서비스는 켜 두어야 해요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least one service must stay on."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최소 한 서비스는 켜 두어야 해요."
+          }
+        }
+      }
+    },
     "추가 한도": {
       "localizations": {
         "en": {
@@ -7672,6 +7896,22 @@
         }
       }
     },
+    "터미널에서 codex login을 실행하고 돌아와 다시 확인을 눌러 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run codex login in Terminal, then come back and press Check again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터미널에서 codex login을 실행하고 돌아와 다시 확인을 눌러 주세요."
+          }
+        }
+      }
+    },
     "터미널에서 로그인": {
       "localizations": {
         "en": {
@@ -7684,6 +7924,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "터미널에서 로그인"
+          }
+        }
+      }
+    },
+    "터미널에서 로그인하는 명령어를 복사해요": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies the command to sign in from Terminal"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터미널에서 로그인하는 명령어를 복사해요"
           }
         }
       }
@@ -7836,6 +8092,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "파일 %lld개 변경"
+          }
+        }
+      }
+    },
+    "표시 없는 날: 기록 없음 · 점: 0 토큰으로 확인됨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No mark: no record · Dot: confirmed 0 tokens"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시 없는 날: 기록 없음 · 점: 0 토큰으로 확인됨"
           }
         }
       }
@@ -8140,6 +8412,22 @@
         }
       }
     },
+    "한도를 아직 불러오지 못했어요. 새로고침한 뒤 시작해 주세요.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits haven't loaded yet. Refresh, then start."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "한도를 아직 불러오지 못했어요. 새로고침한 뒤 시작해 주세요."
+          }
+        }
+      }
+    },
     "한도의 기간이 변경됐어요.": {
       "localizations": {
         "en": {
@@ -8184,6 +8472,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요."
+          }
+        }
+      }
+    },
+    "현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요. (⌘E)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saves the records matching the current service, period, kind and limit filter. (⌘E)"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요. (⌘E)"
           }
         }
       }
@@ -8264,6 +8568,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "확인 시각"
+          }
+        }
+      }
+    },
+    "확인 실패": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check failed"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인 실패"
           }
         }
       }

@@ -13,6 +13,17 @@ struct WorkLogView: View {
         _workLog = ObservedObject(wrappedValue: store.workLog)
     }
 
+    /// ⌘1–⌘3 switch tabs. Invisible buttons carry the shortcuts; the picker stays the visible control.
+    private var tabShortcuts: some View {
+        HStack(spacing: 0) {
+            ForEach(Array(WorkLogTab.allCases.enumerated()), id: \.offset) { index, tab in
+                Button(tab.title) { workLog.tab = tab }
+                    .keyboardShortcut(KeyEquivalent(Character(String(index + 1))), modifiers: .command)
+            }
+        }
+        .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Picker("작업 기록 보기", selection: $workLog.tab) {
@@ -20,6 +31,7 @@ struct WorkLogView: View {
             }
             .pickerStyle(.segmented).labelsHidden()
             .frame(maxWidth: 300)
+            .background { tabShortcuts }
             .padding(.top, UsageSpacing.group).padding(.bottom, UsageSpacing.tight)
             switch workLog.tab {
             case .today: WorkLogTodayView(store: store, workLog: workLog)
@@ -72,12 +84,14 @@ private struct WorkLogTodayView: View {
         HStack(spacing: UsageSpacing.item) {
             Button { workLog.step(-1) } label: { Image(systemName: "chevron.left").frame(width: 24, height: 24) }
                 .buttonStyle(.borderless).disabled(!workLog.canGoBack)
-                .help("이전 날").accessibilityLabel("이전 날")
+                .keyboardShortcut("[", modifiers: .command)
+                .help("이전 날 (⌘[)").accessibilityLabel("이전 날")
             Text(workLog.selectedDay.formatted(.dateTime.month(.wide).day().weekday(.abbreviated)))
                 .font(UsageType.title).monospacedDigit()
             Button { workLog.step(1) } label: { Image(systemName: "chevron.right").frame(width: 24, height: 24) }
                 .buttonStyle(.borderless).disabled(!workLog.canGoForward)
-                .help("다음 날").accessibilityLabel("다음 날")
+                .keyboardShortcut("]", modifiers: .command)
+                .help("다음 날 (⌘])").accessibilityLabel("다음 날")
             if workLog.isRefreshing {
                 ProgressView().controlSize(.small).accessibilityLabel("기록을 읽는 중")
             }
@@ -163,7 +177,13 @@ private struct WorkLogTodayView: View {
 
     private func copy(_ text: String, as kind: String) {
         NSPasteboard.general.clearContents()
-        if NSPasteboard.general.setString(text, forType: .string) { copied = kind }
+        if NSPasteboard.general.setString(text, forType: .string) {
+            copied = kind
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                if copied == kind { copied = nil }
+            }
+        }
     }
 }
 
@@ -294,7 +314,13 @@ private struct WorkLogProjectCard: View {
                 ForEach(project.commits, id: \.sha) { commit in
                     Button {
                         NSPasteboard.general.clearContents()
-                        if NSPasteboard.general.setString(commit.sha, forType: .string) { copiedSHA = commit.sha }
+                        if NSPasteboard.general.setString(commit.sha, forType: .string) {
+                            copiedSHA = commit.sha
+                            Task { @MainActor in
+                                try? await Task.sleep(for: .seconds(2))
+                                if copiedSHA == commit.sha { copiedSHA = nil }
+                            }
+                        }
                     } label: {
                         HStack(spacing: UsageSpacing.item) {
                             Text(verbatim: "· " + commit.subject).lineLimit(1)
@@ -398,6 +424,10 @@ private struct WorkLogWeekView: View {
                     Button {
                         NSPasteboard.general.clearContents()
                         copied = NSPasteboard.general.setString(workLog.weekMarkdown(), forType: .string)
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .seconds(2))
+                            copied = false
+                        }
                     } label: {
                         Label(copied ? String(localized: "복사됨") : String(localized: "주간 마크다운 복사"),
                               systemImage: copied ? "checkmark" : "doc.on.doc")

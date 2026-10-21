@@ -119,6 +119,9 @@ struct PreferencesView: View {
                         set: { store.setProviderEnabled($0, for: provider) }
                     ))
                     .disabled(store.enabledProviders.contains(provider) && store.enabledProviders.count == 1)
+                    if store.enabledProviders.contains(provider) && store.enabledProviders.count == 1 {
+                        detail("최소 한 서비스는 켜 두어야 해요.")
+                    }
                     connectionRow(for: provider)
                 }
                 detail("켜 둔 서비스만 5분마다 조회해요. 각 CLI의 로그인 상태를 사용하며, 끈 서비스의 기록은 보관돼요.")
@@ -270,6 +273,7 @@ struct PreferencesView: View {
 private struct WorkLogSettingsRows: View {
     @ObservedObject var workLog: WorkLogController
     @State private var showsGitNotice = false
+    @FocusState private var editingExcluded: Bool
     @State private var excludedText = ""
 
     var body: some View {
@@ -294,11 +298,19 @@ private struct WorkLogSettingsRows: View {
         detail("끄면 세션 제목만 보여요. 요청 문장은 저장하지 않고 그릴 때마다 원본 기록에서 첫 줄만 읽어요.")
         TextField("제외할 프로젝트", text: $excludedText, prompt: Text("쉼표로 구분"))
             .disabled(!workLog.settings.isEnabled)
+            .focused($editingExcluded)
             .onSubmit(commitExcluded)
+            .onChange(of: editingExcluded) { _, editing in if !editing { commitExcluded() } }
             .onAppear { excludedText = workLog.settings.excludedProjects.joined(separator: ", ") }
             .onDisappear(perform: commitExcluded)
-        detail("이름이 같은 프로젝트는 일지와 복사본 모두에서 빠져요. Return으로 적용해요.")
-            .workLogGitNotice(isPresented: $showsGitNotice, workLog: workLog)
+        Group {
+            if workLog.settings.excludedProjects.isEmpty {
+                detail("쉼표로 구분한 이름의 프로젝트가 일지와 복사본에서 빠져요.")
+            } else {
+                detail("제외됨: \(workLog.settings.excludedProjects.joined(separator: ", "))")
+            }
+        }
+        .workLogGitNotice(isPresented: $showsGitNotice, workLog: workLog)
     }
 
     private func commitExcluded() {

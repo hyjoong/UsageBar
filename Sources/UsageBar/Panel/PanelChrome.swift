@@ -12,10 +12,11 @@ struct PanelUpdateRow: View {
                 HStack {
                     Label("\(version) 업데이트 가능", systemImage: "arrow.down.circle")
                     Spacer()
-                    Text("확인").foregroundStyle(UsageTheme.accent)
+                    Text("업데이트").foregroundStyle(UsageTheme.accent)
                 }.font(UsageType.secondary).padding(.horizontal, UsageSpacing.panelInset).padding(.vertical, 10)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("\(version) 업데이트 가능, 업데이트 시작")
             .disabled(!updates.canCheckForUpdates)
         }
     }

@@ -87,7 +87,7 @@ struct RecoveryCard: View {
             Text(message).font(UsageType.secondary).foregroundStyle(UsageTheme.secondaryInk)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        Text(isLogin ? "codex login 으로 ChatGPT 계정에 로그인해요." : "설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
+        Text(isLogin ? "터미널에서 codex login을 실행하고 돌아와 다시 확인을 눌러 주세요." : "설치된 Codex를 다시 찾아 연결해요. 연결되지 않으면 Codex 앱이나 CLI를 설치·업데이트해 주세요.")
             .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
             .fixedSize(horizontal: false, vertical: true)
         HStack(spacing: UsageSpacing.item) {
@@ -229,11 +229,11 @@ struct ConnectionSetupCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if let other {
-                    Button("\(other.title)만 사용할게요 · \(provider.title) 조회 끄기") {
-                        store.setProviderEnabled(false, for: provider)
-                    }
-                    .buttonStyle(.link).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
-                    .help("설정 → 연결에서 언제든 다시 켤 수 있어요")
+                    Button("\(other.title)만 쓸게요") { store.setProviderEnabled(false, for: provider) }
+                        .buttonStyle(.link).font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                    Text("\(provider.title) 조회를 꺼요. 설정 → 연결에서 언제든 다시 켤 수 있어요.")
+                        .font(UsageType.caption).foregroundStyle(UsageTheme.secondaryInk)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }

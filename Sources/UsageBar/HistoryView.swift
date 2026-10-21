@@ -96,10 +96,12 @@ struct HistoryView: View {
             Picker("서비스", selection: $selectedProvider) {
                 ForEach(ProviderID.allCases) { Text($0.title).tag($0) }
             }.pickerStyle(.segmented).labelsHidden().frame(width: 150)
+            // Claude reports no daily tokens, so the choice only appears where there is data to show.
             Picker("기록 종류", selection: $kind) {
                 Text("잔여 한도").tag("limits")
-                Text(selectedProvider == .claude ? "일별 토큰 (미지원)" : "일별 토큰").tag("tokens")
+                if selectedProvider != .claude { Text("일별 토큰").tag("tokens") }
             }.pickerStyle(.segmented).labelsHidden().frame(width: 250)
+            .onChange(of: selectedProvider) { _, provider in if provider == .claude { kind = "limits" } }
             Spacer()
             Picker("기간", selection: $days) {
                 Text(kind == "tokens" ? "오늘" : "24시간").tag(1)
@@ -125,15 +127,16 @@ struct HistoryView: View {
             } label: {
                 Label("CSV 내보내기", systemImage: "square.and.arrow.up")
             }
+            .keyboardShortcut("e", modifiers: .command)
             .disabled(isExporting || (kind == "tokens" ? records.isEmpty : points.isEmpty))
-            .help("현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요.")
+            .help("현재 서비스, 기간, 기록 종류와 한도 필터에 해당하는 기록을 저장해요. (⌘E)")
         }
     }
 
     private func footer(records: [DailyUsage]) -> some View {
         HStack {
             Label(kind == "tokens"
-                  ? (records.isEmpty ? "제공자가 반환한 일별 토큰" : "빈 날짜: 기록 없음 · 점과 0: 제공된 0 토큰")
+                  ? (records.isEmpty ? "제공자가 반환한 일별 토큰" : "표시 없는 날: 기록 없음 · 점: 0 토큰으로 확인됨")
                   : "확인된 기록만 표시 · 조회 사이의 사용량은 추정하지 않아요", systemImage: "info.circle")
             Spacer()
             if let message = store.storageNotice {
