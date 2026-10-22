@@ -218,6 +218,35 @@ final class AppStoreTests: XCTestCase {
         XCTAssertEqual(store.states[.claude]?.snapshot?.accountKey, "account-a")
     }
 
+    func testFailedCheckIsRetriedWhenThePanelShowsIt() async {
+        let provider = StubProvider(.claude)
+        let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())
+        await provider.setFailure(.unavailable("Claude had a problem"))
+        await store.refresh(.claude, force: true)
+        XCTAssertNotNil(store.states[.claude]?.errorMessage)
+        let now = Date()
+        XCTAssertFalse(store.shouldRetryOnDisplay(.claude, now: now), "an attempt seconds ago is not repeated")
+        XCTAssertTrue(store.shouldRetryOnDisplay(.claude, now: now.addingTimeInterval(11)),
+                      "opening the panel later retries instead of waiting out the backoff")
+        XCTAssertTrue(store.providersDueForRetry(now: now).isEmpty, "still inside the retry wait")
+        XCTAssertEqual(store.providersDueForRetry(now: now.addingTimeInterval(301)), [.claude],
+                       "the minute poll picks the service up as soon as the wait ends")
+
+        await provider.setFailure(nil)
+        await store.refresh(.claude, force: true)
+        XCTAssertNil(store.states[.claude]?.errorMessage)
+        XCTAssertFalse(store.shouldRetryOnDisplay(.claude, now: now.addingTimeInterval(60)))
+        XCTAssertTrue(store.providersDueForRetry(now: now.addingTimeInterval(400)).isEmpty)
+    }
+
+    func testRateLimitIsNotRetriedOnDisplay() async {
+        let provider = StubProvider(.codex)
+        let store = AppStore(providerOverrides: [.codex: provider], preferences: preferences())
+        await provider.setFailure(.rateLimited(retryAfter: 600))
+        await store.refresh(.codex, force: true)
+        XCTAssertFalse(store.shouldRetryOnDisplay(.codex, now: Date().addingTimeInterval(60)))
+    }
+
     func testExpiredAuthenticationKeepsPreviousSnapshotAndClearsAfterRecovery() async {
         let provider = StubProvider(.claude)
         let store = AppStore(providerOverrides: [.claude: provider], preferences: preferences())

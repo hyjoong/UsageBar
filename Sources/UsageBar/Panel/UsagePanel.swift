@@ -51,11 +51,11 @@ struct UsagePanel: View {
         .background(UsageTheme.canvas)
         .foregroundStyle(UsageTheme.ink)
         .tint(UsageTheme.accent)
-        .task { await store.refresh(provider) }
+        .task { await store.refreshForDisplay(provider) }
         .onChange(of: store.selectedProvider) { _, newValue in
             showCredits = false
             showPace = false
-            Task { await store.refresh(newValue) }
+            Task { await store.refreshForDisplay(newValue) }
         }
     }
 

@@ -544,6 +544,27 @@ final class AppStore: ObservableObject {
         return true
     }
 
+    /// The panel just showed `id`. After a failed check the retry wait would otherwise keep the error on
+    /// screen until the person pressed refresh, so a failure is retried now, unless the service asked us to
+    /// wait (rate limit) or the last attempt was seconds ago.
+    func refreshForDisplay(_ id: ProviderID) async {
+        await refresh(id, force: shouldRetryOnDisplay(id, now: Date()))
+    }
+
+    func shouldRetryOnDisplay(_ id: ProviderID, now: Date) -> Bool {
+        guard let state = states[id], state.errorMessage != nil, retryStates[id]?.rateLimited != true else { return false }
+        return state.lastAttempt.map { now.timeIntervalSince($0) >= 10 } ?? true
+    }
+
+    /// Services whose last check failed and whose retry wait is over. The poll retries these on its next
+    /// minute instead of at the next five-minute round, which could miss the end of the wait.
+    func providersDueForRetry(now: Date) -> [ProviderID] {
+        activeProviders.filter { id in
+            guard states[id]?.errorMessage != nil, let retry = retryStates[id] else { return false }
+            return retry.notBefore <= now
+        }
+    }
+
     func refreshAll() async { await refreshAll(force: false) }
 
     private func refreshAll(force: Bool) async {
@@ -699,6 +720,8 @@ final class AppStore: ObservableObject {
                 if now.timeIntervalSince(lastFullRefresh) >= 295 {
                     lastFullRefresh = now
                     await self.refreshAll()
+                } else if !self.providersDueForRetry(now: now).isEmpty {
+                    for provider in self.providersDueForRetry(now: now) { await self.refresh(provider) }
                 } else if let provider = self.workJournal.state.active?.provider,
                           let fetchedAt = self.states[provider]?.snapshot?.fetchedAt,
                           now.timeIntervalSince(fetchedAt) >= 115 {
